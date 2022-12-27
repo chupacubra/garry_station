@@ -1,0 +1,123 @@
+AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("shared.lua")
+
+include("shared.lua")
+
+
+function SWEP:Initialize()
+	--if self.SetHoldType then
+		--self:SetHoldType( self.HoldType or "normal" )
+	--else
+        self:SetHoldType( "normal" )
+	--end
+end
+
+function SWEP:HoldTypeTriger(bool)
+    if bool then
+        if self.hand_item.item then
+            self:SetHoldType("slam")
+        else
+            self:SetHoldType("normal")
+        end
+    else
+        self:SetHoldType("normal")
+    end
+end
+ 
+function SWEP:PrimaryAttack()
+    if self.hand_item.item then
+        self:PrimaryItemAction()
+    end
+
+    --make trace
+    local trace = {
+        start = self:GetOwner():EyePos(),
+        endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 70 ,
+        filter =  function( ent ) return ( ent != self:GetOwner() ) end
+    }
+    
+    trace = util.TraceLine(trace)
+    if !trace.Entity:IsValid() then
+        return
+    end
+
+    if trace.Entity.CanPickup then
+        self.hand_item.item = duplicator.CopyEntTable(trace.Entity)
+
+        PrintTable(self.hand_item.item)
+        
+        trace.Entity:Remove()
+        self:SendToClientDrawModel(true)
+        self:HoldTypeTriger(self.hand_item != nil)
+    end
+end
+
+function SWEP:SecondaryAttack()
+    if self:GetOwner().Equipment.BACKPACK != 0 then
+        if self.hand_item.item then
+            player_manager.RunClass( self:GetOwner(), "InsertItemInBackpack", self.hand_item.item )
+            self:HoldTypeTriger(self.hand_item != nil) 
+            self:SendToClientDrawModel(false)
+            self.hand_item.item = nil
+        end
+    end
+end
+
+function SWEP:PrimaryItemAction()
+    if self.hand_item.primary_action == nil then
+        return
+    end
+    self.hand_item.primary_action(self)
+end
+
+
+function SWEP:Holster()
+    return true
+end
+
+function SWEP:Deploy()
+
+    if !self.hand_item then
+        self.hand_item = {}
+    end
+
+    self:HoldTypeTriger(self.hand_item != nil)
+
+    return true
+end
+
+function SWEP:Holster()
+   return true
+end
+
+function SWEP:Reload()
+    if !self.hand_item.item then
+        return
+    end
+    local trace = {
+        start = self:GetOwner():EyePos(),
+        endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 70 ,
+        filter =  function( ent ) return ( ent != self:GetOwner() ) end
+    }
+    trace = util.TraceLine(trace)
+    self:SendToClientDrawModel(false)
+
+
+    local ent = duplicator.CreateEntityFromTable( nil, self.hand_item.item )
+    ent:SetPos(trace.HitPos)
+    ent.itemData = self.hand_item.itemData
+    ent:Spawn()
+
+    self.hand_item.item = nil
+    self:HoldTypeTriger(self.hand_item != nil)
+end
+
+function SWEP:SendToClientDrawModel(haveItem)
+    net.Start("gs_hand_draw_model")
+    net.WriteEntity(self)
+    net.WriteBool(haveItem)
+    net.WriteString(self.hand_item.item.Model)
+    net.Broadcast()
+
+    --self.Owner:DrawViewModel(true)
+end

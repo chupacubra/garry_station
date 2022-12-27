@@ -1,0 +1,18 @@
+AddCSLuaFile( "player_class/gs_human.lua" )
+AddCSLuaFile( "cl_init.lua" )
+AddCSLuaFile( "shared.lua" )
+AddCSLuaFile( "sh_service.lua" )
+AddCSLuaFile( "sh_enum.lua" )
+AddCSLuaFile( "client/cl_plyhud.lua" )
+AddCSLuaFile( "client/cl_context_menu.lua" )
+AddCSLuaFile( "client/cl_stat.lua" )
+AddCSLuaFile( "client/cl_hud_button.lua" )
+
+include( "shared.lua" )
+include( "player.lua" )
+include( "sh_enum.lua" )
+include( "sh_service.lua" )
+include( "ent_controler/init.lua" )
+include( "concmd.lua" )
+include( "net_string.lua" )
+
