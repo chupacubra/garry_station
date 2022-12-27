@@ -12,6 +12,9 @@ So far, only the development of a health system and the basis of items is being 
 !!!think through!!!
 
 CRIT/SHOCK, ragdolise a person without data loss or SWEP;
+
 The system of organs and bones. Do we need organs at all? Slowing down and increasing spread with broken bones;
+
 DEATH. transition to observers and intensive care;
+
 redo rp_boxstation. Remove gravity in space and lower the damage to zero (for catching a spacewalk). Add at least a cargo shuttle
