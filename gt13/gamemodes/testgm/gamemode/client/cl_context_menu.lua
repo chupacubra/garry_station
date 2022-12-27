@@ -18,14 +18,14 @@ function ContextMenu:MakeContextSWEP(entity, x, y)
             icon  = "icon16/eye.png",
             click = function()
                 local exm = {itemData.Name, itemData.Desc}
-                --[[
+           
                 if itemData.ENUM_Type == GS_ITEM_AMMOBOX then
                     if itemData.AmmoInBox != 0 then
                         table.insert(exm, "In box "..itemData.AmmoInBox.." bullets")
                     else
                         table.insert(exm, "Ammobox is empty")
                     end
-                elseif itemData.ENUM_Type == GS_ITEM_CONTAINER then
+                --elseif itemData.ENUM_Type == GS_ITEM_CONTAINER then
                     --liquid container, show units
                 end
                 --]]
@@ -129,6 +129,9 @@ function ContextMenu:MakeContextItem(key, itemData, x,y)
     
     --[[
         ITEM BOX CANT BE OPEN IN INVENTAR!!!!!!!!
+		or can nvrmnd  i don't know  think about this 
+	
+		box cant be in box?
     ]]
 
     if itemData.ENUM_Type == GS_ITEM_BOX then
@@ -179,7 +182,7 @@ function ContextMenu:ShowBoxInventary(boxinven)
 
 end
 
-function ContextMenu:DragAndDropItem()
+function ContextMenu:DragAndDropItem(item1,item2)
     --box items, ammo in magazine, liquid lit'
 end
 
