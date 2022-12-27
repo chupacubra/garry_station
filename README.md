@@ -1,7 +1,7 @@
 # garry_station
 experimental idea of making the ss13
 
-#The idea is to increase the fun
+# The idea is to increase the fun
 Garry's mod is the best place to replicate some of the features of this game.
 
 And besides, shootouts in this mode will become more exciting. 
