@@ -12,28 +12,56 @@ function ENT:OnReloaded()
     net.SendToServer()
 end
 
-function ENT:Examine()
-    local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
-    local exTable = {name, desc}
-    if self.Entity_Data.ENUM_Type == GS_ITEM_CONTAINER then
-        local unit = self.Entity_Data.CountChemicals
-        if unit != 0 then 
-            table.insert(exTable, "Have ".. unit .." units")
-        else
-            table.insert(exTable, "This is empty")
-        end
-    elseif self.Entity_Data.ENUM_Type == GS_ITEM_AMMOBOX then
-        local ammo = self.Entity_Data.AmmoInBox 
-
-        if ammo != 0 then
-            table.insert(exTable,"Have "..ammo.." bullets")
-        else
-            table.insert(exTable,"No ammo")
-        end
-    end
-    return exTable
+function ENT:GetRequest(dat)
+    self.req_data.received = true
+    self.req_data.data = dat
 end
 
+function ENT:Examine(request, data) -- if bool then
+    if request then
+        local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
+        local exTable = {name, desc}
+
+        table.Add(exTable, data)
+
+        for k,v in pairs(exTable) do
+            if k == 1 then
+                v = "It is ".. v
+            end
+            LocalPlayer():ChatPrint(v)
+        end
+        
+        return
+    end
+
+    if self.Entity_Data.Simple_Examine then
+        local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
+        local exTable = {name, desc}
+        
+        for k,v in pairs(examine) do
+            if k == 1 then
+                v = "It is ".. v
+            end
+            LocalPlayer():ChatPrint(v)
+        end
+    else
+        net.Start("gs_ent_request_private_info")
+        net.WriteEntity(self)
+        net.SendToServer()
+    end
+end
+--[[
+function ENT:ExamineCompare(exam)
+    local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
+    local exTable = {name, desc}
+
+    for k,v in pairs(exam) do
+        table.insert(exTable, v)
+    end
+    
+    return
+end
+--]]
 function ENT:Draw()
     self:DrawModel()
 end
@@ -51,12 +79,6 @@ function ENT:GetContextMenu()
             icon  = "icon16/eye.png",
             click = function()
                 local examine = self:Examine()
-                for k,v in pairs(examine) do
-                    if k == 1 then
-                        v = "It is ".. v
-                    end
-                    LocalPlayer():ChatPrint(v)
-                end
             end
         }
         table.insert(contextButton, button)
@@ -102,8 +124,16 @@ end
 
 net.Receive("gs_ent_update_info_item", function()
     local ent = net.ReadEntity()
-    print(ent)
     local data = net.ReadTable()
     
     ent.Entity_Data = data
 end)
+
+net.Receive("gs_ent_get_private_info",function()
+    local ent = net.ReadEntity()
+    local ex_d = net.ReadTable()
+
+    ent:Examine(true, ex_d)
+end)
+
+-- kopec

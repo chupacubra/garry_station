@@ -15,22 +15,16 @@ function GS_ClPlyStat:Initialize()
     --self.modelID    = 1 --[[ the ID of basics model (these faces(?)) ]]
     self.round_data = {}
     self.antag      = false
-    self.hp         = self:InitHP()
+    self:InitHP()
 
     self:InitInventory()
-    --self:GetStartRoundItemsTEST()
-    --PrintTable(self)
     self.init = true
 
 end
 
 
 function GS_ClPlyStat:InitHP()
-    --[[
-    net.start()
-    hp = net.Read()
-    --]]
-    local BODY = {
+    self.hp = {
 		head   = 100,
 		hand_l = 100,
 		hand_r = 100,
@@ -38,11 +32,17 @@ function GS_ClPlyStat:InitHP()
 		leg_l  = 100,
 		leg_r  = 100,
 	}
-    return BODY
-
+    
+    self.allhp = 100
+    self.icon_stat = GS_HS_OK
 end
 
-
+function GS_ClPlyStat:GetHPStatIcon()
+    if self.icon_stat == GS_HS_CRIT then
+        return 7
+    end
+    return 7 - math.floor(self.allhp / 16)
+end
 
 function GS_ClPlyStat:RequestItemsFromBackpack()
     if self.equipment.BACKPACK == 0 then
@@ -53,17 +53,13 @@ function GS_ClPlyStat:RequestItemsFromBackpack()
     net.SendToServer()
 end
 
-
-function GS_ClPlyStat:EquipItem(data)
-    if data.ENUM_Subtype == nil then
+function GS_ClPlyStat:EquipItem(name, typ)
+    if self.equipment[FAST_EQ_TYPE[typ]] == 0 then
+        self.equipment[FAST_EQ_TYPE[typ]] = name
+        return true
+    else
         return false
     end
-
-    if self.equipment[FAST_EQ_TYPE[data.ENUM_Subtype]] == 0 then
-       self.equipment[FAST_EQ_TYPE[data.ENUM_Subtype]] = data
-    end
-
-    PrintTable(self.equipment)
 end
 
 function GS_ClPlyStat:InitInventory()
@@ -78,13 +74,8 @@ function GS_ClPlyStat:InitInventory()
             MASK      = 0,
             EAR       = 0,
     }
-end
 
-function GS_ClPlyStat:GetNameItem(tocken)
-    if self.allitems[tocken] != nil then
-        return self.allitems[tocken]["name"]
-    end
-    return "unk"
+    self.pocket = {{},{}}
 end
 
 function GS_ClPlyStat:GetEquipName(key)
@@ -92,21 +83,17 @@ function GS_ClPlyStat:GetEquipName(key)
         return "nil"
     end
 
-    return self.equipment[key]["Name"]
+    return self.equipment[key]
 end
 
-function GS_ClPlyStat:UpdateHP()
---[[
-    if we get a pain
-    ]]
-    return {
-		head   = {100}, 
-		hand_l = {100},
-		hand_r = {100},
-		body   = {100},
-		leg_l  = {100},
-		leg_r  = {100},
-	}
+function GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
+    print(iconstat)
+    if part != "0" then
+        self.hp[part] = parthp
+    end
+
+    self.allhp = hp
+    self.icon_stat = iconstat
 end
 
 function GS_ClPlyStat:GetWeaponsSlot(needEntity)
@@ -124,15 +111,17 @@ function GS_ClPlyStat:GetWeaponsSlot(needEntity)
     return arr
 end
 
-function GS_ClPlyStat:UseWeaponFromInventary(key)
+function GS_ClPlyStat:UseWeaponFromInventary(key, from)
     net.Start("gs_cl_inventary_use_weapon")
-    net.WriteInt(key, 8)
+    net.WriteUInt(from, 5)
+    net.WriteUInt(key, 6)
     net.SendToServer()
 end
 
-function GS_ClPlyStat:DropEntFromInventary(key)
+function GS_ClPlyStat:DropEntFromInventary(key, from)
     net.Start("gs_cl_inventary_drop_ent")
-    net.WriteInt(key, 8)
+    net.WriteUInt(from, 5)
+    net.WriteUInt(key, 6)
     net.SendToServer()
 end
 
@@ -142,27 +131,72 @@ function GS_ClPlyStat:DropSWEP(entity)
     net.SendToServer()
 end
 
-function GS_ClPlyStat:MoveSWEPToBackpack(entity)
-    net.Start("gs_cl_weapon_move_inventary")
-    net.WriteEntity(entity)
+function GS_ClPlyStat:ExamineData(examinedata)
+    for k,v in pairs(examinedata) do
+        if k == 1 then
+            v = "It is ".. v
+        end
+        LocalPlayer():ChatPrint(v)
+    end
+end
+
+function GS_ClPlyStat:GetItemFromPocket(key)
+    return self.pocket[key]
+end
+
+function GS_ClPlyStat:GetNameItemFromPocket(key)
+    return self.pocket[key]["Name"] or ""
+end
+
+
+function GS_ClPlyStat:GetItemFromPockets()
+    return self.pocket
+end
+
+function GS_ClPlyStat:UpdatePockets(items)
+    self.pocket = items
+    --PrintTable(self.pocket)
+    --print(self.pocket[1]["Name"])
+end
+
+function GS_ClPlyStat:UpdateInventoryItems(items, from)
+    if from == CONTEXT_POCKET then
+        self:UpdatePockets(items)
+    elseif from == CONTEXT_BACKPACK then
+        ContextMenu:UpdateInventoryItems(items)
+    end
+end
+
+function GS_ClPlyStat:SendActionToServer(rec,drp)
+
+    local item_1, item_2, entity_1, entity_2, from1, from2
+    
+    item_1, entity_1 = typeRet(rec.item)
+    item_2, entity_2 = typeRet(drp.item)
+
+    from1 = itemfrom(rec.type)
+    from2 = itemfrom(drp.type)
+
+    print(from1,from2)
+
+    net.Start("gs_cl_contex_item_action")
+
+    net.WriteEntity(entity_1 or Entity(0))
+    net.WriteUInt(item_1 or 0, 6)
+    net.WriteUInt(from1, 5)
+
+    net.WriteEntity(entity_2 or Entity(0))
+    net.WriteUInt(item_2 or 0, 6)
+    net.WriteUInt(from2, 5)
+
     net.SendToServer()
 end
 
-PrintTable(GS_ClPlyStat)
-
---input.SelectWeapon( LocalPlayer():GetWeapons())
-
 net.Receive("gs_equipment_update",function()
-    local key = net.ReadInt(8)
-    local itemData = net.ReadTable()
+    local key = net.ReadUInt(5)
+    local itemName = net.ReadString()
 
-    GS_ClPlyStat:EquipItem(itemData)
-end)
-
-net.Receive("gs_cl_inventary_request_backpack",function() --??????????????
-    local items = net.ReadTable()
-    PrintTable(items)
-    ContextMenu:OpenBackpack(items)
+    GS_ClPlyStat:EquipItem(itemName, key)
 end)
 
 net.Receive("gs_cl_init_stat", function()
@@ -171,6 +205,20 @@ net.Receive("gs_cl_init_stat", function()
 end )
 
 net.Receive("gs_cl_inventary_update", function()
+    local from  = net.ReadUInt(5)
     local items = net.ReadTable()
-    ContextMenu:UpdateInventoryItems(items)
+    GS_ClPlyStat:UpdateInventoryItems(items, from)
+end)
+
+net.Receive("gs_cl_inventary_examine_return", function()
+    local examine = net.ReadTable()
+    GS_ClPlyStat:ExamineData(examine)
+end)
+
+net.Receive("gs_health_update",function()
+    local part = net.ReadString()
+    local parthp = net.ReadInt(8)
+    local hp = net.ReadInt(8)
+    local iconstat = net.ReadUInt(5)
+    GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
 end)

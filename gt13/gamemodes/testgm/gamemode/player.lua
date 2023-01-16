@@ -1,5 +1,4 @@
-
-function GM:PlayerInitialSpawn(ply)
+ function GM:PlayerInitialSpawn(ply)
 	print( ply:Nick() .. " joined the server." )
     print("1223")
 end
@@ -48,17 +47,35 @@ function GM:PlayerLoadout( ply )
 
 end
 
-function GS_EquipWeapon(ply, weapon)
+function GS_EquipWeapon(ply, weapon) -- for start loadout
 	local ent = ents.Create(weapon)
 	ply:PickupWeapon( ent )
+	if weapon == "gs_swep_hand" then
+		timer.Simple(0.5, function()
+			ent:SetHoldType("normal")
+		end)
+	end
 end
 
 function GM:PlayerSwitchFlashlight()
 	return false
 end
 
+function GM:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
+	if oldWeapon:IsValid() then
+		if oldWeapon.IsGS_Weapon and oldWeapon:GetActivity() == ACT_VM_RELOAD then
+			return true
+		end
+		return false
+	end
+end
+
 function GM:PlayerCanPickupWeapon(ply,weapon)
 	return false
+end
+
+function GM:PlayerDeath( victim, inflictor, attacker )
+	player_manager.RunClass( victim, "StopThink" )
 end
 
 net.Receive("gs_ply_equip_item",function()
@@ -66,13 +83,11 @@ net.Receive("gs_ply_equip_item",function()
 	local ply = net.ReadEntity()
 	local ent = net.ReadEntity()
 
-	print(ply,ent)
-
 	if player_manager.RunClass( ply, "HaveEquipment", FAST_EQ_TYPE[ent.TypeEq] ) == false then
 		local itemData = duplicator.CopyEntTable(ent)
 
-		player_manager.RunClass( ply, "EquipItem", itemData, FAST_EQ_TYPE[ent.TypeEq] )
-		ent:Remove()
+		local succes = player_manager.RunClass( ply, "EquipItem", itemData, FAST_EQ_TYPE[ent.TypeEq] )
+		if succes then ent:Remove() end
 		PrintTable(itemData)
 	end
 end)

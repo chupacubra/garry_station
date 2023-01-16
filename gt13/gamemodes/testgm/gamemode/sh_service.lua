@@ -9,7 +9,6 @@ function gentocken()
 end
 
 function getMainBodyPart(bone) -- hardcode
-    print(bone,"123")
     if bone == GS_BPART_BODY_TORS then
         return true, "body"
     elseif bone ==  GS_BPART_HEAD then
@@ -36,5 +35,21 @@ function cantype(receiver, typ)
         return false
     else
         return receiver == typ
+    end
+end
+
+MSG_ERROR = Color( 255, 25, 25 )
+MSG_WARNING = Color( 255, 251, 132)
+MSG_INFO = Color( 66,170,255)
+
+function GS_MSG(text,color)
+    MsgC(color, "[GS] "..text.."\n")
+end
+
+function typeRet(item)
+    if type(item) == "number" then
+        return item, nil
+    else
+        return nil, item
     end
 end

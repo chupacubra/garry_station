@@ -1,28 +1,20 @@
 include("shared.lua")
 
+SWEP.OffsetVector = Vector(-1, -1, 0)
+
 function SWEP:Initialize()
-    self.delay = CurTime()
-    --self.automatic = false
+    --self.delay = CurTime()
+    self.WorldModelDraw = ClientsideModel(self.WorldModel)
+    self.WorldModelDraw:SetSkin(1)
+    self.WorldModelDraw:SetNoDraw(true)
 end
 
 function SWEP:PrimaryAttack()
-    if self.delay > CurTime() then
-        return
-    end
 
-    self.delay = CurTime() + self.shoot_speed
-    self:EmitSound("Weapon_Pistol.Single")
-    self:ShootEffects()
 end
 
 function SWEP:SecondaryAttack()
-    if self.delay > CurTime() then
-        return
-    end
 
-    self.delay = CurTime() + self.shoot_speed
-    self:EmitSound("Weapon_Pistol.Single")
-    self:ShootEffects()
 end
 
 function SWEP:GetContextMenu()
@@ -30,7 +22,7 @@ function SWEP:GetContextMenu()
     
     if self.CanExamine then
         local button = {
-            label = "Examine",
+            label = "Examine item",
             icon  = "icon16/eye.png",
             click = function()
                 local examine = self:Examine()
@@ -82,13 +74,77 @@ function SWEP:GetContextMenu()
 end
 
 
-function SWEP:Deploy()
-    --self.GunModel = ClientsideModel(SWEP.WorldModel)
-
-    --WorldModel:SetSkin(1)
-    --self.GunModel:SetNoDraw(true)
+function SWEP:Deploy() 
+    print(self.HoldType)
+    self:SetHoldType(self.HoldType)
 end
 
+function SWEP:StripMagazine()
+    net.Start("gs_weapon_base_strip_magazine")
+    net.WriteEntity(self)
+    net.WriteBool(false)
+    net.SendToServer()
+end
+
+function SWEP:StripMagazineHand()
+    net.Start("gs_weapon_base_strip_magazine")
+    net.WriteEntity(self)
+    net.WriteBool(true)
+    net.SendToServer()
+end
+
+function SWEP:Examine()
+    return {self.Entity_Data.Name, self.Entity_Data.Desc}
+end
+
+function SWEP:GS_Pickup()
+    net.Start("gs_ply_pickup_weapon")
+    net.WriteEntity(self)
+    --net.WriteEntity(LocalPlayer())
+    net.SendToServer()
+end
+
+function SWEP:ShootGunEffect()
+    self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
+    self:EmitSound(self.Primary.Sound)
+    self.Owner:MuzzleFlash()
+    self:ShootEffects()
+end
+
+function SWEP:ReloadGunEffect()
+    if self:GetOwner():GetActiveWeapon() != self then
+        return
+    end
+    self.Weapon:DefaultReload(ACT_VM_RELOAD)
+    self:EmitSound(self.ReloadSound)
+end
+
+function SWEP:DrawWorldModel()
+    local _Owner = self:GetOwner()
+
+    if (IsValid(_Owner)) then
+        local offsetVec = self.OffsetVector
+        local offsetAng = Angle(180, 180, 0)
+        
+        local boneid = _Owner:LookupBone("ValveBiped.Bip01_R_Hand")
+        if !boneid then return end
+
+        local matrix = _Owner:GetBoneMatrix(boneid)
+        if !matrix then return end
+
+        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
+
+        self.WorldModelDraw:SetPos(newPos)
+        self.WorldModelDraw:SetAngles(newAng)
+
+        self.WorldModelDraw:SetupBones()
+    else
+        self.WorldModelDraw:SetPos(self:GetPos())
+        self.WorldModelDraw:SetAngles(self:GetAngles())
+    end
+
+    self.WorldModelDraw:DrawModel()
+end
 
 
 net.Receive("gs_weapon_base_effect", function()
@@ -97,7 +153,6 @@ net.Receive("gs_weapon_base_effect", function()
     ef.origin = net.ReadVector()
     ef.startpos = net.ReadVector()
     ef.surfaceprop = net.ReadInt(8)
-    --damagetype on client
     ef.hitbox = net.ReadInt(8)
 
     local effect = EffectData()
@@ -110,7 +165,6 @@ net.Receive("gs_weapon_base_effect", function()
     effect:SetHitBox(ef.hitbox)
     util.Effect( "Impact", effect )
 
-    --Origin, Scale, Flags (TRACER_FLAG_WHIZ), Start
     local traceEf = EffectData()
     traceEf:SetOrigin(ef.origin)
     traceEf:SetScale(5000)
@@ -119,13 +173,14 @@ net.Receive("gs_weapon_base_effect", function()
     util.Effect( "Tracer", traceEf )
 end)
 
-function SWEP:Examine()
-    return {self.Entity_Data.Name, self.Entity_Data.Desc}
-end
 
-function SWEP:GS_Pickup()
-    net.Start("gs_ply_pickup_weapon")
-    net.WriteEntity(self)
-    net.WriteEntity(LocalPlayer())
-    net.SendToServer()
-end
+net.Receive("gs_weapon_base_set_magazine_model", function()
+    local gun = net.ReadEntity()
+    local bool = net.ReadBool()
+    
+    if bool then
+        gun.WorldModelDraw:SetModel(gun.LoadedWorldModel)
+    else
+        gun.WorldModelDraw:SetModel(gun.UnloadedWorldModel)
+    end
+end)

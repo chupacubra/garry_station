@@ -42,8 +42,8 @@ function SWEP:WorldModelTriger(bool)
     end
 end
 
-
 function SWEP:Deploy()
+    self:SetHoldType("normal")
     self:WorldModelTriger(true)
 
     return true
@@ -59,17 +59,58 @@ function SWEP:ShouldDrawViewModel()
         return true
     end
     return false
-    --return true
 end
 
+function SWEP:MakeAction(id)
+    --[[    
+            1 = drop
+            2 = examine
+            ...
+    --]]
+    
+    net.Start("gs_hand_item_make_action")
+    net.WriteUInt(id,3)
+    net.SendToServer()
+end
+
+function SWEP:Examine()
+    self:MakeAction(2)
+end
+
+function SWEP:DropItem()
+    self:MakeAction(1)
+end
+
+function SWEP:GetContextMenu()
+    local options = {}
+    
+    if self.ViewModel then -- HAVE item
+        local button = {
+            label = "Examine item in hand",
+            icon  = "icon16/eye.png",
+            click = function()
+                self:Examine()
+            end,
+        }
+        table.insert(options, button)
+
+        local button = {
+            label = "Drop item",
+            icon  = "icon16/arrow_down.png",
+            click = function()
+                self:DropItem()
+            end,
+        }
+        table.insert(options, button)
+        
+    end
+    
+    return options
+end
 
 function SWEP:DrawWorldModel()
     local _Owner = self:GetOwner()
     
-    --if LocalPlayer() == self:GetOwner() then
-    --    return
-    --end
-
     if (IsValid(_Owner) and IsValid(self.IWorldModel)) then
         local offsetVec = Vector(3, -3, -1)
         local offsetAng = Angle(0, 0, 180)
@@ -85,8 +126,8 @@ function SWEP:DrawWorldModel()
         self.IWorldModel:SetPos(newPos)
         self.IWorldModel:SetAngles(newAng)
         self.IWorldModel:SetupBones()
-
         self.IWorldModel:DrawModel()
+
     elseif IsValid(self.IWorldModel) then
 
         self.IWorldModel:SetPos(self:GetPos())
@@ -103,11 +144,10 @@ net.Receive("gs_hand_draw_model",function()
     local haveItem = net.ReadBool()
     local model = net.ReadString()
 
-    print(hands,haveItem,model)
+
     if haveItem then
         hands.itemModel = model
         hands.ViewModel = model
-        print(hands:GetWeaponViewModel(model))
     else
         hands.itemModel = nil
         hands.ViewModel = nil

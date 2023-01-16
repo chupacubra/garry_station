@@ -7,7 +7,7 @@ function SWEP:CompareWithEnt(ent)
     if self.action_type == GS_AW_MAGAZINE then
         return self:InsertMagazine(ent)
     end
-    --return nil
+    --return nil -- update magazin in inventory to NIL -> remove
 end 
 
 function SWEP:PrimaryAttack()
@@ -21,7 +21,6 @@ function SWEP:PrimaryAttack()
 
     local bullet = self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets]
     if bullet == nil then
- --       print("no bullets")
         return
     end
     self:MakeSingleShoot(bullet)

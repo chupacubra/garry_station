@@ -1,13 +1,12 @@
 include("shared.lua") 
 
-SWEP.PrintName        = "Tekov P9"			
+SWEP.PrintName        = "HN 40"			
 SWEP.Slot		= 0
 SWEP.SlotPos		= 0
 SWEP.DrawAmmo		= false
 SWEP.DrawCrosshair	= true
-SWEP.HoldType = "pistol"
-SWEP.OffsetVector = Vector(-1, -1, 0)
-
+SWEP.HoldType = "smg"
+SWEP.OffsetVector = Vector(-3, -1, 0)
 
 function SWEP:ContextSlot()
     local options = {}

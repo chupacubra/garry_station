@@ -1,7 +1,9 @@
-include("item_pattern.lua")
-
 GS_EntityControler = {}
 
+include("item_ammo.lua")
+include("item_data_operations.lua")
+
+ 
 function GS_EntityControler:MakeEntity(etype,name,pos,ang)
     local entity = ents.Create( "gs_entity_vendomat" )
     entity:SetPos(pos)
@@ -15,54 +17,51 @@ end
 function GS_EntityControler:MakeItem(etype, name, pos, ang)
 
 end 
-
+ 
 function GS_EntityControler:MakeAmmoBox(name,type,pos,ang)
+    print(name)
     if ammo_name[name] == nil then 
         return
     end
 
-    local ent = ammo_name[name]
+    local ent = table.Copy(ammo_name[name])
+
+    PrintTable(ent)
+    
     local entity = ents.Create( "gs_entity_base_item" )
     entity:SetPos(pos)
     entity:SetData(ent.Entity_Data)
+     
     if ent.Private_Data then
         entity:SetPrivateData(ent.Private_Data)
     end
+
+    if ent.Examine_Data then
+        entity:SetExamineData(ent.Examine_Data)
+    end
+
     entity:Spawn()
-
-    PrintTable(entity:GetHandData())
-
 end
 
-
---[[
-
-
-
-]]
-
-function GS_EntityControler:LoadMagazineFromAmmoBox(magazine, ammobox) -- ({Entity_Data,Private_Data},{Entity_Data,Private_Data})
-    local me_data, mp_data = magazine.Entity_Data, magazine.Private_Data
-    local be_data, bp_data = ammobox.Entity_Data, ammobox.Private_Data
-
-    --type ammo test
-    if !cantype(me_data.ENUM_Subtype, be_data.ENUM_Subtype) then
-        return false
+function GS_EntityControler:CreateFullMagazine(name,typ,pos,ang)
+    local ent = fastMagazine(name, typ)
+    print(ent)
+    if !ent then
+        return
     end
 
-    --full magazine
-    if mp_data.Max_Bullets == #mp_data.AmmoInMagazine then
-        return false
+    local entity = ents.Create( "gs_entity_base_item" )
+    entity:SetPos(pos)
+    entity:SetData(ent.Entity_Data)
+     
+    if ent.Private_Data then
+        entity:SetPrivateData(ent.Private_Data)
     end
 
-    if be_data.AmmoInBox == 0 then
-        return false
+    if ent.Examine_Data then
+        entity:SetExamineData(ent.Examine_Data)
     end
 
-    local bullet = bp_data.BulletDamage
-    table.insert(mp_data.AmmoInMagazine, bullet)
-    
-    be_data.AmmoInBox = be_data.AmmoInBox - 1
-
-    return true, {Entity_Data = me_data, Private_Data =  mp_data}, {Entity_Data = be_data, Private_Data = bp_data}
+    entity:Spawn()
 end
+

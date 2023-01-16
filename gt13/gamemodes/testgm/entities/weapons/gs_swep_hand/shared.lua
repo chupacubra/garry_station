@@ -21,3 +21,4 @@ SWEP.Secondary.Automatic    = false
 SWEP.Secondary.Ammo         = "None"
 
 SWEP.ViewModel = ""
+SWEP.WorldModel = "models/weapons/w_pist_p228.mdl"

@@ -23,8 +23,20 @@ local HUD_EQUEIP = {
         "EAR",
     },
 }
+local hp = Material( "health_1" )
 
+local hpicon = {
+    Material( "health_1" ),
+    Material( "health_2" ),
+    Material( "health_3" ),
+    Material( "health_4" ),
+    Material( "health_5" ),
+    Material( "health_6" ),
+    Material( "health_7" ),
+    Material( "health_8" ),
+}
 function HUD.DrawHud()
+
 	surface.SetFont( "TargetID" )
 	surface.SetTextColor( 255, 255, 255 )
 
@@ -46,6 +58,15 @@ function HUD.DrawHud()
         surface.DrawText( weaplist[i] )
     end
 
+    for i = 1,2 do
+        surface.DrawRect((W / 1.5 ) + (110 * i), H - (H / 8), 90, 90)
+        surface.SetTextPos( ((W / 1.5 ) + (110 * i))+10, (H - (H / 8))+10) 
+        surface.DrawText( i )
+        if GS_ClPlyStat.init then
+            surface.SetTextPos(((W / 1.5 ) + (110 * i))+10, (H - (H / 8))+30)
+            surface.DrawText(GS_ClPlyStat:GetNameItemFromPocket(i))
+        end
+    end
 
     surface.SetDrawColor(255,255,255,240)
     for i = 1,4 do
@@ -63,7 +84,7 @@ function HUD.DrawHud()
             if GS_ClPlyStat then
                 if GS_ClPlyStat.init then
                     if GS_ClPlyStat.equipment[v] != 0 then
-                        surface.SetTextPos(10 + (110 * (k-1)), (H - ((H / 8) + ((i-1) * 110) - 15)))
+                        --surface.SetTextPos(10 + (110 * (k-1)), (H - ((H / 8) + ((i-1) * 110) - 15)))
                         --surface.DrawText( GS_ClPlyStat.equipment[v] )
                         surface.SetTextPos(10 + (110 * (k-1)), (H - ((H / 8) + ((i-1) * 110) - 30)))
                         surface.DrawText(GS_ClPlyStat:GetEquipName(v))
@@ -89,6 +110,9 @@ function HUD.DrawHud()
             end
         end
     end
+    surface.SetMaterial( hpicon[GS_ClPlyStat:GetHPStatIcon()])
+	surface.SetDrawColor( 255, 255, 255, 255 )
+	surface.DrawTexturedRect( W - 150, 500, 96, 96 )
 
 end
 

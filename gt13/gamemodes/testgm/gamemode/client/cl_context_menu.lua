@@ -1,6 +1,5 @@
 ContextMenu = {}
 
-
 function ContextMenu:MakeContextSWEP(entity, x, y)
     if entity.GS_Hand then
         print("is hand")
@@ -17,18 +16,9 @@ function ContextMenu:MakeContextSWEP(entity, x, y)
             label = "Examine",
             icon  = "icon16/eye.png",
             click = function()
+
                 local exm = {itemData.Name, itemData.Desc}
-           
-                if itemData.ENUM_Type == GS_ITEM_AMMOBOX then
-                    if itemData.AmmoInBox != 0 then
-                        table.insert(exm, "In box "..itemData.AmmoInBox.." bullets")
-                    else
-                        table.insert(exm, "Ammobox is empty")
-                    end
-                --elseif itemData.ENUM_Type == GS_ITEM_CONTAINER then
-                    --liquid container, show units
-                end
-                --]]
+
                 for k,v in pairs(exm) do
                     if k == 1 then
                         v = "It is ".. v
@@ -41,39 +31,16 @@ function ContextMenu:MakeContextSWEP(entity, x, y)
     end
 
     if entity.IsGS_Weapon then
-        local typeOfWeapon = entity.Entity_Data.ENUM_Subtype
-        if typeOfWeapon == GS_W_PISTOL then
-            local button = {
-                label = "Eject magazine", -- if have
-                icon  = "icon16/control_eject.png",
-                click = function()
-                    entity:StripMagazine()
-                end,
-            }
-        elseif typeOfWeapon == GS_W_SHOTGUN then
-            local button = {
-                label = "Twist the shutter",
-                icon  = "icon16/arrow_right.png",
-                click = function()
-                    entity:TwistShutter() -- shotgun chik shik or bolt action
-                end,
-            }
-        end
-        table.insert(option, button)
+
+        local swepoptions = entity:ContextSlot()
+        
+        table.Add(option, swepoptions)
+    
+    elseif entity.GS_Hand then
+
     end
 
-    if true then --move to inventar swep
-        local button = {
-            label = "Move the backpack",
-            icon  = "icon16/box.png",
-            click = function()
-                GS_ClPlyStat:MoveSWEPToBackpack(entity)
-            end,
-        }
-        table.insert(option, button)
-    end
-
-    if true then -- drop weapon
+    if !entity.GS_Hand then -- drop weapon
         local button = {
             label = "Drop",
             icon  = "icon16/box.png",
@@ -94,46 +61,32 @@ function ContextMenu:MakeContextSWEP(entity, x, y)
         button.DoClick = v.click
     end
 
-end
+end  
 
-function ContextMenu:MakeContextItem(key, itemData, x,y)
+function ContextMenu:MakeContextItem(key, itemData,from, x, y)
+    print(key,itemData,x,y,from)
     --1 make all actions in array
     --2 generate all "buttons"
-
+    if !itemData.Name then
+        return
+    end
+    
     local option = {}
+    PrintTable(itemData)
     if itemData.Name and itemData.Desc then  -- examine
         local button = {
             label = "Examine",
             icon  = "icon16/eye.png",
             click = function()
-                local exm = {itemData.Name, itemData.Desc}
-                if itemData.ENUM_Type == GS_ITEM_AMMOBOX then
-                    if itemData.AmmoInBox != 0 then
-                        table.insert(exm, "In box "..itemData.AmmoInBox.." bullets")
-                    else
-                        table.insert(exm, "Ammobox is empty")
-                    end
-                elseif itemData.ENUM_Type == GS_ITEM_CONTAINER then
-                    --liquid container, show units
-                end
-                for k,v in pairs(exm) do
-                    if k == 1 then
-                        v = "It is ".. v
-                    end
-                    LocalPlayer():ChatPrint(v)
-                end
+                net.Start("gs_cl_inventary_examine_item")
+                net.WriteUInt(from, 5)
+                net.WriteUInt(key, 6)
+                net.SendToServer()
             end
         }
         table.insert(option, button)
     end
     
-    --[[
-        ITEM BOX CANT BE OPEN IN INVENTAR!!!!!!!!
-		or can nvrmnd  i don't know  think about this 
-	
-		box cant be in box?
-    ]]
-
     if itemData.ENUM_Type == GS_ITEM_BOX then
         local button = {
             label = "Open box",
@@ -150,7 +103,7 @@ function ContextMenu:MakeContextItem(key, itemData, x,y)
             label = "Use",
             icon  = "icon16/add.png",
             click = function()
-                GS_ClPlyStat:UseWeaponFromInventary(key)
+                GS_ClPlyStat:UseWeaponFromInventary(key, from)
             end
         }
         table.insert(option, button)
@@ -160,7 +113,7 @@ function ContextMenu:MakeContextItem(key, itemData, x,y)
         label = "Drop this s#!t",
         icon  = "icon16/arrow_down.png",
         click = function()
-            GS_ClPlyStat:DropEntFromInventary(key)
+            GS_ClPlyStat:DropEntFromInventary(key, from)
         end
     }
     table.insert(option, drop)
@@ -182,19 +135,56 @@ function ContextMenu:ShowBoxInventary(boxinven)
 
 end
 
-function ContextMenu:DragAndDropItem(item1,item2)
-    --box items, ammo in magazine, liquid lit'
-end
+local function DragAndDropItem(self, panels, bDoDrop, Command, x, y) -- cursed
+    if bDoDrop then
+        local receivr = self
+        local drop     = panels[1]
+        print(drop, receiver)
+        local item1 = {
+            receiver = true,
+            item = receivr.ent or receivr.key,
+            type = receivr.type,
+        }
 
-function ContextMenu:Draw()
-    surface.SetDrawColor( 0, 0, 0, 128 )
-	surface.DrawRect( 50, 50, 128, 128 )
+        local item2 = {
+            receiver = false,
+            item = drop.ent or drop.key,
+            type = drop.type,
+        }
+
+        GS_ClPlyStat:SendActionToServer(item1,item2)
+    end
 end
+--[[
+function ContextMenu:InitPockets(items)
+    
+    for i = 1, 2 do
+        local pocket = vgui.Create("gt_button")
+        pocket:SetColorB(Color(0,0,0,0))
+        pocket:SetSize( 100, 100 )
+        pocket:SetPos((W / 1.5 ) + (110 * i), H - (H / 8))
+        pocket.key = i
+        pocket.type = "pocket"
+        
+        function pocket:DoClick()
+            print("123")
+            PrintTable(GS_ClPlyStat:GetItemFromPocket(i))
+            ContextMenu:MakeContextItem(v, GS_ClPlyStat:GetItemFromPocket(i), self:GetPos())
+        end
+
+        pocket:Receiver( "item_drop", DragAndDropItem )
+        pocket:Droppable("item_drop")
+
+        table.insert(self.derma, pocket)
+    end
+    --self.open = true
+end
+--]]
 
 function ContextMenu:OpenBackpack(items)
     print("open!")
     self.backpackItems = {}
-    --local items = GS_ClPlyStat:GetItemsFromBackpack()
+
     local i = 1
     local H = ScrH()
     local W = ScrW()
@@ -206,11 +196,14 @@ function ContextMenu:OpenBackpack(items)
         itemB:SetPos(W - 100, (H - ((H / 8) + 110*i)))
 
         function itemB:DoClick()
-            ContextMenu:MakeContextItem(k, v, self:GetPos())
+            ContextMenu:MakeContextItem(k, v, CONTEXT_ITEM_IN_BACK, self:GetPos())
         end
         
-        itemB.type = "item_button"
-        local t = itemB:Droppable( v.Name )
+        itemB.type = "item"
+        itemB.key = k
+        itemB:Droppable("item_drop")
+        itemB:Receiver( "item_drop", DragAndDropItem )
+
         self.backpackItems[v] = {}
         self.backpackItems[v]["button"] = itemB 
         table.insert(self.derma,itemB)
@@ -229,7 +222,6 @@ function ContextMenu:CloseBackpack()
     self.openback = false
 end
 
-
 function ContextMenu:RequestBackpack()
     GS_ClPlyStat:RequestItemsFromBackpack()
 end
@@ -246,7 +238,9 @@ function ContextMenu:ContextMenuOpen()
         self.derma.button:SetText( "Open","backpack" ) 
         self.derma.button:SetSize( 90, 90 )
         self.derma.button:SetPos(W - 100, (H - (H / 8)))
-
+        self.derma.button.type = "backpack"
+        self.derma.button.key  = 0
+        self.derma.button:Receiver("item_drop", DragAndDropItem )
         function self.derma.button:DoClick()
             if context.openback == false then
                 context:RequestBackpack()
@@ -256,27 +250,52 @@ function ContextMenu:ContextMenuOpen()
         end
     end
     
-    self.wslot = {}
+    -- weapon slot button
 
     for k, v in pairs(GS_ClPlyStat:GetWeaponsSlot(true)) do
         local weapb = vgui.Create("gt_button")
         weapb:SetColorB(Color(0,0,0,0))
-        weapb:SetSize( 90, 90 )
+        weapb:SetSize( 100, 100 )
         weapb:SetPos((W / 3.5 ) + (110 * k), H - (H / 8))
-
+        weapb.ent = v
+        weapb.type = "weap"
         function weapb:DoClick()
             context:MakeContextSWEP(v, self:GetPos())
         end
-        
-        table.insert(self.wslot,weapb)
+
+        weapb:Receiver( "item_drop", DragAndDropItem )
+        weapb:Droppable("item_drop")
+
+        table.insert(self.derma,weapb)
     end
-    --(W / 3.5 ) + (110 * i), H - (H / 8), 90, 90
+
+    -- pocket button
+
+    for i = 1, 2 do
+        local pocket = vgui.Create("gt_button")
+        pocket:SetColorB(Color(0,0,0,0))
+        pocket:SetSize( 100, 100 )
+        pocket:SetPos((W / 1.5 ) + (110 * i), H - (H / 8))
+        pocket.key = i
+        pocket.type = "pocket"
+        function pocket:DoClick()
+           context:MakeContextItem(i, GS_ClPlyStat:GetItemFromPocket(i), CONTEXT_POCKET, self:GetPos())
+        end
+
+        pocket:Receiver( "item_drop", DragAndDropItem )
+        pocket:Droppable("item_drop")
+
+        table.insert(self.derma,pocket)
+    end
+
 
     self.Open = true
 end
 
 function ContextMenu:UpdateInventoryItems(items)
-    self:CloseBackpack()
+    if self.openback then
+        self:CloseBackpack()
+    end
     self:OpenBackpack(items)
 end
 
@@ -290,7 +309,9 @@ end
 
 function GM:GUIMousePressed( mouse,vector )
 
-    if ContextMenu.Open then
+    if !ContextMenu.Open then
+        return
+    end
         local trace = {
             start = LocalPlayer():EyePos(),
             endpos = LocalPlayer():EyePos() +  vector * 250 ,
@@ -309,8 +330,7 @@ function GM:GUIMousePressed( mouse,vector )
             Menu:SetPos(scrpos.x,scrpos.y)
             local entity = trace.Entity
             local cntx = entity:GetContextMenu()
-            --print(entity,#cntx)
-            --PrintTable(cntx)
+
             if cntx != nil then
                 for k,v in pairs(cntx) do
                     local button = Menu:AddOption(v.label)
@@ -318,10 +338,12 @@ function GM:GUIMousePressed( mouse,vector )
                     button.DoClick = v.click
                 end
             end
+
         end
-    end
 end
 
+--[[
 function GM:GUIMouseReleased( mouse,vector )
-    print(mouse,vector)
+
 end
+--]]

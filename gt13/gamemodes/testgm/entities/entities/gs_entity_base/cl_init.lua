@@ -23,6 +23,9 @@ function ENT:OnReloaded()
     net.SendToServer()
 end
 
+function ENT:AddContextMenu() -- need for adding new buttons
+    return nil
+end
 
 function ENT:GetContextMenu()
     local contextButton = {}
@@ -53,6 +56,12 @@ function ENT:GetContextMenu()
             end
         }
         table.insert(contextButton, button)
+    end
+
+    local add = self:AddContextMenu()
+    
+    if add then
+        table.Add(contextButton, add)
     end
     
     return contextButton

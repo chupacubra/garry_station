@@ -8,19 +8,26 @@ SWEP.AdminSpawnable		= false
 SWEP.Category           = "GS"
 SWEP.SlotPos            = 1
 
+SWEP.ViewModel = ""
+SWEP.WorldModel = ""
+
+SWEP.UnloadedWorldModel = ""
+SWEP.LoadedWorldModel   = ""
+
 SWEP.UseHands = true
 
 SWEP.IsGS_Weapon = true 
 SWEP.CanExamine  = true
 
+SWEP.Primary.Automatic = false
+SWEP.Primary.Sound = ""
 
-SWEP.ammo_type   = "tekov_magazine"
+SWEP.ammo_type   = ""
 SWEP.shoot_speed = 0.5
 SWEP.recoil = 1
 SWEP.spread = 0.3
 SWEP.damage = 10
 SWEP.damage_type = D_BRUTE
-SWEP.automatic = false
 SWEP.delay = 0
 
 SWEP.Entity_Data = {}
