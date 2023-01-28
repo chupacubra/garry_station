@@ -11,7 +11,7 @@ So far, only the development of a health system and the basis of items is being 
 
 !!!think through!!!
 
-CRIT/SHOCK, ragdolise a person without data loss or SWEP;
+CRIT/SHOCK, ragdolise a person without data loss or SWEP; - some paralyze effect created
 
 The system of organs and bones. Do we need organs at all? Slowing down and increasing spread with broken bones;
 
