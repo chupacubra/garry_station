@@ -15,6 +15,7 @@ util.AddNetworkString("gs_cl_weapon_move_inventary")
 util.AddNetworkString("gs_ply_pickup_weapon")
 util.AddNetworkString("gs_ply_equip_item")
 util.AddNetworkString("gs_cl_contex_item_action")
+util.AddNetworkString("gs_cl_chatprint")
 
 -- ent update info
 util.AddNetworkString("gs_ent_client_init")
@@ -27,6 +28,7 @@ util.AddNetworkString("gs_ent_request_private_info")
 util.AddNetworkString("gs_ent_get_private_info")
 
 util.AddNetworkString("gs_ent_container_open")
+util.AddNetworkString("gs_ent_container_close")
 --hands
 util.AddNetworkString("gs_hand_draw_model")
 
@@ -38,3 +40,6 @@ util.AddNetworkString("gs_weapon_base_comp_dataent")
 util.AddNetworkString("gs_weapon_base_effect")
 util.AddNetworkString("gs_weapon_base_strip_magazine")
 util.AddNetworkString("gs_weapon_base_set_magazine_model")
+
+--subsystems
+util.AddNetworkString("gs_sys_chem_list")

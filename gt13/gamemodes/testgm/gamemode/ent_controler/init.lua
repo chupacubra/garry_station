@@ -1,9 +1,33 @@
 GS_EntityControler = {}
+GS_EntityList = {}
 
-include("item_ammo.lua")
 include("item_data_operations.lua")
-
+include("item_ammo.lua")
+include("item_containers.lua")
+include("ent_containers.lua")
  
+function GS_EntityControler:MakeEntity2(name, typ, pos, ang) 
+    if !GS_EntityList[typ] then
+        return false
+    elseif !GS_EntityList[typ][name] then
+        return false
+    end
+    
+    local edata = table.Copy(GS_EntityList[typ][name])
+    local entity = ents.Create(edata.entity_base or "gs_entity_base_item")
+    --print(edata.entity_base,entity)
+    if edata.Entity_Data then
+        entity:SetData(edata.Entity_Data)
+    end
+
+    if edata.Private_Data then
+        entity.Private_Data = edata.Private_Data
+    end
+
+    entity:SetPos(pos)
+    entity:Spawn()
+end
+
 function GS_EntityControler:MakeEntity(etype,name,pos,ang)
     local entity = ents.Create( "gs_entity_vendomat" )
     entity:SetPos(pos)

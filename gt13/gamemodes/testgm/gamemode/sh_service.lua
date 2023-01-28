@@ -49,7 +49,10 @@ end
 function typeRet(item)
     if type(item) == "number" then
         return item, nil
-    else
-        return nil, item
     end
+    return nil, item
+end
+
+function ItemType(item)
+    return item.Entity_Data.ENUM_Type
 end

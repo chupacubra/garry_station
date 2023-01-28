@@ -14,6 +14,10 @@ HUD_COLOR = {
     Color(175,43,30),
 }
 
+CHAT_COLOR = {
+    RED = Color(204,0,0)
+}
+
 function GetProcentColor(num)
     if num == 100 then
         return HUD_COLOR[1]
@@ -48,6 +52,7 @@ GS_ITEM_PART = 9
 GS_ITEM_WEAPON = 10 
 GS_ITEM_EQUIP = 11
 GS_ITEM_AMMO_PILE = 12
+GS_ITEM_CHEM_CONTAINER = 13
 
 FAST_EQ_TYPE = {
     "BACKPACK",
@@ -125,7 +130,9 @@ CONTEXT_BACKPACK    = 2
 CONTEXT_POCKET      = 3
 CONTEXT_EQUIPMENT   = 4
 CONTEXT_ITEM_IN_BACK = 5
-
+CONTEXT_CONTAINER    = 6
+CONTEXT_ITEM_IN_CONT = 7
+CONTEXT_HAND = 8
 -- if ITEM_MEDIUM than they don't fit in box
 -- if ITEM_BIG then they don't fit in backpack
 -- if ITEM_V_BIG then can't handle (special)
@@ -133,12 +140,30 @@ ITEM_SMALL  = 1
 ITEM_MEDIUM = 2
 ITEM_BIG    = 3
 ITEM_V_BIG  = 4
+--[[
+ENUM_D = {}
+ENUM_D.enum = {}
 
+function ENUM_D:ENUM(enm)
+    return self.enum[enm] 
+end
 
+function ENUM_D:ENUM_Create(enm)
+    if self.enum[enm] then
+        return self.enum[enm]
+    else
+        self.enum[enm] = table.Count(enm)
+        return self.enum[enm]
+    end
+end
+--]]
 function itemfrom(str)
     if str == "weap" then return CONTEXT_WEAPON_SLOT
+    elseif str == "hand" then return CONTEXT_HAND
     elseif str == "backpack" then return CONTEXT_BACKPACK
     elseif str == "pocket" then return CONTEXT_POCKET
     elseif str == "equip" then return CONTEXT_EQUIPMENT
-    elseif str == "item" then return CONTEXT_ITEM_IN_BACK end
+    elseif str == "item" then return CONTEXT_ITEM_IN_BACK
+    elseif str == "container" then return CONTEXT_CONTAINER
+    elseif str == "c_item" then return CONTEXT_ITEM_IN_CONT end
 end

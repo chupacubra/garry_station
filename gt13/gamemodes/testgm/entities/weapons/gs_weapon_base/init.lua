@@ -94,7 +94,7 @@ function SWEP:StripMagazine()
 
     local trace = {
         start = self:GetOwner():EyePos(),
-        endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 40 ,
+        endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 40  ,
         filter =  function( ent ) return ( ent != self:GetOwner() ) end
     }
     trace = util.TraceLine(trace)

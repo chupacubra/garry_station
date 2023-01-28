@@ -2,6 +2,25 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+function ENT:Initialize()
+    if self.Entity_Data then
+        self:SetModel(self.Entity_Data.Model or "models/props_junk/cardboard_box004a_gib01.mdl")
+    else
+        self:SetModel(self:GetModel())
+    end
+    self:PhysicsInit( SOLID_VPHYSICS )
+    self:SetMoveType( MOVETYPE_VPHYSICS )
+    self:SetSolid( SOLID_VPHYSICS )
+    self:SetUseType(SIMPLE_USE)
+    local phys = self:GetPhysicsObject()
+    if (phys:IsValid()) then
+        phys:Wake()
+    end
+
+    self.ContainerUser = Entity(0)
+
+end
+
 function ENT:Use()
 
 end
@@ -10,12 +29,18 @@ function ENT:GetItemsContainer()
     return self.Private_Data.Items
 end
 
+function ENT:GetItemFromContainer(key)
+    return self.Private_Data.Items[key]
+end
+
 function ENT:InsertItemInContainer(item)
     if #self.Private_Data.Items + 1 > self.Private_Data.Max_Items then
         return false
     end
 
     table.insert(self.Private_Data.Items, item)
+    player_manager.RunClass( self.ContainerUser, "OpenEntContainer", self)
+    return true
 end
 
 function ENT:RemoveItemFromContainer(key)
@@ -24,6 +49,7 @@ function ENT:RemoveItemFromContainer(key)
     end
 
     table.remove(self.Private_Data.Items, key)
+    player_manager.RunClass( self.ContainerUser, "OpenEntContainer", self)
 end
 
 function ENT:UpdateItemInContainer(item, key)
@@ -37,10 +63,23 @@ function ENT:UpdateItemInContainer(item, key)
     end
 
     self.Private_Data.Items[key] = item
+    player_manager.RunClass( self.ContainerUser, "OpenEntContainer", self)
 end
 
-net.Receive("gs_ent_container_open", function(_, ply)
+function ENT:Think()
+    if self.ContainerUser:IsValid() then
+        print("123")
+        if self:GetPos():Distance(self.ContainerUser:GetPos()) > 80 then
+            player_manager.RunClass( self.ContainerUser, "CloseEntContainer")
+            GS_MSG(self.ContainerUser:GetName()  .." out of box",MSG_INFO)
+            self.ContainerUser = Entity(0)
+        end
+    end
+end
+
+net.Receive("gs_ent_container_open", function(_, ply) 
     local ent = net.ReadEntity()
 
-    player_manager.RunClass( ply, "OpenContainer", ent)
+    GS_MSG(ply:GetName()  .." open a box",MSG_INFO)
+    player_manager.RunClass( ply, "OpenEntContainer", ent)
 end)

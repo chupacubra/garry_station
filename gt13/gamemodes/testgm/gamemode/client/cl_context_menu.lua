@@ -1,12 +1,45 @@
 ContextMenu = {}
 
+local function DragAndDropItem(self, panels, bDoDrop, Command, x, y) -- cursed
+    if bDoDrop then
+        local receivr = self
+        local drop     = panels[1]
+        print(drop, receivr)
+        local item1 = {
+            receiver = true,
+            item = receivr.ent or receivr.key,
+            type = receivr.type,
+        }
+
+        local item2 = {
+            receiver = false,
+            item = drop.ent or drop.key,
+            type = drop.type,
+        }
+
+        GS_ClPlyStat:SendActionToServer(item1,item2)
+    end
+end
+
 function ContextMenu:MakeContextSWEP(entity, x, y)
+
+    --drop, use, examine, reload, sip, eat, and another shit
     if entity.GS_Hand then
-        print("is hand")
-        --potom
+        local option = {}
+        local swepoptions = entity:ContextSlot()
+        
+        table.Add(option, swepoptions)
+        local Menu = DermaMenu()
+            
+        Menu:SetPos(x,y)
+    
+        for k,v in pairs(option) do
+            local button = Menu:AddOption(v.label)
+            button:SetIcon(v.icon)
+            button.DoClick = v.click
+        end
         return
     end
-    --drop, use, examine, reload, sip, eat, and another shit
 
     local itemData = entity.Entity_Data
     local option = {}
@@ -135,51 +168,65 @@ function ContextMenu:ShowBoxInventary(boxinven)
 
 end
 
-local function DragAndDropItem(self, panels, bDoDrop, Command, x, y) -- cursed
-    if bDoDrop then
-        local receivr = self
-        local drop     = panels[1]
-        print(drop, receiver)
-        local item1 = {
-            receiver = true,
-            item = receivr.ent or receivr.key,
-            type = receivr.type,
-        }
-
-        local item2 = {
-            receiver = false,
-            item = drop.ent or drop.key,
-            type = drop.type,
-        }
-
-        GS_ClPlyStat:SendActionToServer(item1,item2)
+function ContextMenu:OpenContainer(items)
+    if self.containerOpen then
+        ContextMenu:CloseContainer()
     end
-end
---[[
-function ContextMenu:InitPockets(items)
+    --(W / 3.5 ) + (110 * i), H - (H / 8) + ((LineRow)*) 
+    local lines = #items
+    local x, y = 0, - math.floor(lines / 6) + 1
+
+    local H = ScrH()
+    local W = ScrW()
+    self.containerItems = {}
+    local itemB = vgui.Create("gt_button")
+    itemB:SetText( "Drop Item","Here" )
+    itemB:SetSize( 90, 90 )
+    itemB:SetPos((W / 3.5 ) + (110 * x), (H - ((H / 8) + ((y+1) * 100)))-200 )
+    itemB.type = "container"
+    itemB.key = 0
+
+    itemB:Droppable("item_drop")
+    itemB:Receiver( "item_drop", DragAndDropItem )
     
-    for i = 1, 2 do
-        local pocket = vgui.Create("gt_button")
-        pocket:SetColorB(Color(0,0,0,0))
-        pocket:SetSize( 100, 100 )
-        pocket:SetPos((W / 1.5 ) + (110 * i), H - (H / 8))
-        pocket.key = i
-        pocket.type = "pocket"
+    table.insert(self.containerItems, itemB)
+    table.insert(self.derma, itemB)
+    
+    for k,v in pairs(items) do
+        local itemB = vgui.Create("gt_button")
+        itemB:SetText( v.Name )
+        itemB:SetSize( 90, 90 )
+        itemB:SetPos((W / 3.5 ) + (110 * x), (H - ((H / 8) + (y * 100)))-200 )
+
+        itemB.type = "c_item"
+        itemB.key = k
+        function itemB:DoClick()
+            ContextMenu:MakeContextItem(k, v, CONTEXT_ITEM_IN_CONT, self:GetPos())
+        end
+        itemB:Droppable("item_drop")
+        itemB:Receiver( "item_drop", DragAndDropItem )
         
-        function pocket:DoClick()
-            print("123")
-            PrintTable(GS_ClPlyStat:GetItemFromPocket(i))
-            ContextMenu:MakeContextItem(v, GS_ClPlyStat:GetItemFromPocket(i), self:GetPos())
+        x = x + 1
+        if x == 6 then
+            x = 0
+            y = y + 1
         end
 
-        pocket:Receiver( "item_drop", DragAndDropItem )
-        pocket:Droppable("item_drop")
-
-        table.insert(self.derma, pocket)
+        table.insert(self.containerItems, itemB)
+        table.insert(self.derma, itemB)
     end
-    --self.open = true
+
+    self.containerOpen = true
 end
---]]
+
+function ContextMenu:CloseContainer()
+    if self.containerOpen then
+        for k,v in pairs(self.containerItems) do
+            v:Remove()
+        end
+        self.containerOpen = false
+    end
+end
 
 function ContextMenu:OpenBackpack(items)
     print("open!")
@@ -188,7 +235,7 @@ function ContextMenu:OpenBackpack(items)
     local i = 1
     local H = ScrH()
     local W = ScrW()
-
+    
     for k,v in pairs(items) do
         local itemB = vgui.Create("gt_button")
         itemB:SetText( v.Name )
@@ -209,7 +256,6 @@ function ContextMenu:OpenBackpack(items)
         table.insert(self.derma,itemB)
         i = i + 1
     end
-    PrintTable(self.backpackItems)
 
     self.openback = true
 end
@@ -259,6 +305,11 @@ function ContextMenu:ContextMenuOpen()
         weapb:SetPos((W / 3.5 ) + (110 * k), H - (H / 8))
         weapb.ent = v
         weapb.type = "weap"
+
+        if weapb.ent:GetClass() == "gs_swep_hand" then
+            weapb.type = "hand"
+        end
+
         function weapb:DoClick()
             context:MakeContextSWEP(v, self:GetPos())
         end
@@ -290,6 +341,8 @@ function ContextMenu:ContextMenuOpen()
 
 
     self.Open = true
+
+    --ContextMenu:OpenContainer({1,2,3,4,5})
 end
 
 function ContextMenu:UpdateInventoryItems(items)
@@ -305,6 +358,11 @@ function ContextMenu:ContextMenuClose()
     end
 
     self.Open = false
+    if self.containerOpen then
+        GS_ClPlyStat:ClientCloseContainer()
+        self.containerOpen = false
+    end
+    self.openback = false
 end
 
 function GM:GUIMousePressed( mouse,vector )
@@ -312,34 +370,34 @@ function GM:GUIMousePressed( mouse,vector )
     if !ContextMenu.Open then
         return
     end
-        local trace = {
-            start = LocalPlayer():EyePos(),
-            endpos = LocalPlayer():EyePos() +  vector * 250 ,
-            filter =  function( ent ) return ( ent != LocalPlayer() ) end
-        }
+    local trace = {
+        start = LocalPlayer():EyePos(),
+        endpos = LocalPlayer():EyePos() +  vector * 80 ,
+        filter =  function( ent ) return ( ent != LocalPlayer() ) end
+    }
+    
+    trace = util.TraceLine(trace)
+
+
+    -- THE context menu for entities
+    if trace.Entity != Entity(0) and trace.Entity:IsValid() then
+
+        local scrpos = trace.HitPos:ToScreen()
+        local Menu = DermaMenu()
         
-        trace = util.TraceLine(trace)
+        Menu:SetPos(scrpos.x,scrpos.y)
+        local entity = trace.Entity
+        local cntx = entity:GetContextMenu()
 
-
-        -- THE context menu for entities
-        if trace.Entity != Entity(0) and trace.Entity:IsValid() then
-
-            local scrpos = trace.HitPos:ToScreen()
-            local Menu = DermaMenu()
-            
-            Menu:SetPos(scrpos.x,scrpos.y)
-            local entity = trace.Entity
-            local cntx = entity:GetContextMenu()
-
-            if cntx != nil then
-                for k,v in pairs(cntx) do
-                    local button = Menu:AddOption(v.label)
-                    button:SetIcon(v.icon)
-                    button.DoClick = v.click
-                end
+        if cntx != nil then
+            for k,v in pairs(cntx) do
+                local button = Menu:AddOption(v.label)
+                button:SetIcon(v.icon)
+                button.DoClick = v.click
             end
-
         end
+
+    end
 end
 
 --[[

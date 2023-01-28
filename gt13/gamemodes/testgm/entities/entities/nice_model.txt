@@ -1,0 +1,4 @@
+models/props_wasteland/kitchen_stove002a.mdl
+models/props_wasteland/kitchen_stove001a.mdl
+models/props_wasteland/kitchen_fridge001a.mdl
+models/props_c17/furniturestove001a.mdl

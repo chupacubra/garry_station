@@ -3,8 +3,6 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 function ENT:Initialize()
-    PrintTable(self.Entity_Data)
-    PrintTable(self.Private_Data)
     if self.Entity_Data then
         self:SetModel(self.Entity_Data.Model or "models/props_junk/cardboard_box004a_gib01.mdl")
     else

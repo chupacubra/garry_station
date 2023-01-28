@@ -1,15 +1,15 @@
 ENT.Type = "anim"
-ENT.Base = "gs_entity_base"
+ENT.Base = "gs_entity_base" 
  
-ENT.PrintName		= "gs_b_container"
+ENT.PrintName		= "gs_entity_base_container"
 ENT.Author			= "chupa"
 ENT.Spawnable = false
 ENT.Category = "gs"
 
-ENT.Entity_Data = {
+ENT.Entity_Data = { 
     Name = "container",
     Desc = "container_desc",
-    Model = "models/props_interiors/VendingMachineSoda01a.mdl",
+    Model = "models/props_junk/cardboard_box001a.mdl",
     Type = "container",
 }
 

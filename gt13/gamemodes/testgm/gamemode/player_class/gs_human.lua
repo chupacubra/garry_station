@@ -37,12 +37,32 @@ function PLAYER:SetupHPSystem()
 		self.LastDamage = 0 
 		self.CritParalyzeDelay = 0
 		self.Ragdolled = false
+		self.BloodLevel = 100
+		self.BloodBleed = false
+		self.BloodBleedRate  = 0
 	end
 end
 
+function PLAYER:AddBleeding()
+	if self.BloodBleed == false then
+		self.BloodBleedRate = 2
+		self.BloodBleed = true
+	else
+		if self.BloodBleedRate + 2 >= 8 then return end
+
+		self.BloodBleedRate = self.BloodBleedRate + 2
+	end
+end
+
+function PLAYER:RemoveBleeding()
+	if self.BloodBleed then
+		self.BloodBleedRate = 0
+		self.BloodBleed = false
+	end
+end
+
+
 function PLAYER:SetSpeed(walk, run)
-	--self.WalkSpeed = walk
-	--self.RunSpeed  = run
 	self.Player:SetWalkSpeed(walk)
 	self.Player:SetRunSpeed(run)
 end
@@ -91,7 +111,7 @@ function PLAYER:Ragdollize() -- from ragmod
 		table.insert(self.Player.SWEP.Weapons, duplicator.CopyEntTable(v))
 	end
 	self.Player:StripWeapons()
-	self.Player:Spectate( OBS_MODE_CHASE )
+	self.Player:Spectate( OBS_MODE_DEATHCAM )
 	self.Player:SpectateEntity( ragdoll )
 	self.Player:SetNoTarget ( true )
 
@@ -103,6 +123,8 @@ function PLAYER:Unragdollize()
 	local equip = self.Player.Equipment
 	local pocket = self.Player.Pocket
 	local body   = self.Player.BODY
+	local walks  = self.Player:GetWalkSpeed()
+	local runs   = self.Player:GetRunSpeed()
 
 	self.Player:UnSpectate()
 	self.Player:SetModel(self.Player.Ragdoll:GetModel())	
@@ -146,6 +168,7 @@ function PLAYER:Unragdollize()
 	end
 
 	self:SetHP(body)
+	self:SetSpeed(walks, runs)
 end
 
 function PLAYER:CritParalyze(delay)
@@ -163,7 +186,7 @@ function PLAYER:CritParalyze(delay)
 		self:Unragdollize()
 	end)
 
-	self.Player:ChatPrint("You paralized!")
+	GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
 end
 
 function PLAYER:HurtPart(bone, dmg)
@@ -293,8 +316,28 @@ function PLAYER:HealthEffectClienUpdate()
 
 end
 
+function PLAYER:HealHealth(part, typeD, hp)
+	if self.Player.BODY[part] == nil then
+		return false
+	end
+
+	if typeD == D_TOXIN or typeD == D_STAMINA then
+		if self.Player.BODY[part][1] - hp < 0 then
+			self.Player.BODY[part][1] = 0
+		else
+			self.Player.BODY[part][1] = self.Player.BODY[part][1] - hp
+		end
+		return
+	end
+	
+	if self.Player.BODY[part][typeD] - hp < 0 then
+		self.Player.BODY[part][typeD] = 0
+	else
+		self.Player.BODY[part][typeD] = self.Player.BODY[part][typeD] - hp
+	end
+end
+
 function PLAYER:DamageHealth(part, typeD, dmg)
-	print(typeD,dmg)
 	if self.Player.BODY[part] == nil then
 		return false
 	end
@@ -463,45 +506,75 @@ function PLAYER:InsertItemInBackpack(data)
 	return true
 end
 
+function PLAYER:OpenItemContainer() -- we can open the box while the in hands
+	self.OpenContainer = self.Player.Hands
+end
+
 function PLAYER:OpenEntContainer(entity)
 	self.OpenContainer = entity
-
+	if entity != self.Player.Hands then
+		entity.ContainerUser = self.Player
+	end
 	local items = {}
 
 	for k,v in pairs(entity:GetItemsContainer()) do
 		items[k] = {Name = v.Entity_Data.Name, ENUM_Type = v.Entity_Data.ENUM_Type}
 	end
-	--[[
-		-- OPEN A BOX
-		SEND TO CLIENT
-		DRAW A BUTTONS WITH ITEM
-		MAKE CONTEXT ACTIONS
-	net.Start()
-	net.WriteTable()
-	--]]
+	PrintTable(items)
+	net.Start("gs_ent_container_open")
+	net.WriteTable(items)
+	net.Send(self.Player)
+end
+
+function PLAYER:CloseEntContainer(client)
+	if IsValid(self.OpenContainer) then
+		if self.OpenContainer != self.Player.Hands then
+			self.OpenContainer.ContainerUser = Entity(0)
+		end
+		self.OpenContainer = Entity(0)
+		if !client then
+			net.Start("gs_ent_container_close")
+			net.Send(self.Player)
+		end
+		GS_MSG(self.Player:GetName()  .." close",MSG_INFO)
+	end
 end
 
 function PLAYER:GetItemFromContext(context, key)
-	if context == CONTEXT_ITEM_IN_BACK or context == CONTEXT_BACKPACK then
+	if context == CONTEXT_ITEM_IN_BACK then
 		return self:GetItemFromBackpack(key)
 	elseif context == CONTEXT_POCKET then
 		return self:GetItemFromPocket(key)
+	elseif context == CONTEXT_ITEM_IN_CONT then
+		print("get item from container",key)
+		print(self.OpenContainer:GetItemFromContainer(key))
+		return self.OpenContainer:GetItemFromContainer(key)
+	elseif context == CONTEXT_HAND then
+		return self.Player.Hands:GetItem()
 	end
 end
 
 function PLAYER:InsertItemInContext(context, item, pocket)
-	if context == CONTEXT_ITEM_IN_BACK or context == CONTEXT_BACKPACK then
+	if context == CONTEXT_BACKPACK then
 		return self:InsertItemInBackpack(item)
 	elseif context == CONTEXT_POCKET then
 		return self:InsertItemInPocket(item,pocket)
+	elseif context == CONTEXT_CONTAINER then
+		return self.OpenContainer:InsertItemInContainer(item)
+	elseif context == CONTEXT_HAND then
+		return self.Player.Hands:PutItemInHand(item)
 	end
 end
 
 function PLAYER:RemoveItemFromContext(context, key)
-	if context == CONTEXT_ITEM_IN_BACK or context == CONTEXT_BACKPACK then
+	if context == CONTEXT_ITEM_IN_BACK then
 		return self:RemoveItemFromBackpack(key)
 	elseif context == CONTEXT_POCKET then
 		return self:RemoveItemFromPocket(key)
+	elseif context == CONTEXT_ITEM_IN_CONT then
+		return self.OpenContainer:RemoveItemFromContainer(key)
+	elseif context == CONTEXT_HAND then
+		return self.Player.Hands:RemoveItem()
 	end
 end
 
@@ -510,6 +583,10 @@ function PLAYER:UpdateItemInContext(context, item, key)
 		return self:UpdateItemInBackpack(item, key)
 	elseif context == CONTEXT_POCKET then
 		return self:UpdateItemInPocket(item, key)
+	elseif context == CONTEXT_ITEM_IN_CONT then
+		return self.OpenContainer:UpdateItemInContainer(item, key)
+	elseif context == CONTEXT_HAND then
+		return self.Player.Hands:UpdateItem(item)
 	end
 end
 
@@ -523,6 +600,7 @@ function PLAYER:UseWeaponFromInventory(key, from)
 end
 
 function PLAYER:DropEntFromInventary(key, from)
+	print(key,from)
 	local ent = self:GetItemFromContext(from, key)
 
 	if ent != nil then
@@ -659,182 +737,66 @@ function PLAYER:Spawn()
 	self:SetupSystems()
 end
 
-function PLAYER:ReceiveContextAction(receiver, drop) -- cursed rethink about this
-    if receiver.from == CONTEXT_WEAPON_SLOT then
-        if receiver.entity:GetClass() == "gs_swep_hand" then
-			local item = self.Player.Hands:HaveItem()
-			if item then
-				-- cmp i and i
-				if drop.from == CONTEXT_WEAPON_SLOT then
-					return
-				end
 
-				local item_r = self.Player.Hands:GetItem()
-				local item_d = self:GetItemFromContext(drop.from, drop.key)
-				if item_d == false then
-					return
-				end
-				
-				local item_r_rez, item_d_rez, chat_rez  = GS_EntityControler:MakeActionEntData(item_r, item_d)
-		
-				if item_r_rez then
-					self:UpdateItemInContext(drop.from, item_d_rez, drop.key)
-					self.Player.Hands:UpdateItem(item_r_rez)
-				end
-			
-				if chat_rez then
-					self.Player:ChatPrint(chat_rez)
-				end
-				
+function PLAYER:MakeNormalContext(receiver, drop)
+	if receiver.from == CONTEXT_WEAPON_SLOT and receiver.entity != self.Player.Hands  then
+		local drop_ent = self:GetItemFromContext(drop.from, drop.key)
+		print(drop_ent, drop.key)
+		if drop_ent then
+			local drop_rez = receiver.entity:CompareWithEnt(drop_ent)
+			if drop_rez == false then
+				return
+			elseif drop_rez == nil then
+				self:RemoveItemFromContext(drop.from, drop.key)
 			else
-				if drop.from == CONTEXT_ITEM_IN_BACK or drop.from == CONTEXT_POCKET then
-					local item = self:GetItemFromContext(drop.from, drop.key)
-					local succes = self.Player.Hands:PutItemInHand(item)
-				
-					if succes then
-						self:RemoveItemFromContext(drop.from, drop.key)
-					end
-				elseif drop.from == CONTEXT_WEAPON_SLOT then
-					local weap = duplicator.CopyEntTable(drop.entity)
-					local succes = self.Player.Hands:PutItemInHand(weap)
-					
-					if succes then
-						self.Player:StripWeapon(drop.entity:GetClass())
-					end
-
-				end
-			end
-		else
-			if drop.from == CONTEXT_ITEM_IN_BACK or drop.from == CONTEXT_POCKET then
-				local drop_ent = self:GetItemFromContext(drop.from, drop.key)
-				
-				if drop_ent then
-					local drop_rez = receiver.entity:CompareWithEnt(drop_ent)
-					if drop_rez == false then
-						return
-					end
-					self:UpdateItemInContext(drop.from, drop_rez, drop.key)
-				end
-			
-			elseif drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() == "gs_swep_hand" then
-
-				if self.Player.Hands:HaveItem() then
-					local drop_ent = self.Player.Hands:GetItem()
-					local drop_rez = receiver.entity:CompareWithEnt(drop_ent)
-					if drop_rez == false then
-						return
-					end
-					self.Player.Hands:UpdateItem(drop_rez)
-				end
+				self:UpdateItemInContext(drop.from, drop_rez, drop.key)
 			end
 		end
-    elseif receiver.from == CONTEXT_BACKPACK then -- the buttton of backpack
-        if drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() == "gs_swep_hand" then
-			if self.Player.Hands:HaveItem() then
-				local drop_ent = self.Player.Hands:GetItem()
-				local succes = self:InsertItemInBackpack(drop_ent)
-			
-				if succes then
-					self.Player.Hands:RemoveItem()
-				end
-			end
-		elseif drop.from == CONTEXT_POCKET then
-			local item = self:GetItemFromPocket(drop.key)
-			local succes = self:InsertItemInBackpack(item)
-			
-			if succes then
-				self:RemoveItemFromPocket(drop.key)
-			end
-		elseif drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() != "gs_swep_hand" then
-			local weap = duplicator.CopyEntTable(drop.entity)
-			local succes = self:InsertItemInBackpack(weap)
-			
-			if succes then
-				self.Player:StripWeapon(drop.entity:GetClass())
-			end
+	else
+		local receiver_item = self:GetItemFromContext(receiver.from, receiver.key)
 
-		elseif drop.from == CONTEXT_EQUIPMENT then
-
-		end
-    elseif receiver.from == CONTEXT_POCKET then
-          -- this is insert item in pocket or cmpare i and i
-          -- if ply:GetItemInPocket(receiver.item) then -- cmp i and i
-		local pocket_item = self:GetItemFromContext(receiver.from, receiver.key)
-
-		if pocket_item then
-			-- cmp
-		else
-			if drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() != "gs_swep_hand" then
-				self:MoveSWEPToPocket( drop.entity, receiver.key )
-			elseif drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() == "gs_swep_hand" then
-				if self.Player.Hands:HaveItem() then
-					local item = self.Player.Hands:GetItem()
-					local succes = self:InsertItemInPocket(item, receiver.key )
-					if succes then
-						self.Player.Hands:RemoveItem()
-					end
-				end
-			elseif drop.from == CONTEXT_POCKET or drop.from == CONTEXT_ITEM_IN_BACK then
-				local item = self:GetItemFromContext(drop.from, drop.key)
-				local succes = self:InsertItemInPocket(item, receiver.key )
-				if succes then
-					self:RemoveItemFromContext(drop.from, drop.key)
-				end
-			elseif drop.from == CONTEXT_EQUIPMENT then
-	
-			end
-		end
-    elseif receiver.from == CONTEXT_ITEM_IN_BACK then
-          -- WE DONT COMPARE WEAP AND ITEM if receiver I 
-          -- if box or hand then yes
-        if drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() != "gs_swep_hand" then
-            return
-        end
-
-        if drop.from == CONTEXT_WEAPON_SLOT and drop.entity:GetClass() == "gs_swep_hand" then
-			local item_r = self:GetItemFromContext(receiver.from,receiver.key)
-			local item_d = self.Player.Hands:GetItem()
-
-			if item_d == false then
+		if receiver_item then -- combine items
+			if drop.from == CONTEXT_WEAPON_SLOT and drop.entity != self.Player.Hands then
 				return
 			end
 			
-			local item_r_rez, item_d_rez, chat_rez  = GS_EntityControler:MakeActionEntData(item_r, item_d)
-	
-			if item_r_rez then
-				self:UpdateItemInContext(receiver.from, item_r_rez, receiver.key)
-				self.Player.Hands:UpdateItem(drop_d_rez)
-			end
-		
-			if chat_rez then
-				self.Player:ChatPrint(chat_rez)
-			end
-
-		elseif drop.from == CONTEXT_POCKET or drop.from == CONTEXT_ITEM_IN_BACK then
-			local item_r = self:GetItemFromContext(receiver.from, receiver.key)
-			local item_d = self:GetItemFromContext(drop.from, drop.key)
-
-			if item_d == false then
-				return
-			end
-			
-			local item_r_rez, item_d_rez, chat_rez  = GS_EntityControler:MakeActionEntData(item_r, item_d)
+			local drop_item = self:GetItemFromContext(drop.from,drop.key)
+			local item_r_rez, item_d_rez, chat_rez  = GS_EntityControler:MakeActionEntData(receiver_item, drop_item)
 	
 			if item_r_rez then
 				self:UpdateItemInContext(receiver.from, item_r_rez, receiver.key)
 				self:UpdateItemInContext(drop.from, item_d_rez, drop.key)
 			end
-		
-			if chat_rez then
-				self.Player:ChatPrint(chat_rez)
-			end
 
-		end
-    end
-end
+		else -- put item in context
+			print("putitemincontext")
+			if drop.from == CONTEXT_WEAPON_SLOT and drop.entity != self.Player.Hands then
+				local data = duplicator.CopyEntTable(drop.entity)
 
+				local succes = self:InsertItemInContext(receiver.from, data, receiver.key)
+				if succes then
+					self.Player:StripWeapon( weapon:GetClass() )
+				end
+				return
+			else
+				local drop_item = self:GetItemFromContext(drop.from, drop.key)
 
-
+				if drop_item then
+					print(drop_item)
+					local succes = self:InsertItemInContext(receiver.from, drop_item, receiver.key)
+					print(succes,"13")
+					if succes then
+						self:RemoveItemFromContext(drop.from, drop.key)
+					end-- ____     
+				end--    ||/\||     | => | 
+			end --_______||  ||_____________     
+		end-- -- --  O  /     / -- 0  o -- --
+	end  -- -- 0 -- 0  /     / 0  O -- O -- o
+end  -- o  0 -- o --  ______  0 -- o -- 0 -- o
+--___________________--------_________
+--| the whole world   0    is theatre|
+--| and YOU are the  /|\   main clown
+--                   /\
 player_manager.RegisterClass( "gs_human", PLAYER, "player_default" )
 
 
@@ -902,5 +864,9 @@ net.Receive("gs_cl_contex_item_action", function(len, ply)
 
 	PrintTable(receiver)
 	PrintTable(drop)
-	player_manager.RunClass( ply, "ReceiveContextAction", receiver, drop)
+	player_manager.RunClass( ply, "MakeNormalContext", receiver, drop)
+end)
+
+net.Receive("gs_ent_container_close",function(_,ply)
+	player_manager.RunClass( ply, "CloseEntContainer", true)
 end)

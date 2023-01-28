@@ -81,30 +81,42 @@ function SWEP:DropItem()
     self:MakeAction(1)
 end
 
-function SWEP:GetContextMenu()
+function SWEP:ContextSlot()
     local options = {}
     
-    if self.ViewModel then -- HAVE item
-        local button = {
-            label = "Examine item in hand",
-            icon  = "icon16/eye.png",
-            click = function()
-                self:Examine()
-            end,
-        }
-        table.insert(options, button)
-
-        local button = {
-            label = "Drop item",
-            icon  = "icon16/arrow_down.png",
-            click = function()
-                self:DropItem()
-            end,
-        }
-        table.insert(options, button)
-        
+    if !self.ViewModel then
+        return
     end
-    
+    local button = {
+        label = "Examine item in hand",
+        icon  = "icon16/eye.png",
+        click = function()
+            self:Examine()
+        end,
+    }
+    table.insert(options, button)
+
+    local button = {
+        label = "Drop item",
+        icon  = "icon16/arrow_down.png",
+        click = function()
+            self:DropItem()
+        end,
+    }
+    table.insert(options, button) 
+
+    local button = {
+        label = "Open container",
+        icon  = "icon16/box.png",
+        click = function()
+            net.Start("gs_ent_container_open")
+            net.WriteEntity(self)
+            net.SendToServer()
+        end,
+    }
+    table.insert(options, button) 
+
+    PrintTable(options)
     return options
 end
 
@@ -143,11 +155,12 @@ net.Receive("gs_hand_draw_model",function()
     local hands = net.ReadEntity()
     local haveItem = net.ReadBool()
     local model = net.ReadString()
-
+    local e_type = net.ReadUInt(5)
 
     if haveItem then
         hands.itemModel = model
         hands.ViewModel = model
+        hands.Item_ENUM = e_type
     else
         hands.itemModel = nil
         hands.ViewModel = nil

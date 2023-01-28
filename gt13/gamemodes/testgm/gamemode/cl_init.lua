@@ -5,6 +5,7 @@ include( "client/cl_hud_button.lua" )
 include( "client/cl_plyhud.lua" )
 include( "client/cl_context_menu.lua" )
 include( "client/cl_stat.lua" )
+incluse( "client/cl_systems.lua" )
 
 local hide = {
 	["CHudHealth"]  = true,
@@ -46,3 +47,9 @@ function GM:OnContextMenuClose()
     gui.EnableScreenClicker(false)
 end
 
+net.Receive("gs_cl_chatprint", function()
+    local color = net.ReadColor()
+    local text  = net.ReadString()
+
+    chat.AddText(color, text)
+end)

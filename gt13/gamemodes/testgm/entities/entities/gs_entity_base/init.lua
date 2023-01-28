@@ -7,9 +7,16 @@ function ENT:SetExamine(data) -- name, description
         return
     end
 
-    self.Entity_Data.Name = data.name
+    self.Entity_Data.Name = data.name 
     self.Entity_Data.Desc = data.desc
     self:LoadInfoAbout()
+end
+
+function ENT:SetData(data) 
+    self.Entity_Data = data
+    if self.Entity_Data.Model then
+        self:SetModel(self.Entity_Data.Model)
+    end
 end
 
 function ENT:Examine()

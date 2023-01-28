@@ -91,3 +91,11 @@ net.Receive("gs_ply_equip_item",function()
 		PrintTable(itemData)
 	end
 end)
+
+function GS_ChatPrint(ply, text, color)
+	if color == nil then color = Color( 156, 241, 255, 200 ) end
+	net.Start("gs_cl_chatprint")
+	net.WriteColor(color)
+	net.WriteString(text)
+	net.Send(ply)
+end

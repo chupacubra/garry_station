@@ -13,8 +13,6 @@ GS_ClPlyStat.init = false
 function GS_ClPlyStat:Initialize()
     self.player     = LocalPlayer()
     --self.modelID    = 1 --[[ the ID of basics model (these faces(?)) ]]
-    self.round_data = {}
-    self.antag      = false
     self:InitHP()
 
     self:InitInventory()
@@ -158,7 +156,7 @@ function GS_ClPlyStat:UpdatePockets(items)
     --PrintTable(self.pocket)
     --print(self.pocket[1]["Name"])
 end
-
+ 
 function GS_ClPlyStat:UpdateInventoryItems(items, from)
     if from == CONTEXT_POCKET then
         self:UpdatePockets(items)
@@ -166,9 +164,23 @@ function GS_ClPlyStat:UpdateInventoryItems(items, from)
         ContextMenu:UpdateInventoryItems(items)
     end
 end
+--[[
+function GS_ClPlyStat:CloseContainer()
+    net.Start()
+end
+--]]
+--[[
+function GS_ClPlyStat:OpenContainer(items)
+
+end
+--]]
+function GS_ClPlyStat:ClientCloseContainer()
+    net.Start("gs_ent_container_close")
+    net.SendToServer()
+end
 
 function GS_ClPlyStat:SendActionToServer(rec,drp)
-
+    PrintTable(drp)
     local item_1, item_2, entity_1, entity_2, from1, from2
     
     item_1, entity_1 = typeRet(rec.item)
@@ -221,4 +233,13 @@ net.Receive("gs_health_update",function()
     local hp = net.ReadInt(8)
     local iconstat = net.ReadUInt(5)
     GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
+end)
+
+net.Receive("gs_ent_container_open", function()
+    local items = net.ReadTable()
+    ContextMenu:OpenContainer(items)
+end)
+
+net.Receive("gs_ent_container_close",function()
+    ContextMenu:CloseContainer()
 end)

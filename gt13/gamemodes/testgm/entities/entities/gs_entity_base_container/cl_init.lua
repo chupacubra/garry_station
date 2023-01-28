@@ -4,7 +4,7 @@ function ENT:Use()
     --LocalPlayer():ChatPrint("This is not working now...")
 end
 
-function ENT:AddContextMenu()
+function ENT:AddContextMenu() 
     local options = {}
 
     local button = {
@@ -16,4 +16,7 @@ function ENT:AddContextMenu()
             net.SendToServer()
         end
     }
+
+    table.insert(options,button)
+    return options
 end

@@ -38,7 +38,7 @@ function ENT:Examine(request, data) -- if bool then
         local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
         local exTable = {name, desc}
         
-        for k,v in pairs(examine) do
+        for k,v in pairs(exTable) do
             if k == 1 then
                 v = "It is ".. v
             end
@@ -50,18 +50,7 @@ function ENT:Examine(request, data) -- if bool then
         net.SendToServer()
     end
 end
---[[
-function ENT:ExamineCompare(exam)
-    local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
-    local exTable = {name, desc}
 
-    for k,v in pairs(exam) do
-        table.insert(exTable, v)
-    end
-    
-    return
-end
---]]
 function ENT:Draw()
     self:DrawModel()
 end
@@ -119,7 +108,6 @@ function ENT:GetContextMenu()
 
     return contextButton
 end
-
 
 
 net.Receive("gs_ent_update_info_item", function()
