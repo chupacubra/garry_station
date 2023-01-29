@@ -32,7 +32,7 @@ function PLAYER:SetupHPSystem()
 	}
 	
 	if self.Ragdolled != true then
-		self.Chemicals = {}
+		self.Chemicals = CHEMIC_CONTAINER:New_Container(1000)
 		self.HealthStatus = GS_HS_OK
 		self.LastDamage = 0 
 		self.CritParalyzeDelay = 0
@@ -83,15 +83,14 @@ function PLAYER:Ragdollize() -- from ragmod
 	self.Player.RagdollStartSpeed = self.Player:GetVelocity()
 
 	local bones = self.Player.Ragdoll:GetPhysicsObjectCount()
-	for i=1,bones-1 do -- There should be less than 128 bones for any ragdoll  
-		-- This is the physics object of one of the ragdoll's bones  
+	for i=1,bones-1 do
 		local bone = self.Player.Ragdoll:GetPhysicsObjectNum( i )  
 		if bone:IsValid() then  
-			-- This gets the position and angles of the entity bone corresponding to the above physics bone  
+
 			local bonepos = self.Player:GetBonePosition( self.Player.Ragdoll:TranslatePhysBoneToBone( i ) ) 
 			local bonematrix = self.Player:GetBoneMatrix(self.Player.Ragdoll:TranslatePhysBoneToBone( i ))
 			local boneang = bonematrix:GetAngles()
-			-- All we need to do is set the bones position and angle  
+
 			bone:SetPos( bonepos )  
 			bone:SetAngles( boneang )  
 			bone:SetVelocity(self.Player.RagdollStartSpeed)  
@@ -348,6 +347,18 @@ function PLAYER:DamageHealth(part, typeD, dmg)
 	end
 	
 	self.Player.BODY[part][typeD] = self.Player.BODY[part][typeD] + dmg
+end
+
+function PLAYER:InjectChemical(chem,unit) -- insert in human chem  food, poison etc
+	self.Chemicals:Component(chem,unit)
+end
+
+function PLAYER:RemoveChemical(chem,unit)
+	self.Chemicals:Component(chem,-unit)
+end
+
+function PLAYER:Metabolize()
+	
 end
 
 function PLAYER:SetupInventary()

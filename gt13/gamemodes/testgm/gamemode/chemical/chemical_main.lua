@@ -4,6 +4,13 @@ RECEIPTS  = {} -- all receipts
 FAST_REC  = {} -- FAST receipts without perebor
 FOR_CL    = {} -- information about chemicals for clients
 chem = {}
+CHEMIC_CONTAINER = {} -- is "container" for all
+
+--[[
+
+	!TEST THIS!
+
+]]
 
 function AllCompUnits(bucket)
 	local i = 0
@@ -13,18 +20,32 @@ function AllCompUnits(bucket)
 	return i
 end
 
-function CHEMIC:AddComp(name,unit,bucket)
-	if !CHEMICALS[name] or !bucket then
+function CHEMIC_CONTAINER:New_Container(limit)
+	local obj = {}
+	obj.content = {}
+	obj.limit = limit or 100
+
+	function obj:GetAll()
+		return obj.content
+	end
+
+	setmetatable(o, self)
+	self.__index = self
+	return o
+end
+
+function CHEMIC_CONTAINER:Component(name,unit)
+	if !CHEMICALS[name] or !self then
 		return
  	end
 
-  	if bucket.content[name] then
-		bucket.content[name]:AddUnit(unit)
+  	if self.content[name] then
+		self.content[name]:AddUnit(unit)
 		return
-  	elseif bucket.content[name] == nil and unit > 0 then
-		if bucket.limit then
-			local all = AllCompUnits(bucket)
-			local canfill = bucket.limit - all
+  	elseif self.content[name] == nil and unit > 0 then
+		if self.limit then
+			local all = AllCompUnits(self)
+			local canfill = self.limit - all
 			if canfill == 0 then 
 				return
 			end
@@ -56,7 +77,7 @@ function CHEMIC:AddComp(name,unit,bucket)
 	function obj:DecUnit(int)
 		self.unit = self.unit + int
 		if self.unit < 1 then
-	  		bucket.content[name] = nil
+	  		self.content[name] = nil
 			return
 		end
   	end
@@ -66,19 +87,19 @@ function CHEMIC:AddComp(name,unit,bucket)
 			self:DecUnit(int)
 			return
 		end
-		local all = AllCompUnits(bucket)
-		local canfill = bucket.limit - all
+		local all = AllCompUnits(self)
+		local canfill = self.limit - all
 
-		if bucket.limit then
-			local all = AllCompUnits(bucket)
-			local canfill = bucket.limit - all
+		if self.limit then
+			local all = AllCompUnits(self)
+			local canfill = self.limit - all
 
 			if canfill == 0 and int > 0 then 
 				return
 			elseif int < 0 then
 				self.unit = self.unit + int
 				if self.unit < 1 then
-					bucket.content[name] = nil
+					self.content[name] = nil
 					return
 				end
 			end
@@ -88,14 +109,14 @@ function CHEMIC:AddComp(name,unit,bucket)
 			else
 				self.unit = self.unit + int
 				if self.unit < 1 then
-					bucket.content[name] = nil
+					self.content[name] = nil
 					return
 				end
 			end
 		else
 			self.unit = self.unit + int
 			if self.unit < 1 then
-				bucket.content[name] = nil
+				self.content[name] = nil
 				return
 			end
 		end
@@ -105,21 +126,54 @@ function CHEMIC:AddComp(name,unit,bucket)
 	CHEMICALS[self:getName()]["callbackInPly"](self,ply)
   end
   
-  function obj:OnFirstMix(bucket)
+  function obj:OnFirstMix(self)
 	if self.fm then
 	  return
 	end
-	CHEMICALS[self:getName()]["callBackInMix"](self,bucket)
+	CHEMICALS[self:getName()]["callBackInMix"](self,self)
 	self.fm = true
   end
   
   setmetatable(obj, self)
-  self.__index = self; bucket.content[name] = obj
+  self.__index = self; self.content[name] = obj
+end
+
+function CHEMIC_CONTAINER:MixComp()
+	local finalcomp = {}
+	for k,v in pairs(self.content) do
+		if FAST_REC[k] then
+			for kk,vv in pairs(FAST_REC[k]) do
+				local count = 0
+				local recept = RECEIPTS[kk]
+				if CanMake(FormContent(self),recept["inp"]) then
+					while CanMake(FormContent(self),recept["inp"]) != false do
+						for kkk,vvv in pairs(recept["inp"]) do
+							self.content[kkk]:AddUnit(vvv * -1)
+						end
+						count = count + 1
+					end
+					for i = 1,count do
+						for kkk,vvv in pairs(recept["out"]) do
+							self:Component(kkk,vvv)
+							finalcomp[kkk] = true
+						end
+					end
+					self:MixComp()
+				end
+			end
+		end
+	end
+
+	for k,v in pairs(finalcomp) do
+		if self.content[k] then
+			self.content[k]:OnFirstMix(self)
+		end
+	end
 end
 
 
 
-function CHEMIC:New(name,data --[[{simpleName,callbackInPly,callBackInMix,receipt}--]])
+function CHEMIC:New(name,data)
   CHEMICALS[data["simpleName"]] = {
 	simpleName    = data["simpleName"],
 	normalName    = name,
@@ -168,7 +222,7 @@ function FormContent(bucket)
   end
   return arr
 end
-
+--[[
 function CHEMIC:MixComp(bucket)
 	local finalcomp = {}
 	for k,v in pairs(bucket.content) do
@@ -201,3 +255,4 @@ function CHEMIC:MixComp(bucket)
 		end
 	end
 end
+--]]
