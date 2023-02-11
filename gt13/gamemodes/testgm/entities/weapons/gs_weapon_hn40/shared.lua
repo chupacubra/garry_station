@@ -1,7 +1,7 @@
 SWEP.Base = "gs_weapon_base" 
 SWEP.HoldType = "smg"
 SWEP.ViewModel = "models/weapons/cstrike/c_smg_mp5.mdl"
-SWEP.WorldModel = "models/weapons/w_smg_mp5.mdl"
+SWEP.WorldModel =  "models/weapons/w_smg_mp5.mdl"
 
 SWEP.UnloadedWorldModel = "models/weapons/unloaded/smg_mp5.mdl"
 SWEP.LoadedWorldModel   = "models/weapons/w_smg_mp5.mdl"

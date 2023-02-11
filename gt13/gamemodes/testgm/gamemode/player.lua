@@ -1,6 +1,6 @@
  function GM:PlayerInitialSpawn(ply)
-	print( ply:Nick() .. " joined the server." )
-    print("1223")
+	--print( ply:Nick() .. " joined the server." )
+    --print("1223")
 end
 
 function GM:PlayerSpawn( ply )

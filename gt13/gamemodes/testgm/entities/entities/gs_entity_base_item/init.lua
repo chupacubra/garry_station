@@ -103,9 +103,14 @@ end
 
 function ENT:BuildPrivateExamine()
     local arr = {}
-    
+--    local examine_f = self.Examine_Data.examine_string
     for k,v in pairs(self.Examine_Data) do
-        arr[k] = string.format(v[1], self.Private_Data[v[2]])
+        local str = v.examine_string
+        local arg = {}
+        for k,v in pairs(v.arguments) do
+            arg[k] = self[v[1]][v[2]]
+        end
+        arr[k] = string.format(str, unpack(arg))
     end
 
     return arr
@@ -120,6 +125,76 @@ function ENT:RequestPrivateData(ply)
     net.WriteTable(examine)
     net.Send(ply)
 
+end
+
+
+function ENT:GrabEntity(ply)
+    if !self:OnGround() then
+        return
+    end
+
+    if self.GrabPlayer then
+        if self.GrabPlayer == ply then
+            self:UnGrabEntity() -- simple ungrab
+            return
+        else
+            self:UnGrabEntity() -- drive by entity
+        end
+    end
+    
+    self.GrabPlayer = ply
+    self.Grabed     = true
+    self.GrabPos    = ply:WorldToLocal(self:GetPos())
+    self.GrabAng    = self:GetAngles()
+    self.GrabMat    = self:GetPhysicsObject():GetMaterial()
+
+    player_manager.RunClass( ply, "EffectSpeedAdd", "grab_entity", -150, -350 )
+    construct.SetPhysProp( self:GetOwner(), self, 0, nil, { GravityToggle = true, Material = "slipperyslime" } )
+    GS_ChatPrint(self.GrabPlayer, "You grab the "..self.Entity_Data.Name)
+    
+end
+
+function ENT:UnGrabEntity()
+    if self.GrabPlayer then
+        player_manager.RunClass( self.GrabPlayer, "EffectSpeedRemove", "grab_entity")
+        GS_ChatPrint(self.GrabPlayer, "You stop grabbing "..self.Entity_Data.Name)
+    end
+
+    construct.SetPhysProp( self:GetOwner(), self, 0, nil, { GravityToggle = true, Material = self.GrabMat } )
+
+    self.GrabPlayer = nil
+    self.Grabed     = false
+    self.GrapPos    = nil
+    self.GrabAng    = nil
+    self.GrabMat    = nil
+end
+
+function ENT:Think()
+    if self.Grabed then
+        if !IsValid(self.GrabPlayer) then
+            self:UnGrabEntity()
+            return
+        end
+
+        local dist = self:GetPos():Distance( self.GrabPlayer:LocalToWorld(self.GrabPos))
+        if dist > 100 then
+            self:UnGrabEntity()
+            return
+        end
+
+        if dist > 10 then
+            local pos = self.GrabPlayer:LocalToWorld(self.GrabPos)
+            local phys = self:GetPhysicsObject()
+
+            local cpos = pos - self:GetPos()
+
+            cpos:Normalize()
+
+            local force = cpos * dist
+
+            phys:SetVelocity(force)            
+        end
+    end
 end
 
 net.Receive("gs_ent_client_init_item", function()

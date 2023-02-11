@@ -3,10 +3,11 @@ include("shared.lua")
 SWEP.OffsetVector = Vector(-1, -1, 0)
 
 function SWEP:Initialize()
-    --self.delay = CurTime()
-    self.WorldModelDraw = ClientsideModel(self.WorldModel)
+    self.delay = CurTime()
+    self.WorldModelDraw = ClientsideModel(self.WorldModel, RENDER_GROUP_VIEW_MODEL_OPAQUE)
     self.WorldModelDraw:SetSkin(1)
     self.WorldModelDraw:SetNoDraw(true)
+    self:SetHoldType(self.HoldType)
 end
 
 function SWEP:PrimaryAttack()
@@ -145,7 +146,12 @@ function SWEP:DrawWorldModel()
 
     self.WorldModelDraw:DrawModel()
 end
-
+--[[
+function SWEP:DrawWorldModel( flags )
+    --print(self:GetModel())
+	self:DrawModel( flags )
+end
+--]]
 
 net.Receive("gs_weapon_base_effect", function()
     local ef = {}
@@ -177,10 +183,12 @@ end)
 net.Receive("gs_weapon_base_set_magazine_model", function()
     local gun = net.ReadEntity()
     local bool = net.ReadBool()
-    
+    print(bool)
     if bool then
         gun.WorldModelDraw:SetModel(gun.LoadedWorldModel)
     else
         gun.WorldModelDraw:SetModel(gun.UnloadedWorldModel)
     end
+    --gun:SetModel(gun.WorldModel)
+
 end)

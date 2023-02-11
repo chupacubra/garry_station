@@ -26,7 +26,7 @@ function SWEP:Deploy()
     self:SetHoldType(self.HoldType)
 end
 
-function SWEP:DealDamage(trace, dmgbullet )
+function SWEP:DealDamage(trace, dmgbullet)
     if trace.Entity:IsPlayer() then
         player_manager.RunClass( trace.Entity,"HurtPart", trace.PhysicsBone, dmgbullet.BulletDamage)
     end
@@ -46,7 +46,7 @@ function SWEP:MakeSingleShoot(dmgbullet)
         end
     }
 
-    local s = self.Owner:FireBullets( bullet )
+    local s = self.Owner:FireBullets( bullet , true)
     self:CallOnClient("ShootGunEffect")
     self:ShootEffects()
     self:MakeRecoil()
@@ -72,7 +72,7 @@ function SWEP:BroadcastShootEffect(trace)
 end
 
 function SWEP:MakeRecoil()
-    self:GetOwner():ViewPunch( Angle( -self.recoil, 0, 0 ) )
+    self:GetOwner():ViewPunch( Angle( -self.recoil, math.random(-1,1) * self.recoil, 0 ) )
 end
 
 function SWEP:GS_PickupWeapon(ply)
@@ -89,6 +89,7 @@ function SWEP:StripMagazine()
     end
 
     if self.magazine == nil then
+        self:GetOwner():ChatPrint("No magazine")
         return
     end
 
@@ -140,7 +141,7 @@ function SWEP:InsertMagazine(ent)
         return false
     end
 
-    if self.ammo_type != ent.Entity_Data.Weapon_Magazine then
+    if self.ammo_type != ent.Entity_Data.ENT_Name then
         return false
     end
 
@@ -167,14 +168,8 @@ net.Receive("gs_weapon_base_strip_magazine",function()
         weap:StripMagazine()
     end
 end)
---[[
-function SWEP:CanChangeWeapon()
-    if self.reloadTime > CurTime() then
-        return false
-    end
-    return true
-end
---]]
+
+
 function SWEP:ReloadGunEffect()
     if self:GetOwner():GetActiveWeapon() != self then
         return
@@ -186,9 +181,7 @@ function SWEP:ReloadGunEffect()
 
     local reloadtime = self.Owner:GetViewModel():SequenceDuration() + 0.1
 
-    self.delay = CurTime() + reloadtime
-    self.reloadTime = CurTime() + reloadtime
-
+    self:SetNextPrimaryFire(CurTime() + reloadtime)
     timer.Simple(reloadtime, function()
         self:SetActivity(ACT_VM_IDLE)
     end)

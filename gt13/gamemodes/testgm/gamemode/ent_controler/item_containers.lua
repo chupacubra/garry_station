@@ -1,6 +1,7 @@
 
 GS_EntityList.ent_container_small = {
     cardboard_box = { 
+        entity_base = "gs_entity_base_item_container",
         Entity_Data = {
             Name = "Small cardboard box",
             Desc = "You can put something in it",
@@ -16,18 +17,18 @@ GS_EntityList.ent_container_small = {
 }
 
 GS_EntityList.ent_chem_container_small = {
-    cardboard_box = { 
+    bucket = { 
         Entity_Data = {
             Name = "Bucket",
             Desc = "Dear god...",
             Model = "models/props_junk/MetalBucket01a.mdl",
             ENUM_Type = GS_ITEM_CHEM_CONTAINER,
-            Simple_Examine = true,
         },
         Private_Data = {
             Unit = 0,
             Max_unit = 100,
             Chem = {},
         },
+        Examine_Data = BaseExamine.chem_container
     },
 }

@@ -59,6 +59,10 @@ function ENT:GS_Equip()
 
 end
 
+function ENT:AddContextMenu()
+
+end
+
 function ENT:GetContextMenu()
     local contextButton = {}
     
@@ -104,6 +108,24 @@ function ENT:GetContextMenu()
             end 
         }
         table.insert(contextButton, button)
+    end
+
+    local button = {
+        label = "Grab",
+        icon  = "icon16/link.png",
+        click = function()
+            net.Start("gs_ent_grab")
+            net.WriteEntity(self)
+            net.SendToServer()
+        end
+    }
+    table.insert(contextButton,button)
+    
+
+    --local add = self:AddContextMenu()
+    
+    if add then
+        table.Add(contextButton, add)
     end
 
     return contextButton

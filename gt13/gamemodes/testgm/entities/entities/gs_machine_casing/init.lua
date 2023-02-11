@@ -14,14 +14,51 @@ function ENT:Initialize()
         phys:Wake()
     end
 
+    self:SetMaterial("phoenix_storms/metalfloor_2-3")
     self:SetExamine({name = "machine empty case", desc = "something is missing"})
-    self:Breakable(100)
     self.parts = {}
+    self.board = false
 end
 
-function ENT:InsertItem()
+
+
+--[[
+function ENT:Wrench(ply)
+    --ply:ChatPrint("You don't know...")
+end
+--]]
+--[[
+]]
+
+function ENT:Screwdriver(ply)
 
 end
+
+function ENT:Crowbar(ply)
+    self:EjectItem()
+end
+
+function ENT:InsertPlate(item)
+    self.plate = item
+    return nil
+end
+
+function ENT:HandInsertItem(ply, item)
+    if item.Entity_Data.ENUM_Type == GS_ITEM_BOARD and !self.board then
+        return self:InsertPlate(item)
+    end
+end
+
+function ENT:EjectItem()
+    if #parts == 0 then
+
+    end
+end
+
+function ENT:MakeMachine()
+
+end
+
 
 function ENT:Use()
 

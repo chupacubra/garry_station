@@ -1,11 +1,17 @@
 include("shared.lua")
 
-SWEP.PrintName = "Hands"
+SWEP.PrintName = "Hands" 
 SWEP.HoldType = "normal"
 
-function SWEP:DrawHUD()
+
+function SWEP:Initialize()
+    self.FightHand = false
+    self.RCooldown = 0
+end
+
+function SWEP:DrawHUD() 
     surface.SetFont( "TargetID" )
-    surface.SetTextPos((ScrW() / 2)-25, (ScrH() / 2) + 50)
+    surface.SetTextPos((ScrW() / 2)-50, (ScrH() / 2) + 100)
     surface.SetTextColor( 255, 255, 255 )
     surface.DrawText( "Click on item" )
 
@@ -55,7 +61,7 @@ function SWEP:Holster()
 end
 
 function SWEP:ShouldDrawViewModel()
-    if self.ViewModel != nil then
+    if self.FightHand or self.itemModel then
         return true
     end
     return false
@@ -81,12 +87,53 @@ function SWEP:DropItem()
     self:MakeAction(1)
 end
 
+function SWEP:HaveItem()
+    return self.itemModel != nil --bruh
+end
+--[[
+function SWEP:SecondaryAttack()
+    print("secondart")
+    if self:HaveItem() == false and !self.FightHand then
+        self:FightPlayerModel()
+    elseif self.FightHand then
+        self:FightPlayerModelStop()
+    end
+end
+
+function SWEP:FightPlayerModel()
+    if self.RCooldown > CurTime() then
+        return 
+    end
+    self.FightHand = true
+    self.RCooldown = CurTime() + 1
+    print("Change to FIGHT")
+end
+
+function SWEP:FightPlayerModelStop()
+    if self.RCooldown > CurTime() then
+        return 
+    end
+    self.FightHand = false
+    self.RCooldown = CurTime() + 1
+    print("Change to NOFIGHT")
+end
+--]]
+--[[
+function SWEP:PrimaryAttack()
+    if self.FightHand then
+        print("BEATING")
+        local VModel = self:GetOwner():GetViewModel()
+        VModel:SendViewModelMatchingSequence( 4 )
+    end
+end
+--]]
 function SWEP:ContextSlot()
     local options = {}
     
-    if !self.ViewModel then
+    if !self.itemModel then
         return
     end
+
     local button = {
         label = "Examine item in hand",
         icon  = "icon16/eye.png",
@@ -150,6 +197,23 @@ function SWEP:DrawWorldModel()
 
 end
 
+function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
+    if self.itemModel and self.FightHand == false then
+        ViewModel:SetModel(self.itemModel or "")
+    --elseif self.FightHand then
+    --    ViewModel:SetModel(self.ViewModel)
+    end
+
+end
+
+function SWEP:GetViewModelPosition(pos, ang)
+    if self.itemModel then
+	    pos,ang = LocalToWorld(Vector(30,-5,-10),Angle(0,180,0),pos,ang)
+	elseif self.FightHand then
+        pos,ang = LocalToWorld(Vector(0,0,0),Angle(0,0,0),pos,ang)
+    end
+	return pos, ang
+end
 
 net.Receive("gs_hand_draw_model",function()
     local hands = net.ReadEntity()
@@ -159,23 +223,22 @@ net.Receive("gs_hand_draw_model",function()
 
     if haveItem then
         hands.itemModel = model
-        hands.ViewModel = model
         hands.Item_ENUM = e_type
     else
         hands.itemModel = nil
-        hands.ViewModel = nil
+        hands.Item_ENUM = 0
     end
+
     hands:WorldModelTriger(haveItem)
 end)
 
-function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
-    if self.ViewModel then
-        ViewModel:SetModel(self.ViewModel or "")
-    end
-end
+net.Receive("gs_hand_vm", function()
+    local bool = net.ReadBool()
+    local hand = LocalPlayer():GetWeapon("gs_swep_hand")
 
-function SWEP:GetViewModelPosition( pos , ang)
-	pos,ang = LocalToWorld(Vector(30,-5,-10),Angle(0,180,0),pos,ang)
-	
-	return pos, ang
-end
+    if !hand then
+        return
+    end
+
+    hand.FightHand =  bool
+end)

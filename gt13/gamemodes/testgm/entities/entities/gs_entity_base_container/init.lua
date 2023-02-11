@@ -66,16 +66,49 @@ function ENT:UpdateItemInContainer(item, key)
     player_manager.RunClass( self.ContainerUser, "OpenEntContainer", self)
 end
 
+
 function ENT:Think()
     if self.ContainerUser:IsValid() then
-        print("123")
         if self:GetPos():Distance(self.ContainerUser:GetPos()) > 80 then
             player_manager.RunClass( self.ContainerUser, "CloseEntContainer")
             GS_MSG(self.ContainerUser:GetName()  .." out of box",MSG_INFO)
             self.ContainerUser = Entity(0)
         end
     end
+    if self.Grabed then
+        if !IsValid(self.GrabPlayer) then
+            self:UnGrabEntity()
+            return
+        end
+        
+        local dist = self:GetPos():Distance( self.GrabPlayer:LocalToWorld(self.GrabPos))
+        if dist > 100  then
+            self:UnGrabEntity()
+            return
+        end
+
+        if dist > 10 then
+            local pos = self.GrabPlayer:LocalToWorld(self.GrabPos)
+            local phys = self:GetPhysicsObject()
+
+            local cpos = pos - self:GetPos() 
+
+            cpos:Normalize()
+
+            local force = 1 * cpos * dist * 3
+
+            phys:SetVelocity(force)
+        end
+    end
 end
+
+
+
+function ENT:OnRemove()
+    if self.ContainerUser:IsValid() then
+        player_manager.RunClass( self.ContainerUser, "CloseEntContainer")
+    end
+end 
 
 net.Receive("gs_ent_container_open", function(_, ply) 
     local ent = net.ReadEntity()

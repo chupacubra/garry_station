@@ -1,4 +1,4 @@
-HUD = {}
+GS_HUD = {}
 
 --[[
 hat/mask
@@ -35,7 +35,7 @@ local hpicon = {
     Material( "health_7" ),
     Material( "health_8" ),
 }
-function HUD.DrawHud()
+function GS_HUD.DrawHud() 
 
 	surface.SetFont( "TargetID" )
 	surface.SetTextColor( 255, 255, 255 )

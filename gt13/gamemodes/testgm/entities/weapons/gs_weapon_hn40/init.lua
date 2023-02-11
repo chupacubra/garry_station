@@ -24,10 +24,11 @@ function SWEP:PrimaryAttack()
         return
     end
     self:MakeSingleShoot(bullet)
-    self.delay = CurTime() + self.shoot_speed
+    --self.delay = CurTime() + self.shoot_speed
 
     self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets] = nil
     self.magazine.Private_Data.Bullets = self.magazine.Private_Data.Bullets - 1
+    self:SetNextPrimaryFire(CurTime() + self.shoot_speed)
 end
 
 function SWEP:SecondaryAttack()

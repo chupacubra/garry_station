@@ -5,7 +5,7 @@ SWEP.Slot		= 0
 SWEP.SlotPos		= 0
 SWEP.DrawAmmo		= false
 SWEP.DrawCrosshair	= true
-SWEP.HoldType = "smg"
+SWEP.HoldType = "ar2"
 SWEP.OffsetVector = Vector(-3, -1, 0)
 
 function SWEP:ContextSlot()

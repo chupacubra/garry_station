@@ -20,18 +20,17 @@ util.AddNetworkString("gs_cl_chatprint")
 -- ent update info
 util.AddNetworkString("gs_ent_client_init")
 util.AddNetworkString("gs_ent_client_init_item")
-
 util.AddNetworkString("gs_ent_update_info")
 util.AddNetworkString("gs_ent_update_info_item")
-
 util.AddNetworkString("gs_ent_request_private_info")
 util.AddNetworkString("gs_ent_get_private_info")
+util.AddNetworkString("gs_ent_grab")
 
 util.AddNetworkString("gs_ent_container_open")
 util.AddNetworkString("gs_ent_container_close")
 --hands
 util.AddNetworkString("gs_hand_draw_model")
-
+util.AddNetworkString("gs_hand_vm")
 util.AddNetworkString("gs_hand_item_make_action")
 
 

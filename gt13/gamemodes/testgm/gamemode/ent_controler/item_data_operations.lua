@@ -41,7 +41,12 @@ function GS_EntityControler:ExamineData(ent)
     local arr = {}
     
     for k,v in pairs(ent.Examine_Data) do
-        arr[k] = string.format(v[1], ent.Private_Data[v[2]])
+        local str = v.examine_string
+        local arg = {}
+        for k,v in pairs(v.arguments) do
+            arg[k] = self[v[1]][v[2]]
+        end
+        arr[k] = string.format(str, unpack(arg))
     end
 
     return arr

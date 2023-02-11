@@ -8,12 +8,20 @@ ENT.Category = "gs"
 ENT.GS_Entity = true
 
 ENT.CanExamine = true
-ENT.CanUse = true
-ENT.CanBreak = false
+ENT.CanUse     = true
+ENT.CanBreak   = false
+ENT.CanBolted  = true
 
 ENT.Entity_Data = {
     Name = "NAME_ENT",
     Desc = "DESC",
     Model = "model",
     Type = "base",
+}
+
+ENT.Entity_Status = {
+    build     = false, 
+    maintance = false,
+    bolt      = false,
+    broken    = false
 }

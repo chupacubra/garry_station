@@ -15,4 +15,5 @@ include( "sh_service.lua" )
 include( "ent_controler/init.lua" )
 include( "concmd.lua" )
 include( "net_string.lua" )
+include( "chemical/sv_init.lua")
 

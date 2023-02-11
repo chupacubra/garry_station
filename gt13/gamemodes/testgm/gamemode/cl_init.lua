@@ -5,7 +5,7 @@ include( "client/cl_hud_button.lua" )
 include( "client/cl_plyhud.lua" )
 include( "client/cl_context_menu.lua" )
 include( "client/cl_stat.lua" )
-incluse( "client/cl_systems.lua" )
+include( "client/cl_systems.lua" )
 
 local hide = {
 	["CHudHealth"]  = true,
@@ -22,7 +22,7 @@ hook.Add( "HUDShouldDraw", "HideHUD", function( name )
 end )
 
 function GM:HUDPaint()
-    HUD:DrawHud()
+    GS_HUD:DrawHud()
 end
 
 function GM:PostDrawHUD()

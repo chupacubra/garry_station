@@ -40,6 +40,9 @@ function PLAYER:SetupHPSystem()
 		self.BloodLevel = 100
 		self.BloodBleed = false
 		self.BloodBleedRate  = 0
+		self.CurSpeedRun = self.RunSpeed
+		self.CurSpeedWalk = self.WalkSpeed
+		self.EffectSpeed  = {}
 	end
 end
 
@@ -65,6 +68,38 @@ end
 function PLAYER:SetSpeed(walk, run)
 	self.Player:SetWalkSpeed(walk)
 	self.Player:SetRunSpeed(run)
+end
+
+function PLAYER:EffectSpeedSet()
+	print(self.CurSpeedWalk, self.CurSpeedRun)
+	self.Player:SetWalkSpeed(self.CurSpeedWalk)
+	self.Player:SetRunSpeed(self.CurSpeedRun) 
+end
+
+function PLAYER:EffectSpeedAdd(effect, walk, run)
+	if self.EffectSpeed[effect] then
+		return
+	end
+
+	self.EffectSpeed[effect] = {walk, run}
+	self.CurSpeedRun = self.CurSpeedRun + run
+	self.CurSpeedWalk = self.CurSpeedWalk + walk
+
+	self:EffectSpeedSet()
+end
+
+function PLAYER:EffectSpeedRemove(effect)
+	if self.EffectSpeed[effect] == nil then
+		return
+	end
+	local walk, run = unpack(self.EffectSpeed[effect])
+
+	self.CurSpeedRun = self.CurSpeedRun - run
+	self.CurSpeedWalk = self.CurSpeedWalk - walk
+
+	self.EffectSpeed[effect] = nil 
+
+	self:EffectSpeedSet()
 end
 
 function PLAYER:Ragdollize() -- from ragmod
@@ -351,6 +386,7 @@ end
 
 function PLAYER:InjectChemical(chem,unit) -- insert in human chem  food, poison etc
 	self.Chemicals:Component(chem,unit)
+	PrintTable(self.Chemicals)
 end
 
 function PLAYER:RemoveChemical(chem,unit)
@@ -358,7 +394,8 @@ function PLAYER:RemoveChemical(chem,unit)
 end
 
 function PLAYER:Metabolize()
-	
+	-- activate 1 unit of chemicals on timer
+	-- and mixing with another
 end
 
 function PLAYER:SetupInventary()
@@ -709,7 +746,7 @@ function PLAYER:SetupThink()
 			print("HARDCRIT STATUS")
 			--self:Ragdollize()
 		elseif dmg >= 100 then
-			self:SetSpeed(self.BaseWalkSpeed - 150, self.BaseRunSpeed - 250)
+			self:EffectSpeed("krit_status",-150, -250)
 			print("SOFTCRIT STATUS")
 			self.HealthStatus = GS_HS_CRIT
 			if procent <= 40 then
@@ -717,7 +754,7 @@ function PLAYER:SetupThink()
 			end
 			self:HealthPartClientUpdate()
 		elseif dmg < 100 then
-			self:SetSpeed(self.BaseWalkSpeed, self.BaseRunSpeed)
+			--self:SetSpeed(self.BaseWalkSpeed, self.BaseRunSpeed)
 			if self.HealthStatus != GS_HS_OK then
 				self.HealthStatus = GS_HS_OK
 				self:HealthPartClientUpdate()
@@ -747,7 +784,6 @@ end
 function PLAYER:Spawn()
 	self:SetupSystems()
 end
-
 
 function PLAYER:MakeNormalContext(receiver, drop)
 	if receiver.from == CONTEXT_WEAPON_SLOT and receiver.entity != self.Player.Hands  then
@@ -808,6 +844,9 @@ end  -- o  0 -- o --  ______  0 -- o -- 0 -- o
 --| the whole world   0    is theatre|
 --| and YOU are the  /|\   main clown
 --                   /\
+
+
+
 player_manager.RegisterClass( "gs_human", PLAYER, "player_default" )
 
 

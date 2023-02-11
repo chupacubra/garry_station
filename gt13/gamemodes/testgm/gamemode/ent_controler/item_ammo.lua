@@ -6,6 +6,7 @@ ammo_name = {
             Model = "models/Items/BoxSRounds.mdl",
             ENUM_Type = GS_ITEM_AMMOBOX,
             ENUM_Subtype = AMMO_9MM,
+            ENT_Name = "pistol_ab",
             Simple_Examine = false -- if need request data from server
         },
         
@@ -16,11 +17,7 @@ ammo_name = {
                 [D_STAMINA] = 10,
             }
         },
-
-        Examine_Data = {
-            {"In box %s bullets","AmmoInBox"}
-        },
-        
+        Examine_Data = BaseExamine.ammobox 
     },
 
     pistol_resin = {
@@ -30,6 +27,7 @@ ammo_name = {
             Model = "models/Items/BoxSRounds.mdl",
             ENUM_Type = GS_ITEM_AMMOBOX,
             ENUM_Subtype = AMMO_9MM_R,
+            ENT_Name = "pistol_resin_ab",
         },
         Private_Data = {
             AmmoInBox = 40,
@@ -38,10 +36,7 @@ ammo_name = {
                 [D_STAMINA] = 30,
             }
         },
-        Examine_Data = {
-            -- the private data from
-            {"In box %s bullets","AmmoInBox"}
-        }
+        Examine_Data = BaseExamine.ammobox 
     },
     tekov_magazine = {
         Entity_Data = {
@@ -49,7 +44,7 @@ ammo_name = {
             Desc = "For Tekov P9",
             ENUM_Type = GS_ITEM_AMMO_MAGAZINE,
             ENUM_Subtype = {AMMO_9MM, AMMO_9MM_R},
-            Weapon_Magazine = "tekov_magazine",
+            ENT_Name = "tekov_magazine",
             Model = "models/weapons/unloaded/pist_p228_mag.mdl",
         },
         Private_Data = {
@@ -57,9 +52,7 @@ ammo_name = {
             Bullets = 0,
             Magazine = {},
         },
-        Examine_Data = {
-            {"In magazine %s bullets", "Bullets"}
-        },
+        Examine_Data = BaseExamine.gun_magazine
 
     },
     hn40_magazine = {
@@ -68,7 +61,7 @@ ammo_name = {
             Desc = "For HN 40",
             ENUM_Type = GS_ITEM_AMMO_MAGAZINE,
             ENUM_Subtype = {AMMO_9MM, AMMO_9MM_R},
-            Weapon_Magazine = "hn40_magazine",
+            ENT_Name = "hn40_magazine",
             Model = "models/weapons/unloaded/smg_mp5_mag.mdl",
         },
         Private_Data = {
@@ -76,10 +69,9 @@ ammo_name = {
             Bullets = 0,
             Magazine = {},
         },
-        Examine_Data = {
-            {"In magazine %s bullets", "Bullets"}
-        },
+        Examine_Data = BaseExamine.gun_magazine
     },
+    --[[
     pile_9mm = {
         Entity_Data = {
             Name = "Pile of 9MM bullets",
@@ -96,9 +88,7 @@ ammo_name = {
                 [D_STAMINA] = 10,
             }
         },
-        Examine_Data = {
-            {"In pile %s items", "Stack"}
-        }
+        Examine_Data = BaseExamine.pile_stack 
     },
     pile_9mm_r = {
         Entity_Data = {
@@ -112,6 +102,7 @@ ammo_name = {
 
         }
     }
+    -]]
 }
 
 BULLETS = {
@@ -136,7 +127,7 @@ function fastMagazine(name, bullet, numbullets)
     end
 
     local magazine = table.Copy(ammo_name[name])
-    print(bullet)
+
     if bullet == nil or cantype(magazine.Entity_Data.ENUM_Subtype, bullet) == false then
         return false
     end
@@ -147,12 +138,11 @@ function fastMagazine(name, bullet, numbullets)
     
     local bul = BULLETS[bullet]
 
-    print(bul, bullet)
+    
     for i = 1, numbullets do
         table.insert(magazine.Private_Data.Magazine, bul)
     end
     magazine.Private_Data.Bullets = numbullets
-    print(numbullets)
-    PrintTable(magazine)
+
     return magazine
 end

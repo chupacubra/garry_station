@@ -10,15 +10,19 @@ SWEP.Category			    = "Other"
 SWEP.Spawnable              = true
 SWEP.AdminSpawnable         = true
 
-SWEP.Primary.ClipSize       = -1
-SWEP.Primary.DefaultClip    = -1
-SWEP.Primary.Automatic      = false
-SWEP.Primary.Ammo           = "None"
-  
-SWEP.Secondary.ClipSize     = -1
-SWEP.Secondary.DefaultClip  = -1
-SWEP.Secondary.Automatic    = false
-SWEP.Secondary.Ammo         = "None"
+SWEP.Primary.ClipSize = -1
+SWEP.Primary.DefaultClip = -1
+SWEP.Primary.Automatic = false
+SWEP.Primary.Ammo = "none"
 
-SWEP.ViewModel = ""
-SWEP.WorldModel = "models/weapons/w_pist_p228.mdl"
+SWEP.Secondary.ClipSize = -1
+SWEP.Secondary.DefaultClip = -1
+SWEP.Secondary.Automatic = false
+SWEP.Secondary.Ammo = "none"
+
+SWEP.ViewModel = "models/weapons/c_arms.mdl" 
+SWEP.WorldModel = ""
+SWEP.ViewModelFOV = 54
+SWEP.UseHands = true
+
+SWEP.DrawAmmo = false

@@ -29,9 +29,13 @@ function CHEMIC_CONTAINER:New_Container(limit)
 		return obj.content
 	end
 
-	setmetatable(o, self)
+	function obj:HaveChems()
+		return table.IsEmpty(obj.content) != false
+	end
+
+	setmetatable(obj, self)
 	self.__index = self
-	return o
+	return obj
 end
 
 function CHEMIC_CONTAINER:Component(name,unit)

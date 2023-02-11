@@ -4,16 +4,16 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 
-function SWEP:Initialize()
-    self:SetHoldType( "normal" )
-end
-
 function SWEP:Deploy()
     self:HoldTypeTriger(self.hand_item != nil)
 end
 
 function SWEP:Equip()
-    self:HoldTypeTriger(self.hand_item != nil)
+    --self:HoldTypeTriger(self.hand_item != nil)
+    self.FightHand = false
+    self.RCooldown = 0
+    self.BCooldown = 0
+    self:SetHoldType( "normal" )
 end
 
 
@@ -29,13 +29,7 @@ function SWEP:HoldTypeTriger(bool)
     end
 end
 
-
-function SWEP:PrimaryAttack()
-    if self.hand_item.item then
-        self:PrimaryItemAction()
-    end
-
-    --make trace
+function SWEP:MakeTrace()
     local trace = {
         start = self:GetOwner():EyePos(),
         endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 70 ,
@@ -43,6 +37,30 @@ function SWEP:PrimaryAttack()
     }
     
     trace = util.TraceLine(trace)
+
+    return trace
+end
+
+function SWEP:BeatEntity()
+    if self.BCooldown > CurTime() then
+        return
+    end
+
+    local VModel = self:GetOwner():GetViewModel()
+    
+    VModel:SendViewModelMatchingSequence( math.random(3, 5) )
+
+    self.BCooldown = CurTime() + 0.8
+    
+end
+
+function SWEP:PickupEntity()
+    if self.hand_item.item then
+        self:PrimaryItemAction()
+    end
+
+    local trace = self:MakeTrace()
+
     if !trace.Entity:IsValid() then
         return
     end
@@ -58,18 +76,71 @@ function SWEP:PrimaryAttack()
     end
 end
 
-function SWEP:SecondaryAttack()
-    if self:GetOwner().Equipment.BACKPACK != 0 then
-        if self.hand_item.item then
-            player_manager.RunClass( self:GetOwner(), "InsertItemInBackpack", self.hand_item.item )
-            self:SendToClientDrawModel(false)
-            self.hand_item.item = nil
-            self:HoldTypeTriger(self.hand_item != nil)
-            if self.OpenContainer then
-                self:CloseContainer()
-            end
-        end
+function SWEP:PrimaryAttack()
+    if self.FightHand then
+        self:BeatEntity()
+    else
+        self:PickupEntity()
     end
+end
+
+function SWEP:InsertItemInEnt()
+    local trace = self:MakeTrace()
+
+    if !trace.Entity or trace.Entity:IsPlayer() or !trace.Entity:IsValid() then
+        return
+    end
+    
+    local entity = trace.Entity
+
+    if entity.HandInsertItem then
+        local item = entity:HandInsertItem(ply, self.hand_item.item)
+        self:UpdateItem(item)
+    end
+end
+
+function SWEP:SecondaryAttack()
+    if !self:HaveItem() then
+        self:FightModeToggle()
+    else
+        self:InsertItemInEnt()
+    end
+end
+
+function SWEP:FightModeToggle(bool)
+    if self:HaveItem() or self.RCooldown > CurTime() then
+        return
+    end
+    if bool == nil then
+        if self.FightHand then
+            self.FightHand = false
+            self:HoldTypeTriger(false)
+            GS_ChatPrint(self:GetOwner(), "You lowered your fists")
+        else
+            self.FightHand = true
+            self:SetHoldType("fist")
+            GS_ChatPrint(self:GetOwner(), "You prepared FISTS", Color(255,50,50))
+        end
+    else
+        self.FightHand = bool 
+    end
+    
+    self.RCooldown = CurTime() + 1
+    self:ViewModeFight()
+
+end
+
+function SWEP:ViewModeFight()
+    local VModel = self:GetOwner():GetViewModel()
+
+    if self.FightHand then
+        VModel:SendViewModelMatchingSequence( 2 )
+    end
+    
+    net.Start("gs_hand_vm")
+    net.WriteBool(self.FightHand)
+    net.Send(self:GetOwner())
+
 end
 
 function SWEP:HaveItem()
@@ -84,8 +155,8 @@ end
 function SWEP:UpdateItem(itm)
     if self.hand_item.item then
 
-        self:SendToClientDrawModel(false)
-        self.hand_item.item = nil
+        self.hand_item.item = itm
+        self:SendToClientDrawModel(self.hand_item != nil)
         self:HoldTypeTriger(self.hand_item != nil)
         
         return true
@@ -116,12 +187,7 @@ function SWEP:PutItemInHand(itemA)
 end
 
 function SWEP:PrimaryItemAction()
-    --[[
-    if self.hand_item.primary_action == nil then
-        return
-    end
-    self.hand_item.primary_action(self)
-    --]]
+
     if self.hand_item.item then
         return false
     end
@@ -191,10 +257,6 @@ function SWEP:Deploy()
     return true
 end
 
-function SWEP:Holster()
-   return true
-end
-
 function SWEP:DropItem()
     if !self.hand_item.item then
         return
@@ -222,16 +284,21 @@ function SWEP:DropItem()
 end
 
 function SWEP:Reload()
-    self:DropItem()
+    if self:HaveItem() then
+        self:DropItem()
+    end
+
 end
 
 function SWEP:ExamineItem()
 	local examine = {self.hand_item.item.Entity_Data.Name, self.hand_item.item.Entity_Data.Desc}
 	local priv = {}
+
     if self.hand_item.item.Entity_Data.Simple_Examine != true then
         local priv = GS_EntityControler:ExamineData(self.hand_item.item)
     end
-	table.Add(examine, priv)
+	
+    table.Add(examine, priv)
 
     net.Start("gs_cl_inventary_examine_return") -- because he does same
 	net.WriteTable(examine)
@@ -271,3 +338,4 @@ net.Receive("gs_hand_item_make_action",function(_, ply)
 
     hand:MakeAction(id)
 end)
+

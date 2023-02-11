@@ -1,11 +1,15 @@
 GS_EntityControler = {}
 GS_EntityList = {}
 
+include("item_base_examine.lua")
 include("item_data_operations.lua")
 include("item_ammo.lua")
 include("item_containers.lua")
 include("ent_containers.lua")
- 
+include("item_board.lua")
+include("item_res.lua")
+
+
 function GS_EntityControler:MakeEntity2(name, typ, pos, ang) 
     if !GS_EntityList[typ] then
         return false
@@ -15,15 +19,18 @@ function GS_EntityControler:MakeEntity2(name, typ, pos, ang)
     
     local edata = table.Copy(GS_EntityList[typ][name])
     local entity = ents.Create(edata.entity_base or "gs_entity_base_item")
-    --print(edata.entity_base,entity)
+
     if edata.Entity_Data then
         entity:SetData(edata.Entity_Data)
-    end
+    end 
 
     if edata.Private_Data then
         entity.Private_Data = edata.Private_Data
     end
 
+    if edata.Examine_Data then
+        entity.Examine_Data = edata.Examine_Data
+    end
     entity:SetPos(pos)
     entity:Spawn()
 end
