@@ -1,17 +1,18 @@
- function GM:PlayerInitialSpawn(ply)
-	--print( ply:Nick() .. " joined the server." )
-    --print("1223")
+include("player_ext.lua")
+
+function GM:PlayerInitialSpawn(ply)
 end
 
 function GM:PlayerSpawn( ply )
-
+	print(ply:Team(),TEAM_CONNECTING, TEAM_UNASSIGNED)
+	if ply:Team() == TEAM_CONNECTING then -- joined/conected, set team to specc
+		self:PlayerSpawnAsSpectator(ply)
+		return
+	end--]]
     player_manager.SetPlayerClass( ply, "gs_human" )
 
     ply:SetupHands()
     player_manager.OnPlayerSpawn( ply )
-
-
-	player_manager.OnPlayerSpawn( ply, transiton )
 	player_manager.RunClass( ply, "Spawn" )
 
     hook.Call( "PlayerSetModel", GAMEMODE, ply )
@@ -28,6 +29,7 @@ end
 function GM:PlayerSetHandsModel( ply, ent )
 
 	local info = player_manager.RunClass( ply, "GetHandsModel" )
+
 	if ( !info ) then
 		local playermodel = player_manager.TranslateToPlayerModelName( ply:GetModel() )
 		info = player_manager.TranslatePlayerHands( playermodel )
@@ -76,6 +78,64 @@ end
 
 function GM:PlayerDeath( victim, inflictor, attacker )
 	player_manager.RunClass( victim, "StopThink" )
+end
+
+function GM:PlayerSpawnAsSpectator( ply )
+	debug.Trace()
+	print(ply)
+	ply:StripWeapons()
+
+	if (GS_Round_System:Status() == GS_ROUND_PREPARE) then
+		ply:SetTeam( TEAM_SPECTATOR )
+		ply:Spectate( OBS_MODE_FIXED )
+		--net.Start("")
+		return
+
+	end
+
+	ply:SetTeam( TEAM_SPECTATOR )
+	ply:Spectate( OBS_MODE_ROAMING )
+
+end
+
+function PlayerSpawnAsSpectator( ply )
+	debug.Trace()
+	print(ply)
+	ply:StripWeapons()
+
+	if (GS_Round_System:Status() == GS_ROUND_PREPARE) then
+		ply:SetTeam( TEAM_SPECTATOR )
+		ply:Spectate( OBS_MODE_FIXED )
+		--net.Start("")
+		return
+
+	end
+
+	ply:SetTeam( TEAM_SPECTATOR )
+	ply:Spectate( OBS_MODE_ROAMING )
+
+end
+
+function GM:PlayerDisconnected( ply )
+	--[[ IF spectator than nothing
+		 IF player -> alive
+		 	create ragdoll with label "deep depression"
+		 IF player -> ragdolled
+		 	override this ragdoll to DEATH
+	]]
+	if ply:IsDead() and ply:Team() == TEAM_SPECTATOR then
+		--spectators....
+	else
+		if !player_manager.RunClass( ply, "IsRagdolled") then
+			player_manager.RunClass( ply, "Ragdollize", true)
+			GS_Corpse.SetRagdollDeath(ply, ply.Ragdoll, true)
+
+			hook.Run("GS_PlayerDead", ply:SteamID())
+		else
+			GS_Corpse.SetRagdollDeath(ply, ply.Ragdoll, true)
+			hook.Run("GS_PlayerDead", ply:SteamID())
+		end
+	end
 end
 
 net.Receive("gs_ply_equip_item",function()

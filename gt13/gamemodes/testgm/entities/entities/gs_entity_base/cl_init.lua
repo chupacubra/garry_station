@@ -30,8 +30,6 @@ end
 function ENT:GetContextMenu()
     local contextButton = {}
     
-
-
     if self.CanExamine then
         local button = {
             label = "Examine",

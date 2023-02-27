@@ -68,8 +68,6 @@ function SWEP:SwingAnim(hit)
 	else
 		anim =  "swing".. math.random(1, 2)
 	end
-	
-
 
 	VModel:SendViewModelMatchingSequence(anim_list[anim])
 end

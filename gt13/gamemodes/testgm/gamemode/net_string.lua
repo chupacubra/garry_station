@@ -42,3 +42,15 @@ util.AddNetworkString("gs_weapon_base_set_magazine_model")
 
 --subsystems
 util.AddNetworkString("gs_sys_chem_list")
+util.AddNetworkString("gs_sys_corpse_create")
+util.AddNetworkString("gs_sys_corpse_action")
+
+--special netstring for spec entity
+util.AddNetworkString("gs_ent_mc_exam_parts")
+
+--round system
+util.AddNetworkString("gs_round_status")
+
+-- derma menu handler
+util.AddNetworkString("gs_cl_f_button")
+util.AddNetworkString("gs_cl_derma_handler")

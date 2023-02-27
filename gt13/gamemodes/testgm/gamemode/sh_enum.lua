@@ -141,6 +141,7 @@ ITEM_SMALL  = 1
 ITEM_MEDIUM = 2
 ITEM_BIG    = 3
 ITEM_V_BIG  = 4
+
 --[[
 ENUM_D = {}
 ENUM_D.enum = {}
@@ -158,6 +159,26 @@ function ENUM_D:ENUM_Create(enm)
     end
 end
 --]]
+
+GS_ROUND_WAIT_PLY = -1
+GS_ROUND_PREPARE = 0
+GS_ROUND_RUNNING = 1
+GS_ROUND_END     = 2
+
+function roundstr(stat)
+    if stat == GS_ROUND_WAIT_PLY then
+        return "Wait some piple..."
+    elseif stat == GS_ROUND_PREPARE then
+        return "Preparing game"
+    elseif stat == GS_ROUND_RUNNING then
+        return "Game is running!"
+    elseif stat == GS_ROUND_END then
+        return "Game is end!"
+    else
+        return "..."
+    end
+end
+
 function itemfrom(str)
     if str == "weap" then return CONTEXT_WEAPON_SLOT
     elseif str == "hand" then return CONTEXT_HAND
@@ -167,4 +188,8 @@ function itemfrom(str)
     elseif str == "item" then return CONTEXT_ITEM_IN_BACK
     elseif str == "container" then return CONTEXT_CONTAINER
     elseif str == "c_item" then return CONTEXT_ITEM_IN_CONT end
+end
+
+function formattime(time)
+    return string.format("%02d:%02d:%02d", time.h,time.m,time.s)
 end

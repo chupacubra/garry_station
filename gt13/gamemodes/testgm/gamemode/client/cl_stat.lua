@@ -14,7 +14,6 @@ function GS_ClPlyStat:Initialize()
     self.player     = LocalPlayer()
     --self.modelID    = 1 --[[ the ID of basics model (these faces(?)) ]]
     self:InitHP()
-
     self:InitInventory()
     self.init = true
 
@@ -204,17 +203,27 @@ function GS_ClPlyStat:SendActionToServer(rec,drp)
     net.SendToServer()
 end
 
+function GS_ClPlyStat:DeathStatus()
+    self.init = false
+end
+
+
+
+net.Receive("gs_cl_init_stat", function()
+    local bool = net.ReadBool()
+    if bool then
+        GS_ClPlyStat:Initialize()
+    else
+        GS_ClPlyStat:DeathStatus()
+    end
+end)
+
 net.Receive("gs_equipment_update",function()
     local key = net.ReadUInt(5)
     local itemName = net.ReadString()
 
     GS_ClPlyStat:EquipItem(itemName, key)
 end)
-
-net.Receive("gs_cl_init_stat", function()
-    local bool = net.ReadBool()
-    GS_ClPlyStat:Initialize()
-end )
 
 net.Receive("gs_cl_inventary_update", function()
     local from  = net.ReadUInt(5)

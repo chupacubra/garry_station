@@ -10,7 +10,10 @@ GS_EntityList.tech_plate = {
         },
         Private_Data = {
             Machine = "gs_entity_vendomat",
-            Parts = {},
+            Parts = {
+                part_plug = 1, 
+                part_electronic = 2,
+            },
         },
     }
 }

@@ -41,6 +41,8 @@ concommand.Add( "gs_smag", function( ply, cmd, args, str )
     GS_EntityControler:CreateFullMagazine("hn40_magazine", AMMO_9MM ,ply:GetPos()+Vector(50,0,50),0)
 end)
 
+
+
 concommand.Add( "gs_pistol", function( ply, cmd, args, str )
     --GS_EntityControler:MakeEntity(0,0,ply:GetPos()+Vector(50,0,50),0)
     local ent = ents.Create("gs_weapon_pistol")

@@ -8,7 +8,7 @@ GS_EntityList.parts = {
             ENUM_Type = GS_ITEM_COMMON,
             Simple_Examine = true
         },
-    },
+    }, 
     p_wheel = { 
         Entity_Data = {
             Name = "Mechanic wheel",
@@ -19,12 +19,12 @@ GS_EntityList.parts = {
             Simple_Examine = true
         },
     },
-    p_wheel = { 
+    p_electronic = { 
         Entity_Data = {
             Name = "Electronics",
             Desc = "Part of big machines",
             Model = "models/props_lab/reciever01d.mdl",
-            ENT_Name = "part_wheel",
+            ENT_Name = "part_electronic",
             ENUM_Type = GS_ITEM_COMMON,
             Simple_Examine = true
         },

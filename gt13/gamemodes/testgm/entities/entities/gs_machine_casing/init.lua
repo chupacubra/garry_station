@@ -18,17 +18,8 @@ function ENT:Initialize()
     self:SetExamine({name = "machine empty case", desc = "something is missing"})
     self.parts = {}
     self.board = false
+    self.recept = {}
 end
-
-
-
---[[
-function ENT:Wrench(ply)
-    --ply:ChatPrint("You don't know...")
-end
---]]
---[[
-]]
 
 function ENT:Screwdriver(ply)
 
@@ -38,8 +29,23 @@ function ENT:Crowbar(ply)
     self:EjectItem()
 end
 
+function ENT:EjectItem()
+    if self.board then
+        --eject  ALL items
+
+        --ejectBoard()
+
+        for k,v in pairs(self.parts) do
+            --ejectItem(v)
+            --remove
+        end
+    end
+end
+
 function ENT:InsertPlate(item)
     self.plate = item
+    self.recept = item.Private_Data.Parts
+    
     return nil
 end
 
@@ -59,7 +65,26 @@ function ENT:MakeMachine()
 
 end
 
-
 function ENT:Use()
 
 end
+
+
+--[[
+    Board: Vendomat
+    Parts:
+      Plug: 1/1
+      Electronics: 0/2
+]]
+function ENT:ExamineParts(ply)
+    local exam = {}
+    if !self.board then
+        table.insert(exam,"This machine don't have board")
+        return exam
+    end    
+end
+
+net.Receive("gs_ent_mc_exam_parts",function(_,ply)
+    local ent = net.ReadEntity()
+    local examine = ent:ExamineParts(ply)
+end)

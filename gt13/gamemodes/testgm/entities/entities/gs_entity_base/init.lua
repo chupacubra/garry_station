@@ -62,7 +62,10 @@ function ENT:OnReloaded()
     self:LoadInfoAbout()
 end
 
-
+--[[
+    RETHINK THIS SHIT
+    THIS MUST BE FOR ALL GS_ENT
+]]
 function ENT:GrabEntity(ply)
     if !self:OnGround() then
         return

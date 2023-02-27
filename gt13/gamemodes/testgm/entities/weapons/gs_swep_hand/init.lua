@@ -174,7 +174,7 @@ function SWEP:RemoveItem()
 end
 
 function SWEP:PutItemInHand(itemA)
-    if self.hand_item.item then
+    if self:HaveItem() then
         return false
     end
 

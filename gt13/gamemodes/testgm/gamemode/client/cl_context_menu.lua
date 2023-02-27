@@ -387,8 +387,13 @@ function GM:GUIMousePressed( mouse,vector )
         
         Menu:SetPos(scrpos.x,scrpos.y)
         local entity = trace.Entity
-        local cntx = entity:GetContextMenu()
-
+        local cntx = {}
+        if entity.corpse then
+            print("trup")
+            cntx = CL_GS_Corpse.GetContextMenu(entity)
+        else
+            cntx = entity:GetContextMenu()
+        end 
         if cntx != nil then
             for k,v in pairs(cntx) do
                 local button = Menu:AddOption(v.label)

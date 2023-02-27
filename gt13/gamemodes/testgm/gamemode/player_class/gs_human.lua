@@ -2,7 +2,6 @@ DEFINE_BASECLASS( "player_default" )
  
 local PLAYER = {} 
 
-
 PLAYER.WalkSpeed = 200
 PLAYER.RunSpeed  = 400
 PLAYER.BaseWalkSpeed = PLAYER.WalkSpeed
@@ -11,12 +10,10 @@ PLAYER.UseVMHands = true
 PLAYER.PLYModel  = "models/player/Group01/male_07.mdl"
 
 function PLAYER:SetModel()
-
 	local modelname = self.PLYModel
 
 	util.PrecacheModel( modelname )
 	self.Player:SetModel( modelname )
-
 end
 
 function PLAYER:SetupHPSystem()
@@ -27,24 +24,39 @@ function PLAYER:SetupHPSystem()
 		body   = {0,0},
 		leg_l  = {0,0},
 		leg_r  = {0,0},
-		toxin  = {0},
-		stamina = {0},
 	}
-	
+
+	self.Player.HP_Effect = {
+		toxin   = 0,
+		stamina = 0,
+		hypoxia = 0,
+	}
+	--[[]]
+	self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(1000)
+	self.Player.BloodLevel = 100
+	self.Player.BloodBleed = false
+	self.Player.BloodBleedRate  = 0
+	self.Player.HealthStatus = GS_HS_OK
+
 	if self.Ragdolled != true then
 		self.Chemicals = CHEMIC_CONTAINER:New_Container(1000)
-		self.HealthStatus = GS_HS_OK
+		--self.HealthStatus = GS_HS_OK
 		self.LastDamage = 0 
 		self.CritParalyzeDelay = 0
 		self.Ragdolled = false
-		self.BloodLevel = 100
-		self.BloodBleed = false
-		self.BloodBleedRate  = 0
+		--self.BloodLevel = 100
+		--self.BloodBleed = false
+		--self.BloodBleedRate  = 0
 		self.CurSpeedRun = self.RunSpeed
 		self.CurSpeedWalk = self.WalkSpeed
 		self.EffectSpeed  = {}
 	end
 end
+--[[
+
+bleeding:
+if ragdolled:
+	ragdoll must be blooded!131
 
 function PLAYER:AddBleeding()
 	if self.BloodBleed == false then
@@ -59,15 +71,44 @@ end
 
 function PLAYER:RemoveBleeding()
 	if self.BloodBleed then
-		self.BloodBleedRate = 0
+		self.BloodBleedRate = 0 
 		self.BloodBleed = false
 	end
 end
-
-
+--]]
 function PLAYER:SetSpeed(walk, run)
 	self.Player:SetWalkSpeed(walk)
 	self.Player:SetRunSpeed(run)
+end
+
+function PLAYER:SetCharacterData(char)
+	--[[
+		Setup chararcter in spawn
+		char get from client
+		generate spec uniq ID
+		
+		char = {
+			name = "John Jonson",
+			model = "modelstring",
+			model_id = 9,
+			...
+		}
+	]]
+
+	self.Character = char
+end
+
+function PLAYER:GetGMName()
+	--[[the name here is character name
+	
+	on client:
+		if KNOW this man: (as John Jonson)
+		UNKNOW: Unknown
+
+		for knowing this man you need:
+			hear talking this guy + be close with him some time
+
+	]]
 end
 
 function PLAYER:EffectSpeedSet()
@@ -107,34 +148,15 @@ function PLAYER:Ragdollize() -- from ragmod
 		return 
 	end
 
-	local ragdoll = ents.Create( "prop_ragdoll" )
+	self:DropSWEPBeforeRagdollize()
+
+	local ragdoll = GS_Corpse.Create(self.Player)
 	self.Player.Ragdoll = ragdoll
-	self.Player.Ragdoll:SetCustomCollisionCheck(true)
-	self.Player.Ragdoll:SetPos( self.Player:GetPos() )
-	self.Player.Ragdoll:SetModel( self.Player:GetModel() )
-	self.Player.Ragdoll:SetAngles(Angle((self.Player:GetAngles().p), (self.Player:GetAngles().y), self.Player:GetAngles().r))
-	self.Player.Ragdoll:Spawn()
-
-	self.Player.RagdollStartSpeed = self.Player:GetVelocity()
-
-	local bones = self.Player.Ragdoll:GetPhysicsObjectCount()
-	for i=1,bones-1 do
-		local bone = self.Player.Ragdoll:GetPhysicsObjectNum( i )  
-		if bone:IsValid() then  
-
-			local bonepos = self.Player:GetBonePosition( self.Player.Ragdoll:TranslatePhysBoneToBone( i ) ) 
-			local bonematrix = self.Player:GetBoneMatrix(self.Player.Ragdoll:TranslatePhysBoneToBone( i ))
-			local boneang = bonematrix:GetAngles()
-
-			bone:SetPos( bonepos )  
-			bone:SetAngles( boneang )  
-			bone:SetVelocity(self.Player.RagdollStartSpeed)  
-		end  
-	end
 
 	self.Player.SWEP = {}
 	self.Player.SWEP.Hand_Item = false
 	self.Player.SWEP.Weapons = {}
+	
 
 	for k, v in pairs(self.Player:GetWeapons()) do
 		if v:GetClass() == "gs_swep_hand" then
@@ -144,24 +166,35 @@ function PLAYER:Ragdollize() -- from ragmod
 		end
 		table.insert(self.Player.SWEP.Weapons, duplicator.CopyEntTable(v))
 	end
-	self.Player:StripWeapons()
-	self.Player:Spectate( OBS_MODE_DEATHCAM )
-	self.Player:SpectateEntity( ragdoll )
-	self.Player:SetNoTarget ( true )
 
+	self.Player:StripWeapons()
+	self.Player:Spectate( OBS_MODE_CHASE )
+	self.Player:SpectateEntity( ragdoll )
+	self.Player:SetNoTarget( true )
+	
 	self.Ragdolled = true
 end
 
 function PLAYER:Unragdollize()
+	if !IsValid(self.Player.Ragdoll) then
+		GS_MSG(self.Player.." lose self corpse ragdoll, move to spectators")
+		return
+	end
+
 	local sweps = self.Player.SWEP
 	local equip = self.Player.Equipment
 	local pocket = self.Player.Pocket
 	local body   = self.Player.BODY
+	local blood, blood_level, blool_rate = self.Player.BloodBleed, self.Player.BloodLevel, self.Player.BloodBleedRate
+	local chem = self.Player.Chemicals
+	local hp_stat = self.Player.HealthStatus
 	local walks  = self.Player:GetWalkSpeed()
 	local runs   = self.Player:GetRunSpeed()
+	
+	--[[this shit don't save after respawn]]
 
 	self.Player:UnSpectate()
-	self.Player:SetModel(self.Player.Ragdoll:GetModel())	
+	self.Player:SetModel(self.Player.Ragdoll:GetModel())	--?
 
 	self.Player:Spawn()
 
@@ -203,9 +236,14 @@ function PLAYER:Unragdollize()
 
 	self:SetHP(body)
 	self:SetSpeed(walks, runs)
+	self.Player.HealthStatus = hp_stat
 end
 
-function PLAYER:CritParalyze(delay)
+function PLAYER:IsRagdolled()
+	return self.Ragdolled
+end
+
+function PLAYER:CritParalyze(delay,hard)
 	if self.Ragdolled or self.CritParalyzeDelay > CurTime() then
 		return false
 	end
@@ -215,10 +253,13 @@ function PLAYER:CritParalyze(delay)
 	end
 
 	self:Ragdollize()
-	self.CritParalyzeDelay = CurTime() + delay + 7
-	timer.Simple(delay, function()
-		self:Unragdollize()
-	end)
+	if !hard then
+		self.CritParalyzeDelay = CurTime() + delay + 7
+		
+		timer.Simple(delay, function()
+			self:Unragdollize()
+		end)
+	end
 
 	GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
 end
@@ -247,6 +288,10 @@ function PLAYER:HurtPart(bone, dmg)
 	-- ???
 	--PrintTable(dmg)
 	for k,v in pairs(dmg) do
+		print(k,v)
+		if k == D_STAMINA or k == D_TOXIN then
+			continue
+		end
 		self:DamageHealth(mainpart, k, v)
 	end
 
@@ -276,12 +321,14 @@ function PLAYER:GetHealthPercentPart(part)
 	if self.Player.BODY[part] == nil then
 		return 0
 	end
-	local dmg
+	local dmg--[[
 	if part != "toxin" and part != "stamina" then
 		dmg = 100 - (self.Player.BODY[part][1] + self.Player.BODY[part][2] or 0)
 	else
 		dmg = 100 - self.Player.BODY[part][1]
 	end
+	--]]
+	dmg = 100 - (self.Player.BODY[part][1] + self.Player.BODY[part][2] or 0)
 
 	if dmg < -100 then
 		dmg = -100
@@ -295,9 +342,6 @@ function PLAYER:GetHealthPercent()
 	local dmg = 0
 
 	for k,v in pairs(self.Player.BODY) do
-		if k == "stamina" or k == "toxin" then
-			continue
-		end
 		dmg = dmg + self:GetHealthPercentPart(k)
 	end
 
@@ -310,14 +354,10 @@ function PLAYER:GetSumDMG()
 	local dmg = 0
 	
 	for k,v in pairs(self.Player.BODY) do
-		if k == "toxin" or k == "stamina" then -- potom
-			dmg = dmg + v[1]
-			continue
-		end
-
 		dmg = dmg + v[1] + v[2]
 	end
 
+	dmg = dmg + self.Player.HP_Effect.toxin + self.Player.HP_Effect.hypoxia
 	return dmg
 end
 
@@ -341,29 +381,22 @@ function PLAYER:HealthPartClientUpdate(part)
 	net.WriteString(part)   -- if we hurt the leg
 	net.WriteInt(parthp, 8) -- the hp of leg
 	net.WriteInt(hp, 8)     -- the ALL hp (100%...)
-	net.WriteUInt(self.HealthStatus,5)
+	net.WriteUInt(self.Player.HealthStatus,5)
 	net.Send(self.Player)
 end
 
+--[[
 function PLAYER:HealthEffectClienUpdate()
 	-- if we have crit or smth
 
 end
+--]]
 
 function PLAYER:HealHealth(part, typeD, hp)
 	if self.Player.BODY[part] == nil then
 		return false
 	end
 
-	if typeD == D_TOXIN or typeD == D_STAMINA then
-		if self.Player.BODY[part][1] - hp < 0 then
-			self.Player.BODY[part][1] = 0
-		else
-			self.Player.BODY[part][1] = self.Player.BODY[part][1] - hp
-		end
-		return
-	end
-	
 	if self.Player.BODY[part][typeD] - hp < 0 then
 		self.Player.BODY[part][typeD] = 0
 	else
@@ -376,26 +409,66 @@ function PLAYER:DamageHealth(part, typeD, dmg)
 		return false
 	end
 
-	if typeD == D_TOXIN or typeD == D_STAMINA then
-		self.Player.BODY[part][1] = self.Player.BODY[part][1] + dmg
-		return
-	end
-	
 	self.Player.BODY[part][typeD] = self.Player.BODY[part][typeD] + dmg
 end
 
+function PLAYER:DamageStamina(dmg)
+	self.Player.HP_Effect.stamina = self.Player.HP_Effect.stamina + dmg
+end
+
+function PLAYER:DamageHypoxia(dmg)
+	self.Player.HP_Effect.hypoxia = self.Player.HP_Effect.hypoxia + dmg
+end
+
+function PLAYER:DamageToxin(dmg)
+	self.Player.HP_Effect.toxin = self.Player.HP_Effect.toxin + dmg
+end
+
+function PLAYER:GetHypoxia()
+	return self.Player.HP_Effect.hypoxia
+end
+
+function PLAYER:GetStamina()
+	return self.Player.HP_Effect.stamina
+end
+
+function PLAYER:GetToxin()
+	return self.Player.HP_Effect.toxin
+end
+
 function PLAYER:InjectChemical(chem,unit) -- insert in human chem  food, poison etc
-	self.Chemicals:Component(chem,unit)
+	self.Player.Chemicals:Component(chem,unit)
 	PrintTable(self.Chemicals)
 end
 
 function PLAYER:RemoveChemical(chem,unit)
-	self.Chemicals:Component(chem,-unit)
+	self.Player.Chemicals:Component(chem,-unit)
 end
 
 function PLAYER:Metabolize()
 	-- activate 1 unit of chemicals on timer
 	-- and mixing with another
+end
+
+function PLAYER:Death()
+	--[[
+		move to ghost
+		spawn a ragdoll, ragdoll of death person
+		set him equipments and other
+	]]
+	if self.Ragdolled then
+		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
+	else
+		--[[ create ragdoll]]
+		self:Ragdollize()
+		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
+	end
+	self:StopThink()
+	self:CloseHudClient()
+	PlayerSpawnAsSpectator(self.Player)
+	
+	hook.Run("GS_PlayerDead", self.Player:SteamID())
+	player_manager.ClearPlayerClass( self.Player )
 end
 
 function PLAYER:SetupInventary()
@@ -676,6 +749,15 @@ function PLAYER:DropSWEP(weapon)
 	self.Player:DropWeapon(weapon)
 end
 
+function PLAYER:DropSWEPBeforeRagdollize()
+	local weap = self.Player:GetActiveWeapon()
+	if weap.GS_Hand then
+		weap:DropItem()
+	else
+		self.Player:DropWeapon(weap)
+	end
+end
+
 function PLAYER:EquipmentEquipClient(itemData, key)
 	net.Start("gs_equipment_update")
 	net.WriteUInt(FAST_HUD_TYPE[key], 5)
@@ -733,6 +815,7 @@ end
 function PLAYER:SetupThink()
 	timer.Create("gs_player_think_"..self.Player:EntIndex(), 1, 0, function()
 		if !self.Player:IsValid() then
+
 			self:StopThink()
 			return
 		end
@@ -742,21 +825,45 @@ function PLAYER:SetupThink()
 		local procent = math.random(1, 100)
 		local dmg = self:GetSumDMG()
 		
-		if dmg >= 150 then
+
+		if dmg >= 200 then
+			--[[DEATH]]
+			print("DEATH STATUS")
+			print("D")
+			self:Death()
+			self:HealthPartClientUpdate()
+		elseif dmg >= 150 then
 			print("HARDCRIT STATUS")
+			self.Player.HealthStatus = GS_HS_CRIT
+			--[[
+				here we make the perm critparalyze
+				make suffer from hypoxia
+				fak y human die almost
+				
+				if person hp --> 100 then
+					remove hypoxia uron( 5/7 in timer)
+			]]
+
+			if procent <= 50 then
+				self:CritParalyze(0,true)
+				self:DamageHypoxia(4)
+			end
+			print(dmg)
 			--self:Ragdollize()
+			self:HealthPartClientUpdate()
 		elseif dmg >= 100 then
-			self:EffectSpeed("krit_status",-150, -250)
+			self:EffectSpeedAdd("krit_status",-150, -250)
 			print("SOFTCRIT STATUS")
-			self.HealthStatus = GS_HS_CRIT
+			self.Player.HealthStatus = GS_HS_CRIT
 			if procent <= 40 then
 				self:CritParalyze()
 			end
+			--if self.Player.
 			self:HealthPartClientUpdate()
 		elseif dmg < 100 then
 			--self:SetSpeed(self.BaseWalkSpeed, self.BaseRunSpeed)
-			if self.HealthStatus != GS_HS_OK then
-				self.HealthStatus = GS_HS_OK
+			if self.Player.HealthStatus != GS_HS_OK then
+				self.Player.HealthStatus = GS_HS_OK
 				self:HealthPartClientUpdate()
 			end
 		end
@@ -773,6 +880,13 @@ function PLAYER:InitHudClient()
 	net.WriteBool(true)
 	net.Send(self.Player)
 end
+
+function PLAYER:CloseHudClient()
+	net.Start("gs_cl_init_stat")
+	net.WriteBool(false)
+	net.Send(self.Player)
+end
+
 
 function PLAYER:SetupSystems()
 	self:SetupInventary()
@@ -870,33 +984,14 @@ net.Receive("gs_cl_weapon_drop", function(_, ply)
 	local ent = net.ReadEntity()
 	player_manager.RunClass( ply, "DropSWEP", ent )
 end)
---[[
-net.Receive("gs_cl_weapon_move_inventary", function(_, ply)
-	local ent = net.ReadEntity()
-	player_manager.RunClass( ply, "MoveSWEPToBackpack", ent )
-end)
 
---[[
-net.Receive("gs_weapon_base_comp_dataent", function(_,ply)
-	local ent = net.ReadEntity()
-	local keyitem = net.ReadInt(8)
-	player_manager.RunClass( ply, "CompareEntFromInventoryAndSWEP", keyitem, ent)
-end)
---]]
 
 net.Receive("gs_cl_inventary_examine_item", function(_, ply)
 	local from    = net.ReadUInt(5)
 	local keyitem = net.ReadUInt(6)
 	player_manager.RunClass( ply, "ExamineItemFromInventory", keyitem, from)
 end)
---[[
-net.Receive("gs_cl_inventaty_comp_ent_ent", function(_, ply)
-	local receiver = net.ReadInt(8)
-	local drop     = net.ReadInt(8)
 
-	player_manager.RunClass( ply, "CompareEntAndEnt", receiver, drop)
-end)
---]]
 
 net.Receive("gs_cl_contex_item_action", function(len, ply)
 	local receiver = {}

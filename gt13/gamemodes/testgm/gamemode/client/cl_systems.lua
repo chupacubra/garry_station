@@ -1,4 +1,4 @@
-include("cl_chem_config.lua")
+--include("cl_chem_config.lua")
 
 GL_CLIENT_CHEM = {}
 CHEMIA = {}
