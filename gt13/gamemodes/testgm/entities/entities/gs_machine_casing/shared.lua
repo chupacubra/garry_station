@@ -12,3 +12,5 @@ ENT.Entity_Data = {
     Model = "models/props_junk/wood_crate001a.mdl",
     Type = "machine_case",
 }
+
+ENT.ItemReceiver = true

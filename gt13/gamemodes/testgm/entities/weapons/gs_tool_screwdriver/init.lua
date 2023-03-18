@@ -4,7 +4,6 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 
-
 function SWEP:PrimaryAttack()
     self:SetNextPrimaryFire( CurTime() + 0.5 ) 
     local trace = self:MakeTrace()
@@ -25,11 +24,8 @@ function SWEP:PrimaryAttack()
     end
 
     local class = entity:GetClass()
-    print(entity:GetClass())
-    print(entity.Crowbar)
-    --if class == "gs_entity_base" or class == "gs_entity_base_container" then
-    if entity.Crowbar != nil then
-        local succes, text =  entity:Crowbar(self:GetOwner())
+    if entity.Screwdriver != nil then
+        local succes, text =  entity:Screwdriver(self:GetOwner())
 
         if succes and text then
             self:GetOwner():ChatPrint(text)

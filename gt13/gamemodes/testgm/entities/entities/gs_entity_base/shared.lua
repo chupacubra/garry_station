@@ -11,6 +11,7 @@ ENT.CanExamine = true
 ENT.CanUse     = true
 ENT.CanBreak   = false
 ENT.CanBolted  = true
+ENT.ItemReceiver = false
 
 ENT.Entity_Data = {
     Name = "NAME_ENT",

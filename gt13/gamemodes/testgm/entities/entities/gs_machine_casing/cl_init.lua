@@ -12,5 +12,7 @@ function ENT:AddContextMenu()
             net.SendToServer()
         end
     }
-    table.insert(contextButton, button)
+    table.insert(opt, button)
+
+    return opt
 end

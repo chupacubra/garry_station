@@ -2,16 +2,12 @@ GS_Corpse = {}
 
 --[[
     THE CORPSE MUST BE APART HUMAN
-    SAVE IN CORPSE ONLY ID OF PLY
-
-
-    idea generate for all persons blood DNK,
+    SAVE IN CORPSE ONLY ID PLY
 ]]
 
 function GS_Corpse.SendCorpseClient(rag)
     net.Start("gs_sys_corpse_create")
     net.WriteEntity(rag)
-    --net.WriteString(plyID)
     net.Broadcast()
 end
 
@@ -82,6 +78,7 @@ function GS_Corpse.ExamineRag(viewer, rag)
 
     table.insert(examine, "It's human corpse.")
     --test: alive or ded
+
     if rag.ply_dead then
         if rag.disconnect then
             table.insert(examine, "Deep depression...")
@@ -90,7 +87,7 @@ function GS_Corpse.ExamineRag(viewer, rag)
         end 
     else
         --test: status hp
-        local ply = player.GetBySteamID( rag.ownerID)
+        local ply = player.GetBySteamID(rag.ownerID)
 
         if IsValid(ply) then
             local hp_stat = ply.HealthStatus
@@ -100,7 +97,7 @@ function GS_Corpse.ExamineRag(viewer, rag)
                 table.insert(examine, "Face is pale...")
             end
         else
-            GS_MSG(rag.ownerID.." no in server but rag in not dead mark and this runned, WTF?")
+            --GS_MSG(rag.ownerID.." no in server but rag in not dead mark and this runned, WTF?")
             table.insert(examine, "The is strange")
         end
     end
@@ -108,6 +105,7 @@ function GS_Corpse.ExamineRag(viewer, rag)
     net.Start("gs_cl_inventary_examine_return")
 	net.WriteTable(examine)
 	net.Send(viewer)
+
 end
 
 net.Receive("gs_sys_corpse_action", function(_,ply)
@@ -122,6 +120,8 @@ net.Receive("gs_sys_corpse_action", function(_,ply)
     if act == 0 then  -- EXAMINE COPRSE
         GS_Corpse.ExamineRag(ply, rag)
     else
-
+        --[[
+            other actions
+        ]]
     end
 end)

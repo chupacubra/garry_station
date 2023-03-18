@@ -10,7 +10,7 @@ surface.CreateFont( "GS_CEFont", {
 } )
 
 surface.CreateFont( "GS_CEFontHead", {
-	font = "DermaDefault", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
+	font = "DermaDefault",
 	extended = false,
 	size = 20,
 	weight = 1000,
@@ -21,11 +21,81 @@ surface.CreateFont( "GS_CEFontHead", {
 } )
 
 list_models = {}
+list_pers   = {}
+
+--[[
+    chars saved in gs13_chars dir
+
+        config.txt
+        random.txt
+        random2.txt
+]]
+
+function SaveNewCharacter(char_data)
+    local id = gentocken()
+
+    local data = util.TableToJSON( char_data )
+    local filename = "gs13/chars/"..id..".txt"
+
+    file.Write(filename, data)
+
+    return file.Exists(filename, "DATA")
+end
+
+function SaveCharacter(id, char_data)
+    if id == nil then
+        SaveNewCharacter(char_data)
+        return
+    end
+
+    local filename = "gs13/chars/"..id..".txt"
+    local data = util.TableToJSON( char_data )
+    
+    file.Write(filename, data)
+
+    return file.Exists(filename, "DATA")
+end
+
+function OpenCharacter(id)
+    local filename = "gs13/chars/"..id..".txt"
+
+    if !file.Exists(filename, "DATA") then
+        return
+    end
+
+    local json = file.Read( filename, "DATA" )
+    local tbl  = util.JSONToTable(json)
+
+    return tbl
+end
+
+function DeleteCharacter(id)
+    local filename = "gs13/chars/"..id..".txt"
+
+    file.Delete( filename )
+
+    return !file.Exists(filename, "DATA")
+end
+
+function FindAllIDCharacters()
+    local chars_id = file.Find( "gs13/chars/*", "DATA" )
+
+    for k,v in pairs(files) do
+        chars_id[k] = string.StripExtension(v)
+    end
+    
+    return chars_id
+end
 
 function DrawCharacterEditor()
     if CEFrame then
         return
     end
+    --[[
+    local CharData = {
+        name 
+    }
+    --]]
 
     local CEFrame = vgui.Create("DFrame")
     CEFrame:SetSize(500, 240)
@@ -43,7 +113,6 @@ function DrawCharacterEditor()
     icon:SetModel( "models/player/Group01/male_09.mdl" )
     function icon:LayoutEntity( Entity ) return end
     function icon.Entity:GetPlayerColor() return Vector (1, 0, 0) end
-    
 
     local DPOpt = vgui.Create( "DPanel", CEFrame )
     DPOpt:SetSize( 285, 200 )
@@ -53,6 +122,16 @@ function DrawCharacterEditor()
     DCharList:SetPos( 5, 5 )
     DCharList:SetSize( 100, 20 )
     DCharList:SetValue( "Select..." )
+
+    for k,v in pairs(FindAllIDCharacters()) do
+        DCharList:AddChoice(v.Name, v)
+    end
+
+    function DComboBox:OnSelect( index, val, data )
+        --[[
+            set up other data
+        ]]
+    end
 
     local BNewChar = vgui.Create("DImageButton", DPOpt)
     BNewChar:SetPos(110,6)
@@ -251,3 +330,9 @@ concommand.Add("gs_d", function()
 end)
 
 DrawStartroundMenu()
+
+if file.IsDir( "gs13", "DATA" ) == false then
+    file.CreateDir("gs13")
+    file.CreateDir("gs13/chars")
+    file.Write( "gs13/config.txt", util.TableToJSON( {last_char = "0"} ) )
+end

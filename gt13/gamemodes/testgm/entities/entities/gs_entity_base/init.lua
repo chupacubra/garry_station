@@ -52,7 +52,6 @@ end
 
 function ENT:LoadInfoAbout() -- !!!!!! 
     net.Start("gs_ent_update_info")
-
     net.WriteEntity(self)
     net.WriteTable(self.Entity_Data)
     net.Broadcast()
@@ -66,6 +65,7 @@ end
     RETHINK THIS SHIT
     THIS MUST BE FOR ALL GS_ENT
 ]]
+--[[
 function ENT:GrabEntity(ply)
     if !self:OnGround() then
         return
@@ -133,6 +133,7 @@ function ENT:Think()
         end
     end
 end
+--]]
 
 function ENT:Bolt()
 
@@ -220,9 +221,4 @@ end
 net.Receive("gs_ent_client_init", function()
     local ent = net.ReadEntity()
     ent:LoadInfoAbout()
-end)
-
-net.Receive("gs_ent_grab", function(_,ply)
-    local ent = net.ReadEntity()
-    ent:GrabEntity(ply)
 end)

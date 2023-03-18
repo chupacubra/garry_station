@@ -8,15 +8,18 @@ include("item_containers.lua")
 include("ent_containers.lua")
 include("item_board.lua")
 include("item_res.lua")
+include("item_common.lua")
 
 
-function GS_EntityControler:MakeEntity2(name, typ, pos, ang) 
+function GS_EntityControler:MakeEntity2(name, typ, pos, ang)
+    print(typ,name)
+    PrintTable(GS_EntityList[typ])
     if !GS_EntityList[typ] then
         return false
     elseif !GS_EntityList[typ][name] then
         return false
     end
-    
+    print("spawning")
     local edata = table.Copy(GS_EntityList[typ][name])
     local entity = ents.Create(edata.entity_base or "gs_entity_base_item")
 

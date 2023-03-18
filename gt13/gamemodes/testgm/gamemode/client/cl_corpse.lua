@@ -10,14 +10,7 @@ CL_GS_Corpse = {}
 ]]
 
 function CL_GS_Corpse.MakeClientCoprse(rag)
-    --rag.PlayerID = ply:SteamID()
-    
-    --[[
-        create ragdoll functions
-    ]]
-
     rag.corpse  = true
-
 end
 
 function CL_GS_Corpse.GetContextMenu(rag)

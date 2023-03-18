@@ -116,6 +116,10 @@ function PlayerSpawnAsSpectator( ply )
 
 end
 
+function GM:CanPlayerSuicide()
+	return false 
+end
+
 function GM:PlayerDisconnected( ply )
 	--[[ IF spectator than nothing
 		 IF player -> alive
@@ -157,5 +161,11 @@ function GS_ChatPrint(ply, text, color)
 	net.Start("gs_cl_chatprint")
 	net.WriteColor(color)
 	net.WriteString(text)
+	net.Send(ply)
+end
+
+function GS_ReturnExamineTable(ply, tbl)
+	net.Start("gs_cl_inventary_examine_return")
+	net.WriteTable(tbl)
 	net.Send(ply)
 end

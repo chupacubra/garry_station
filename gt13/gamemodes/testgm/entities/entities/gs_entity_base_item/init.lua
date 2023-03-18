@@ -124,10 +124,8 @@ function ENT:RequestPrivateData(ply)
     net.WriteEntity(self)
     net.WriteTable(examine)
     net.Send(ply)
-
 end
-
-
+--[[
 function ENT:GrabEntity(ply)
     if !self:OnGround() then
         return
@@ -168,7 +166,7 @@ function ENT:UnGrabEntity()
     self.GrabAng    = nil
     self.GrabMat    = nil
 end
-
+--]]
 function ENT:Think()
     if self.Grabed then
         if !IsValid(self.GrabPlayer) then

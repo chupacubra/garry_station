@@ -7,7 +7,7 @@ include( "client/cl_plyhud.lua" )
 include( "client/cl_context_menu.lua" )
 include( "client/cl_stat.lua" )
 include( "client/cl_systems.lua" )
-include( "client/cl_corpse.lua" )
+--include( "client/cl_corpse.lua" )
 
 include("client/derma/cl_roundstart.lua" )
 

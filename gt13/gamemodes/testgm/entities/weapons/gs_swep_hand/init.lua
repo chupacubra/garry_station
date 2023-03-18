@@ -55,10 +55,11 @@ function SWEP:BeatEntity()
 end
 
 function SWEP:PickupEntity()
-    if self.hand_item.item then
-        self:PrimaryItemAction()
-    end
+    if self:HaveItem() then
 
+        return
+    end
+    
     local trace = self:MakeTrace()
 
     if !trace.Entity:IsValid() then
@@ -80,7 +81,19 @@ function SWEP:PrimaryAttack()
     if self.FightHand then
         self:BeatEntity()
     else
-        self:PickupEntity()
+        if self:HaveItem() then
+            self:PrimaryItemAction()
+        else
+            self:PickupEntity()
+        end
+    end
+end
+
+function SWEP:SecondaryAttack()
+    if self:HaveItem() then
+        self:InsertItemInEnt()
+    else
+        self:FightModeToggle()
     end
 end
 
@@ -93,17 +106,15 @@ function SWEP:InsertItemInEnt()
     
     local entity = trace.Entity
 
-    if entity.HandInsertItem then
-        local item = entity:HandInsertItem(ply, self.hand_item.item)
-        self:UpdateItem(item)
-    end
-end
-
-function SWEP:SecondaryAttack()
-    if !self:HaveItem() then
-        self:FightModeToggle()
-    else
-        self:InsertItemInEnt()
+    if entity.ItemReceiver then
+        local item = entity:InsertItem(ply, self.hand_item.item)
+        if item then
+            self:UpdateItem(item)
+        elseif item == nil then
+            self:RemoveItem()
+        elseif item == false then
+            --nothing
+        end
     end
 end
 
@@ -188,9 +199,10 @@ end
 
 function SWEP:PrimaryItemAction()
 
-    if self.hand_item.item then
+    if self:HaveItem() == false then
         return false
     end
+    
     if ItemType(self.hand_item.item) == GS_ITEM_CONTAINER then
         self:OpenHandContainer()
         self.OpenContainer = true

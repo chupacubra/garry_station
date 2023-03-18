@@ -31,6 +31,20 @@ GS_EntityList.parts = {
     }
 }
 
+GS_EntityList.Board_Parts_Fast = {}
+
+for k,v in pairs(GS_EntityList.parts) do
+    GS_EntityList.Board_Parts_Fast[v.Entity_Data.ENT_Name] = k
+end
+
+function GS_EntityList.GetPartNiceName(ent_name)
+    --local ent = GS_EntityList.Board_Parts_Fast[ent_name]
+    if GS_EntityList.Board_Parts_Fast[ent_name] then
+        local key = GS_EntityList.Board_Parts_Fast[ent_name]
+        return GS_EntityList.parts[key]["Entity_Data"]["Name"]
+    end
+    return false
+end
 
 
 --models/props_lab/reciever01d.mdl

@@ -19,7 +19,7 @@ SWEP.ViewModelFlip = false
 SWEP.UseHands = true
 SWEP.ViewModel = "models/weapons/c_crowbar_frame.mdl"
 SWEP.WorldModel = "models/props_c17/tools_wrench01a.mdl"
-SWEP.ShowViewModel = true
+SWEP.ShowViewModel = false
 SWEP.ShowWorldModel = true
 
 SWEP.HoldType = "melee"

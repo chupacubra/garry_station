@@ -51,3 +51,10 @@ function GS_EntityControler:ExamineData(ent)
 
     return arr
 end
+
+function GS_EntityControler.ItemInBoardReceipt(board, part)
+    if board.Private_Data.Parts[part.Entity_Data.ENT_Name] != nil then
+        return true, board.Private_Data.Parts[part.Entity_Data.ENT_Name]
+    end
+    return false, 0
+end

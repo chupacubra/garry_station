@@ -415,6 +415,7 @@ if CLIENT then
 					string.find(v.model, ".mdl") and file.Exists (v.model, "GAME") ) then
 				
 				v.modelEnt = ClientsideModel(v.model, RENDER_GROUP_VIEW_MODEL_OPAQUE)
+				print(v.modelEnt,v.modelEnt:GetModel())
 				if (IsValid(v.modelEnt)) then
 					v.modelEnt:SetPos(self:GetPos())
 					v.modelEnt:SetAngles(self:GetAngles())

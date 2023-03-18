@@ -57,8 +57,20 @@ concommand.Add( "gs_wrench", function( ply, cmd, args, str )
     ent:Spawn()
 end )
 
+concommand.Add( "gs_machine", function( ply, cmd, args, str )
+    local ent = ents.Create("gs_machine_casing")
+    ent:SetPos(ply:GetPos()+Vector(50,0,50))
+    ent:Spawn()
+end )
+
 concommand.Add( "gs_crowbar", function( ply, cmd, args, str )
     local ent = ents.Create("gs_tool_crowbar")
+    ent:SetPos(ply:GetPos()+Vector(50,0,50))
+    ent:Spawn()
+end )
+
+concommand.Add( "gs_screw", function( ply, cmd, args, str )
+    local ent = ents.Create("gs_tool_screwdriver")
     ent:SetPos(ply:GetPos()+Vector(50,0,50))
     ent:Spawn()
 end )
@@ -101,4 +113,18 @@ concommand.Add( "gs_spawn", function( ply, cmd, args, str )
     print(cmd)
     --player_manager.RunClass( ply,"InjectChemical","water",10)
     GS_EntityControler:MakeEntity2(args[1],args[2],ply:GetPos()+Vector(50,0,50),0)
+end )
+
+concommand.Add( "gs_task", function( ply, cmd, args, str )
+    GS_Task:CreateNew(ply,"test_task", 5, game.GetWorld(),{
+        start  = function(ply,_)
+            ply:ChatPrint("You start screwing the machine casing")
+        end,
+        succes = function(ply,_)
+            ply:ChatPrint("You screwed machine case")
+        end,
+        unsucces = function(ply,_)
+            ply:ChatPrint("You stop screwing machine case")
+        end
+    },{},"Screwdriving some...")
 end )

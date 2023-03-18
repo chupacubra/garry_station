@@ -42,10 +42,18 @@ util.AddNetworkString("gs_weapon_base_set_magazine_model")
 
 --subsystems
 util.AddNetworkString("gs_sys_chem_list")
+
 util.AddNetworkString("gs_sys_corpse_create")
 util.AddNetworkString("gs_sys_corpse_action")
 
+util.AddNetworkString("gs_sys_task_send")
+util.AddNetworkString("gs_sys_task_end")
+
+
 --special netstring for spec entity
+--[[
+    rethink this, need simple makefunc(id)
+]]
 util.AddNetworkString("gs_ent_mc_exam_parts")
 
 --round system
