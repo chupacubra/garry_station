@@ -14,5 +14,12 @@ function handler.actions.join(ply,arg)
     GS_Round_System:RoundSpawnPlayer(ply)
 end
 
+function handler.actions.loadchar(ply,arg)
+    --[[
+        arg is whole char_data
+    ]]
+
+    GS_PLY_Char:SaveChar(ply, arg)
+end
 
 AddMenuHandler("menu_prestart", handler)

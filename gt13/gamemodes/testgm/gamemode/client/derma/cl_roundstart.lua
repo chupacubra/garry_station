@@ -22,14 +22,39 @@ surface.CreateFont( "GS_CEFontHead", {
 
 list_models = {}
 list_pers   = {}
+bapply_cooldown = false
+
+new_char = {
+    name = "John Jonson",
+    model = 1,
+    person_notes = "",
+    examine_info = "",
+    job_prefer   = "",
+    char_settings = {},
+}
 
 --[[
-    chars saved in gs13_chars dir
-
-        config.txt
-        random.txt
-        random2.txt
+    chars saved in gs13
+    config.txt
+    chars/
+         random1.txt
+         random2.txt
 ]]
+
+function CreateNewChar()
+    local a = {
+        id = gentocken(),
+        char_data = {
+            name = gentocken(),
+            model = 1,
+            person_notes = "",
+            examine_info = "",
+            job_prefer   = "",
+            char_settings = {},
+        }
+    }
+    return table.Copy(a)
+end
 
 function SaveNewCharacter(char_data)
     local id = gentocken()
@@ -77,25 +102,30 @@ function DeleteCharacter(id)
     return !file.Exists(filename, "DATA")
 end
 
-function FindAllIDCharacters()
+function FindAllCharacters()
     local chars_id = file.Find( "gs13/chars/*", "DATA" )
-
-    for k,v in pairs(files) do
-        chars_id[k] = string.StripExtension(v)
+    local chars_tbl = {}
+    for k,v in pairs(chars_id) do
+        --chars_id[k] = string.StripExtension(v)
+        local json = file.Read("gs13/chars/"..v , "DATA" )
+        local data = util.JSONToTable(json)
+        if data then
+            table.insert(chars_tbl, data)
+        end
     end
     
-    return chars_id
+    return chars_tbl
 end
 
+
+
+
+
 function DrawCharacterEditor()
-    if CEFrame then
-        return
-    end
-    --[[
-    local CharData = {
-        name 
-    }
-    --]]
+    --local derma_table = {}
+    local char_selected = {}
+    local chat_selected_bool = false
+
 
     local CEFrame = vgui.Create("DFrame")
     CEFrame:SetSize(500, 240)
@@ -110,33 +140,42 @@ function DrawCharacterEditor()
 
     local icon = vgui.Create( "DModelPanel", DPModel )
     icon:SetSize(200,200)
-    icon:SetModel( "models/player/Group01/male_09.mdl" )
+    icon:SetModel( "" )
     function icon:LayoutEntity( Entity ) return end
-    function icon.Entity:GetPlayerColor() return Vector (1, 0, 0) end
+
+    --function icon.Entity:GetPlayerColor() return Vector (1, 0, 0) end
 
     local DPOpt = vgui.Create( "DPanel", CEFrame )
     DPOpt:SetSize( 285, 200 )
     DPOpt:SetPos(210,30)
-
+ 
     local DCharList = vgui.Create( "DComboBox", DPOpt)
     DCharList:SetPos( 5, 5 )
     DCharList:SetSize( 100, 20 )
-    DCharList:SetValue( "Select..." )
+    DCharList:SetValue( "None" )
 
-    for k,v in pairs(FindAllIDCharacters()) do
-        DCharList:AddChoice(v.Name, v)
-    end
-
-    function DComboBox:OnSelect( index, val, data )
-        --[[
-            set up other data
-        ]]
+    function DCharList:ResetAndSelect(tocken)
+        self:Clear()
+        for k,v in pairs(FindAllIDCharacters()) do
+            local append_id = DCharList:AddChoice(v.char_data.name, v)
+            if v.id == tocken then
+                DCharList:ChooseOptionID( append_id )
+                ChooseChar(data)
+            end
+        end
     end
 
     local BNewChar = vgui.Create("DImageButton", DPOpt)
     BNewChar:SetPos(110,6)
 	BNewChar:SetSize(18,18)
 	BNewChar:SetIcon("icon16/page_add.png")
+--[[
+    function BNewChar:DoClick()
+        local new = CreateNewChar()
+        local id_new = DCharList:AddChoice(new.char_data.name, new)
+        DCharList:ChooseOptionID( id_new )
+    end
+--]]
 
     local BSaveChar = vgui.Create("DImageButton", DPOpt)
     BSaveChar:SetPos(132,6)
@@ -155,25 +194,13 @@ function DrawCharacterEditor()
     PLabel:SetColor(Color(0,0,238))
     PLabel:SetText("Person information")
 
-
-    local PName = vgui.Create( "DLabel" , DPOpt)
-    PName:SetPos(5, 60)
-    PName:SetSize(164,20)
-    PName:SetColor(Color(0,0,0))
-    PName:SetFont("GS_CEFont")
-    PName:SetText("Name: John Jonson")
-    PName:SetMouseInputEnabled( true )
-
-    function PName:DoClick()
-        print("Change name, call derma")
-        Derma_StringRequest(
-        "Name of character", 
-        "fack u",
-        "Ivan Ivanov",
-        function(text) print(text) end,
-        function(text) print("Cancelled input") end
-    )
-    end
+    local PNameChar = vgui.Create( "DLabel" , DPOpt)
+    PNameChar:SetPos(5, 60)
+    PNameChar:SetSize(164,20)
+    PNameChar:SetColor(Color(0,0,0))
+    PNameChar:SetFont("GS_CEFont")
+    PNameChar:SetText("Name: Select Person First!")
+    PNameChar:SetMouseInputEnabled( true )
 
     local PModel = vgui.Create( "DLabel" , DPOpt)
     PModel:SetPos(5, 76)
@@ -191,10 +218,6 @@ function DrawCharacterEditor()
     PNotes:SetText("Person information(Person notes): Click")
     PNotes:SetMouseInputEnabled( true )
 
-    function PNotes:DoClick()
-        print("Change model")
-    end
-
     local PExamine = vgui.Create( "DLabel" , DPOpt)
     PExamine:SetPos(5, 124)
     PExamine:SetSize(150,20)
@@ -202,9 +225,6 @@ function DrawCharacterEditor()
     PExamine:SetFont("GS_CEFont")
     PExamine:SetText("Examine info: Click")
     PExamine:SetMouseInputEnabled( true )
-
-    function PExamine:DoClick()
-    end
 
     local PJob = vgui.Create( "DLabel" , DPOpt)
     PJob:SetPos(5, 156)
@@ -214,9 +234,6 @@ function DrawCharacterEditor()
     PJob:SetText("Job Preferences: Click")
     PJob:SetMouseInputEnabled( true )
 
-    function PJob:DoClick()
-    end
-
     local PRole = vgui.Create( "DLabel" , DPOpt)
     PRole:SetPos(5, 172)
     PRole:SetSize(150,20)
@@ -225,12 +242,121 @@ function DrawCharacterEditor()
     PRole:SetText("Role setting: Click")
     PRole:SetMouseInputEnabled( true )
 
+    local PApply = vgui.Create( "DLabel" , DPOpt)
+    PApply:SetPos(175, 172)
+    PApply:SetSize(150,20)
+    PApply:SetColor(Color(0,0,0))
+    PApply:SetFont("GS_CEFont")
+    PApply:SetText("Use this character")
+    PApply:SetMouseInputEnabled( true )
+
+    local function ChooseChar(char_data)
+        char_selected_bool = true
+        char_selected = char_data
+        PNameChar:SetText("Name: "..char_selected.char_data.name)
+        PrintTable(char_selected)
+    end
+
+    function BSaveChar:DoClick()
+        --DCharList:AddChoice(char_selected.char_data.name, char_selected)
+        SaveCharacter(char_selected.id,char_selected)
+        local tocken = char_selected.id
+        char_selected = {}
+        DCharList:ResetAndSelect(tocken)
+    end
+
+    for k,v in pairs(FindAllCharacters()) do
+        print(k,v)
+        DCharList:AddChoice(v.char_data.name, v)
+    end
+
+    function DCharList:OnSelect( index, val, data )
+        --char_selected = data
+         --PNameChar:SetText("Name: "..char_selected.char_data.name)
+        PrintTable(data)
+        ChooseChar(data)
+    end
+
+    function PNameChar:DoClick()
+        if !char_selected_bool then
+            return
+        end
+        print("Change name, call derma")
+        Derma_StringRequest(
+            "Name of character", 
+            "Name of character write here",
+            "Ivan Ivanov",
+            function(text) 
+                if table.IsEmpty(char_selected) then
+                    return
+                end
+                
+                char_selected.char_data.name = text
+                PNameChar:SetText("Name: "..text)
+                --DCharList:ChooseOption( text, DCharList:GetSelectedID())
+            end,
+            function(text) print("Cancelled input") end
+        )
+    end
+
+    function BNewChar:DoClick()
+        local new = CreateNewChar()
+        local id_new = DCharList:AddChoice("New", new)
+        DCharList:ChooseOptionID( id_new )
+        ChooseChar(new)
+    end
+
+    function PNotes:DoClick()
+        print("Change model")
+    end
+
+    function PExamine:DoClick()
+        Derma_StringRequest(
+            "Examine data", 
+            "Examine char",
+            char_selected.char_data.examine_info or "bald",
+            function(text)
+                if table.IsEmpty(char_selected) then
+                    return
+                end
+                
+                char_selected.char_data.examine_info = text
+                --PNameChar:SetText("Name: "..text)
+            end,
+            function(text) print("Cancelled input") end
+        )
+    end
+
+    function PJob:DoClick()
+    end
+
     function PRole:DoClick()
     end
-end
 
+    function PApply:DoClick()
+        if bapply_cooldown then
+            return 
+        end
+
+        MakeDermaAction("menu_prestart", "loadchar", char_selected.char_data)
+
+        loaded_char = char_selected
+        loaded_char_bool = true
+        bapply_cooldown = true
+        self:SetColor(Color(200,40,40))
+        timer.Simple(3, function()
+            if IsValid(self) then
+                bapply_cooldown = nil
+                self:SetColor(Color(0,0,0))
+            end
+        end)
+    end
+
+end 
 
 function DrawStartroundMenu()
+    local loaded_char = {}
+    local loaded_char_bool = false
     local Menu = vgui.Create("DFrame")
 
     Menu:SetSize(200, 400)
@@ -304,7 +430,7 @@ function DrawStartroundMenu()
                     --[[
                         menu handler ready button
                     ]]
-
+                    
                     MakeDermaAction("menu_prestart", "ready", {ready = self.Ready})
                 end
 
@@ -324,15 +450,27 @@ function DrawStartroundMenu()
     end
 
 end
---[[]]
-concommand.Add("gs_d", function()
-    DrawStartroundMenu()
-end)
 
 DrawStartroundMenu()
+
+concommand.Add("gs_d", function()
+    DrawStartroundMenu()
+end)   
 
 if file.IsDir( "gs13", "DATA" ) == false then
     file.CreateDir("gs13")
     file.CreateDir("gs13/chars")
     file.Write( "gs13/config.txt", util.TableToJSON( {last_char = "0"} ) )
 end
+
+
+
+net.Receive("gs_sys_char_send",function()
+
+    local bool = net.ReadBool()
+    if bool then
+        Derma_Message("Character applied", "Character editor", "OK")
+    else
+        Derma_Message("Character IS NOT applied. I gues is a error?", "Character editor", "Why?")
+    end
+end)

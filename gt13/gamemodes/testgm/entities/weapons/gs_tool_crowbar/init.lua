@@ -3,31 +3,25 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+function SWEP:Swing(trace)
+	local entity = trace.Entity
 
+	if !trace.Hit then
+		return
+	end
 
-function SWEP:PrimaryAttack()
-    self:SetNextPrimaryFire( CurTime() + 0.5 ) 
-    local trace = self:MakeTrace()
-    
-    self:SwingAnim(trace.Hit)
-    self:SoundHit(trace.Hit)
-
-    local entity = trace.Entity
-    
     if !entity:IsValid() then
-
         return
     end
 
-    if entity:IsPlayer() then
-        -- punch human
+	if entity:IsPlayer() then
+		self:HitPlayer(entity, trace.PhysicsBone)
         return
     end
+
 
     local class = entity:GetClass()
-    print(entity:GetClass())
-    print(entity.Crowbar)
-    --if class == "gs_entity_base" or class == "gs_entity_base_container" then
+
     if entity.Crowbar != nil then
         local succes, text =  entity:Crowbar(self:GetOwner())
 
@@ -36,8 +30,4 @@ function SWEP:PrimaryAttack()
         end
     end
 end
-
-function SWEP:SecondaryAttack()
-end
-
 

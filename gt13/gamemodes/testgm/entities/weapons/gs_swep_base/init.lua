@@ -23,19 +23,20 @@ function SWEP:SoundHit(hit)
         self:GetOwner():EmitSound(Sound(self.PrimarySound..".Single"))
     end
 end
-
+--[[
 function SWEP:Hit(trace)
     if trace.Enity:IsPlayer() then
         print("hit padlu")
+		player_manager.RunClass( trace.Entity, "HurtPart", trace.PhysicsBone, {[D_BRUTE] = math.random(7, 12)})
     else
 
     end
 end
+--]]
 
-function SWEP:PrimaryAttack()
-end
-
-function SWEP:SecondaryAttack()
+function SWEP:HitPlayer(ply, bone)
+	print("hit padlu")
+	player_manager.RunClass(ply, "HurtPart", bone, {[D_BRUTE] = math.random(7, 12)})
 end
 
 function SWEP:MakeTrace()
@@ -59,6 +60,7 @@ function SWEP:MakeTrace()
 	return tr
 end
 
+
 function SWEP:SwingAnim(hit)
 	local VModel = self:GetOwner():GetViewModel()
 	local anim
@@ -70,6 +72,20 @@ function SWEP:SwingAnim(hit)
 	end
 
 	VModel:SendViewModelMatchingSequence(anim_list[anim])
+end
+
+function SWEP:PrimaryAttack()
+	self:SetNextPrimaryFire( CurTime() + 0.6 ) 
+	local trace = self:MakeTrace()
+    
+	self:SwingAnim(trace.Hit)
+	self:SoundHit(trace.Hit)
+
+	self:Swing(trace)
+end
+
+
+function SWEP:SecondaryAttack()
 end
 
 function SWEP:Deploy()

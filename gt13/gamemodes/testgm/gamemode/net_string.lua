@@ -16,6 +16,7 @@ util.AddNetworkString("gs_ply_pickup_weapon")
 util.AddNetworkString("gs_ply_equip_item")
 util.AddNetworkString("gs_cl_contex_item_action")
 util.AddNetworkString("gs_cl_chatprint")
+util.AddNetworkString("gs_cl_actions_human")
 
 -- ent update info
 util.AddNetworkString("gs_ent_client_init")
@@ -49,6 +50,7 @@ util.AddNetworkString("gs_sys_corpse_action")
 util.AddNetworkString("gs_sys_task_send")
 util.AddNetworkString("gs_sys_task_end")
 
+util.AddNetworkString("gs_sys_char_send") -- 2x
 
 --special netstring for spec entity
 --[[

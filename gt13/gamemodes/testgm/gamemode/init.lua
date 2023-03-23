@@ -29,3 +29,4 @@ include( "resource.lua")
 hook.Add("GS_PlayerDead", "MakePersonDead", function(plyID)
     GS_Round_System:AddDeadPly(plyID)
 end)
+

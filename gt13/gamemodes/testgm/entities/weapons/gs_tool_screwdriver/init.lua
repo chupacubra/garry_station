@@ -3,27 +3,25 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+function SWEP:Swing(trace)
+	local entity = trace.Entity
 
-function SWEP:PrimaryAttack()
-    self:SetNextPrimaryFire( CurTime() + 0.5 ) 
-    local trace = self:MakeTrace()
-    
-    self:SwingAnim(trace.Hit)
-    self:SoundHit(trace.Hit)
+	if !trace.Hit then
+		return
+	end
 
-    local entity = trace.Entity
-    
     if !entity:IsValid() then
-
         return
     end
 
-    if entity:IsPlayer() then
-        -- punch human
+	if entity:IsPlayer() then
+		self:HitPlayer(entity, trace.PhysicsBone)
         return
     end
+
 
     local class = entity:GetClass()
+
     if entity.Screwdriver != nil then
         local succes, text =  entity:Screwdriver(self:GetOwner())
 
@@ -32,8 +30,4 @@ function SWEP:PrimaryAttack()
         end
     end
 end
-
-function SWEP:SecondaryAttack()
-end
-
 

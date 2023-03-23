@@ -3,6 +3,8 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local SwingSound = Sound( "WeaponFrag.Throw" )
+local HitSound = Sound( "Flesh.ImpactHard" )
 
 function SWEP:Deploy()
     self:HoldTypeTriger(self.hand_item != nil)
@@ -49,9 +51,37 @@ function SWEP:BeatEntity()
     local VModel = self:GetOwner():GetViewModel()
     
     VModel:SendViewModelMatchingSequence( math.random(3, 5) )
+    self:EmitSound(SwingSound)
 
     self.BCooldown = CurTime() + 0.8
+
+    --[[
+    -- fuc this
+    --]]
+
+    timer.Simple(0.2, function()
+        if !IsValid(self) then
+            return
+        end
+
+        local trace = self:MakeTrace()
+
+        if trace.Hit == false then
+            return
+        end
+
+        self:EmitSound(HitSound)
+        
+        if IsValid(trace.Entity) then
+            if trace.Entity:IsPlayer() then
+                player_manager.RunClass( trace.Entity, "HurtPart", trace.PhysicsBone, {[D_BRUTE] = math.random(3, 5)})
+            end
     
+        end
+    end)
+
+
+
 end
 
 function SWEP:PickupEntity()

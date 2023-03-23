@@ -108,6 +108,11 @@ concommand.Add( "gs_leaf", function( ply, cmd, args, str )
     player_manager.RunClass( ply,"InjectChemical","water",10)
 end )
 
+concommand.Add( "gs_examine", function( ply, cmd, args, str )
+    player_manager.RunClass( ply,"Examine", ply)
+end )
+
+
 concommand.Add( "gs_spawn", function( ply, cmd, args, str )
     PrintTable(args)
     print(cmd)

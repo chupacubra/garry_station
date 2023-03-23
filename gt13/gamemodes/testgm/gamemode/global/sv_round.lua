@@ -60,10 +60,14 @@ end
 
 function GS_Round_System:StartRoundSpawnPlayer()
     for ply,ready in pairs(self.ReadyPly) do
-        if ready then
+        if ready and GS_PLY_Char:GetPlyChar(ply) then
             ply:SetTeam( TEAM_PLY )
             ply:UnSpectate()
             ply:Spawn()
+            print("spawn", ply)
+            local char =  GS_PLY_Char:GetPlyChar(ply)
+            PrintTable(char)
+            player_manager.RunClass(ply, "SetCharacterData", char)
             --[[
                 set plydata
                 set job
@@ -84,11 +88,21 @@ function GS_Round_System:RoundSpawnPlayer(ply)
         GS_MSG("player want to spawn, when round != running")
         return
     end
-    
+
+    local char = GS_PLY_Char:GetPlyChar(ply)
+    if char == false then
+        GS_MSG("player want to spawn, when round != running")
+        ply:ChatPrint("Load char first!")
+        return
+    end
     ply:SetTeam( TEAM_PLY )
     ply:UnSpectate()
     ply:Spawn()
-    --
+    
+    print("spawn", ply)
+    local char =  GS_PLY_Char:GetPlyChar(ply)
+    PrintTable(char)
+    player_manager.RunClass(ply, "SetCharacterData", char)
 end
 
 function GS_Round_System:StartPreparationPhase()

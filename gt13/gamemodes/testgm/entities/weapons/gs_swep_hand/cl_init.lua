@@ -9,6 +9,15 @@ function SWEP:Initialize()
     self.RCooldown = 0
 end
 
+function SWEP:PrimaryAttack()
+
+end
+
+function SWEP:SecondaryAttack()
+
+end
+
+
 function SWEP:DrawHUD() 
     surface.SetFont( "TargetID" )
     surface.SetTextPos((ScrW() / 2)-50, (ScrH() / 2) + 100)
