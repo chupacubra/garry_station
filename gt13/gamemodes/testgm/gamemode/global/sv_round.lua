@@ -48,10 +48,20 @@ end
 
 function GS_Round_System:PlayerReady(ply,ready)
     if self.Round_Status != GS_ROUND_PREPARE then 
-        return
+        return false
+    end
+
+    --[[
+        only ply who have char can be ready
+    ]]
+
+    if !GS_PLY_Char:HaveChar(ply) then
+
+        return false
     end
 
     self.ReadyPly[ply] = ready
+    return true
 end
 
 function GS_Round_System:PlayerObserver(ply,ready)
@@ -90,11 +100,13 @@ function GS_Round_System:RoundSpawnPlayer(ply)
     end
 
     local char = GS_PLY_Char:GetPlyChar(ply)
+    
     if char == false then
         GS_MSG("player want to spawn, when round != running")
         ply:ChatPrint("Load char first!")
         return
     end
+
     ply:SetTeam( TEAM_PLY )
     ply:UnSpectate()
     ply:Spawn()
@@ -155,4 +167,23 @@ function GS_Round_System:RemoveDeadPly(plyID)
     self.DeadPlayers[plyID] = nil
 end
 
-GS_Round_System:InitGame() 
+
+--[[
+    randomise job for char use char seetings
+    
+    char.job_preference -> char.job_selected
+    if job_preference = nil:
+        char.job_selected = random job
+
+]]
+function GS_Round_System:PrestartRaffleJob()
+    for k, v in pairs(self.ReadyPly) do
+        local char = GS_PLY_Char:GetPlyChar(v)
+        if char == false then
+            GS_MSG(ply:Nick().."don't have char but ready and want to have a job")
+            return
+        end
+    end
+end
+
+GS_Round_System:InitGame()

@@ -42,8 +42,8 @@ MSG_ERROR = Color( 255, 25, 25 )
 MSG_WARNING = Color( 255, 251, 132)
 MSG_INFO = Color( 66,170,255)
 
-function GS_MSG(text,color)
-    MsgC(color, "[GS] "..text.."\n")
+function GS_MSG(text,color)--fuck this
+    MsgC(MSG_INFO, "[GS] "..text.."\n")
 end
 
 function typeRet(item)

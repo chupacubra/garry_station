@@ -79,12 +79,6 @@ net.Receive("gs_cl_f_button", function()
     end
 end)
 --]]
-function MakeDermaAction(menu, func, arg) -- rethink ABoUT THIS!
-    net.Start("gs_cl_derma_handler")
-    net.WriteString(menu)
-    net.WriteString(func)
-    net.WriteTable(arg)
-    net.SendToServer()
-end
+
 
 GS_RoundStatus:Init()

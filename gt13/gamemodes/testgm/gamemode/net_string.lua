@@ -64,3 +64,4 @@ util.AddNetworkString("gs_round_status")
 -- derma menu handler
 util.AddNetworkString("gs_cl_f_button")
 util.AddNetworkString("gs_cl_derma_handler")
+util.AddNetworkString("gs_cl_derma_open")

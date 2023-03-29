@@ -184,11 +184,11 @@ net.Receive("gs_weapon_base_set_magazine_model", function()
     local gun = net.ReadEntity()
     local bool = net.ReadBool()
     print(bool)
-    if bool then
-        gun.WorldModelDraw:SetModel(gun.LoadedWorldModel)
-    else
-        gun.WorldModelDraw:SetModel(gun.UnloadedWorldModel)
-    end
-    --gun:SetModel(gun.WorldModel)
-
+    timer.Simple(0.1, function()
+        if bool then
+            gun.WorldModelDraw:SetModel(gun.LoadedWorldModel)
+        else
+            gun.WorldModelDraw:SetModel(gun.UnloadedWorldModel)
+        end
+    end)
 end)

@@ -1,6 +1,6 @@
 GS_PLY_Char = {}
 GS_PLY_Char.Loaded = {}
-
+GS_PLY_Char.CharSelect = {}
 --net.Receive(, callback)
 
 function GS_PLY_Char:SendToClientSucces(ply, bool)
@@ -10,7 +10,8 @@ function GS_PLY_Char:SendToClientSucces(ply, bool)
 end
 
 function GS_PLY_Char:GetPlyChar(ply)
-	return self.Loaded[ply] or false
+	local tocken = self.CharSelect[ply]
+	return self.Loaded[tocken] or false
 end
 
 function GS_PLY_Char:SaveChar(ply, data)
@@ -25,10 +26,22 @@ function GS_PLY_Char:SaveChar(ply, data)
 		end
 	end
 
-	data["unique_id"] = gentocken()
+	local tocken = gentocken()
 
-	self.Loaded[ply] = data
+	data["unique_id"] = tocken
+	
+	self.Loaded[tocken] = data
+	self:SelectChar(ply, tocken)
+
 	self:SendToClientSucces(ply, true)
+end
+
+function GS_PLY_Char:SelectChar(ply, tocken)
+	self.CharSelect[ply] = tocken
+end
+
+function GS_PLY_Char:HaveChar(ply)
+	return self.CharSelect[ply] != nil
 end
 
 net.Receive("gs_sys_char_send", function(_, ply)

@@ -1,6 +1,16 @@
 -- make actions with ITEM DATA -
 GS_EntityControler = GS_EntityControler or {}
+--[[
+    need make this to
 
+    GS_EntityControler:CreateActionItem("item1", "item2", function(item1, item2, ply)
+        print("connecting item1 with item2")
+        CreateTask(function()
+            connecting succesful!
+        end)
+    end)
+
+]]
 function GS_EntityControler:MakeActionEntData(receiver, drop)
     if receiver.Entity_Data.ENUM_Type == GS_ITEM_AMMO_MAGAZINE and (drop.Entity_Data.ENUM_Type == GS_ITEM_AMMOBOX or drop.Entity_Data.ENUM_Type == GS_ITEM_MATERIAL) then
         if cantype(receiver.Entity_Data.ENUM_Subtype, drop.Entity_Data.ENUM_Subtype) then

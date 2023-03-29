@@ -40,3 +40,12 @@ in the card we put information about the person and his access
     as we can see, the result is equal to the requested access and the scientist can pass
 ]]
 
+GS_ID = {}
+
+function GS_ID:PrestartGenerateID(char, access, job)
+
+end
+
+function CheckAccess(have, need)
+    return bit.band(have, need) == need
+end
