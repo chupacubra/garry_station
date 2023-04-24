@@ -82,3 +82,11 @@ end)
 
 
 GS_RoundStatus:Init()
+
+function MakeDermaAction(name, func, arg)
+    net.Start("gs_cl_derma_handler")
+    net.WriteString(name)
+    net.WriteString(func)
+    net.WriteTable(arg)
+    net.SendToServer()
+end 

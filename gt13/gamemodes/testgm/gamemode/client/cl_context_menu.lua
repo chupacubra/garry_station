@@ -1,5 +1,23 @@
 ContextMenu = {}
 
+local HUD_EQUEIP = {
+    {
+        "BELT",
+        "KEYCARD",
+        "PDA",
+    },
+    {
+        "BACKPACK",
+        "VEST",
+        "GLOVES",
+    },
+    {
+        "HEAD",
+        "MASK",
+        "EAR",
+    },
+}
+
 local function DragAndDropItem(self, panels, bDoDrop, Command, x, y) -- cursed
     if bDoDrop then
         local receivr = self
@@ -272,28 +290,45 @@ function ContextMenu:RequestBackpack()
     GS_ClPlyStat:RequestItemsFromBackpack()
 end
 
-function ContextMenu:ContextMenuOpen()
+function ContextMenu:DrawBackpackButton()
     local H = ScrH()
     local W = ScrW()
+
+    if self.derma["backpack_button"] then
+        return
+    end
+
+    local context = self
+    local button = vgui.Create("gt_button")
+
+    button:SetText( "Open","backpack" ) 
+    button:SetSize( 90, 90 )
+    button:SetPos(W - 100, (H - (H / 8)))
+    button.type = "backpack"
+    button.key  = 0
+    button:Receiver("item_drop", DragAndDropItem )
+
+    function button:DoClick()
+        if context.openback == false then
+            context:RequestBackpack()
+        else
+            context:CloseBackpack()
+        end
+    end
+    
+    self.derma["backpack_button"] = button
+end
+
+function ContextMenu:ContextMenuOpen() 
+    local H = ScrH()
+    local W = ScrW()
+
     local context = self
     self.derma = {}
     self.openback = false
 
-    if GS_ClPlyStat.equipment.BACKPACK != 0 then
-        self.derma.button = vgui.Create("gt_button")
-        self.derma.button:SetText( "Open","backpack" ) 
-        self.derma.button:SetSize( 90, 90 )
-        self.derma.button:SetPos(W - 100, (H - (H / 8)))
-        self.derma.button.type = "backpack"
-        self.derma.button.key  = 0
-        self.derma.button:Receiver("item_drop", DragAndDropItem )
-        function self.derma.button:DoClick()
-            if context.openback == false then
-                context:RequestBackpack()
-            else
-                context:CloseBackpack()
-            end
-        end
+    if GS_ClPlyStat:HaveEquip("BACKPACK") then
+        ContextMenu:DrawBackpackButton()
     end
     
     -- weapon slot button
@@ -317,7 +352,7 @@ function ContextMenu:ContextMenuOpen()
         weapb:Receiver( "item_drop", DragAndDropItem )
         weapb:Droppable("item_drop")
 
-        table.insert(self.derma,weapb)
+        self.derma["weapon_slot"..k] = weapb
     end
 
     -- pocket button
@@ -329,6 +364,7 @@ function ContextMenu:ContextMenuOpen()
         pocket:SetPos((W / 1.5 ) + (110 * i), H - (H / 8))
         pocket.key = i
         pocket.type = "pocket"
+
         function pocket:DoClick()
            context:MakeContextItem(i, GS_ClPlyStat:GetItemFromPocket(i), CONTEXT_POCKET, self:GetPos())
         end
@@ -336,13 +372,46 @@ function ContextMenu:ContextMenuOpen()
         pocket:Receiver( "item_drop", DragAndDropItem )
         pocket:Droppable("item_drop")
 
-        table.insert(self.derma,pocket)
+        self.derma["pocket"..i] = pocket
     end
 
+    --equipments
+    self.derma_equip = {}
+    local eq_i = 1
+
+    for i = 1,3 do
+        for k,v in pairs(HUD_EQUEIP[i]) do
+            local slot = vgui.Create("gt_button")
+            slot:SetSize(100,100)
+            slot:SetPos(10 + (110 * (k-1)), (H - ((H / 8) + ((i-1) * 110))))
+            slot.type = "equipment"
+            slot.key  = eq_i
+            --slot.e_key = v
+
+            if GS_ClPlyStat then
+                if GS_ClPlyStat.init then
+                    slot:SetText(v, GS_ClPlyStat:GetEquipName(v))
+                end
+            end
+
+            self.derma_equip[v] = slot
+            self.derma["equip_"..v] = slot            
+            eq_i = eq_i + 1
+        end
+    end
 
     self.Open = true
+end
 
-    --ContextMenu:OpenContainer({1,2,3,4,5})
+function ContextMenu:UpdateEquipmentItem()
+    if !self.Open then
+        return
+    end
+
+    for k,v in pairs(self.derma_equip) do
+        v:SetText(k, GS_ClPlyStat:GetEquipName(k))
+    end
+
 end
 
 function ContextMenu:UpdateInventoryItems(items)
@@ -358,10 +427,12 @@ function ContextMenu:ContextMenuClose()
     end
 
     self.Open = false
+
     if self.containerOpen then
         GS_ClPlyStat:ClientCloseContainer()
         self.containerOpen = false
     end
+
     self.openback = false
 end
 
@@ -404,9 +475,3 @@ function GM:GUIMousePressed( mouse,vector )
 
     end
 end
-
---[[
-function GM:GUIMouseReleased( mouse,vector )
-
-end
---]]

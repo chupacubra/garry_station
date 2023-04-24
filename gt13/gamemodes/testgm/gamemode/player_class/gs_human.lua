@@ -1,8 +1,9 @@
-include("gs_inventary.lua")
-include("gs_human_body.lua")
-include("gs_effects.lua")
-include("gs_char.lua")
-
+if SERVER then
+	include("gs_inventary.lua")
+	include("gs_human_body.lua")
+	include("gs_effects.lua")
+	include("gs_char.lua")
+end
 DEFINE_BASECLASS( "player_default" )
 
 local PLAYER = {}
@@ -21,24 +22,28 @@ function PLAYER:SetModel()
 	self.Player:SetModel( modelname )
 end
 
---INCLUDE INVENTARY FUNCTION
-for k,v in pairs(PLAYER_INVENTARY) do
-	PLAYER[k] = v
-end
+if SERVER then
 
---INCLUDE BODY AND HP FUNCTION
-for k,v in pairs(PLAYER_HP) do
-	PLAYER[k] = v
-end
+	--INCLUDE INVENTARY FUNCTION
+	for k,v in pairs(PLAYER_INVENTARY) do
+		PLAYER[k] = v
+	end
 
---INCLUDE EFFECTS
-for k,v in pairs(PLAYER_EFFECT) do
-	PLAYER[k] = v
-end
+	--INCLUDE BODY AND HP FUNCTION
+	for k,v in pairs(PLAYER_HP) do
+		PLAYER[k] = v
+	end
 
---INCLUDE CHAR
-for k,v in pairs(PLAYER_CHAR) do
-	PLAYER[k] = v
+	--INCLUDE EFFECTS
+	for k,v in pairs(PLAYER_EFFECT) do
+		PLAYER[k] = v
+	end
+
+	--INCLUDE CHAR
+	for k,v in pairs(PLAYER_CHAR) do
+		PLAYER[k] = v
+	end
+
 end
 
 function PLAYER:GetHandsModel()

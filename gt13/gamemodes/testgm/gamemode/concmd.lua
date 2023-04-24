@@ -109,7 +109,7 @@ concommand.Add( "gs_leaf", function( ply, cmd, args, str )
 end )
 
 concommand.Add( "gs_examine", function( ply, cmd, args, str )
-    player_manager.RunClass( ply,"Examine", ply)
+    print(ply:Examine())
 end )
 
 

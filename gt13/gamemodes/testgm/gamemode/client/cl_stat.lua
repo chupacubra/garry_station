@@ -11,12 +11,9 @@ GS_ClPlyStat.init = false
 ]]
   
 function GS_ClPlyStat:Initialize()
-    self.player     = LocalPlayer()
-    --self.modelID    = 1 --[[ the ID of basics model (these faces(?)) ]]
     self:InitHP()
     self:InitInventory()
     self.init = true
-
 end
 
 
@@ -51,12 +48,13 @@ function GS_ClPlyStat:RequestItemsFromBackpack()
 end
 
 function GS_ClPlyStat:EquipItem(name, typ)
-    if self.equipment[FAST_EQ_TYPE[typ]] == 0 then
-        self.equipment[FAST_EQ_TYPE[typ]] = name
-        return true
-    else
-        return false
+    self.equipment[FAST_EQ_TYPE[typ]] = name
+    
+    if typ == GS_EQUIP_BACKPACK then
+        ContextMenu:DrawBackpackButton()
     end
+
+    ContextMenu:UpdateEquipmentItem()
 end
 
 function GS_ClPlyStat:InitInventory()
@@ -76,8 +74,8 @@ function GS_ClPlyStat:InitInventory()
 end
 
 function GS_ClPlyStat:GetEquipName(key)
-    if self.equipment[key] == nil then
-        return "nil"
+    if self.equipment[key] == nil or self.equipment[key] == 0 then
+        return ""
     end
 
     return self.equipment[key]
@@ -106,6 +104,10 @@ function GS_ClPlyStat:GetWeaponsSlot(needEntity)
     end
 
     return arr
+end
+
+function GS_ClPlyStat:HaveEquip(key)
+    return self.equipment[key] != 0
 end
 
 function GS_ClPlyStat:UseWeaponFromInventary(key, from)

@@ -42,7 +42,7 @@ MSG_ERROR = Color( 255, 25, 25 )
 MSG_WARNING = Color( 255, 251, 132)
 MSG_INFO = Color( 66,170,255)
 
-function GS_MSG(text,color)--fuck this
+function GS_MSG(text,color)
     MsgC(MSG_INFO, "[GS] "..text.."\n")
 end
 

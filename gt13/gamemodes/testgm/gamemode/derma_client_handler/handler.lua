@@ -1,4 +1,6 @@
 Derma_Handlers = {}
+Derma_OpenedMenu = {}
+
 
 function AddMenuHandler(key,func)
     Derma_Handlers[key] = func
@@ -17,7 +19,6 @@ function HandlerMenuRun(ply,key,func,arg)
     handler_func[func](ply,arg)
 end
 
-
 net.Receive("gs_cl_derma_handler", function(_,ply)
     local menu = net.ReadString()
     local func = net.ReadString()
@@ -25,3 +26,4 @@ net.Receive("gs_cl_derma_handler", function(_,ply)
 
     HandlerMenuRun(ply,menu,func,arg)
 end)
+

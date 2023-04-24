@@ -1,7 +1,13 @@
 GS_PLY_Char = {}
-GS_PLY_Char.Loaded = {}
-GS_PLY_Char.CharSelect = {}
---net.Receive(, callback)
+GS_PLY_Char.Chars = {}
+GS_PLY_Char.Selected_Chars = {}
+
+--[[
+	IDEA:
+		система должна отвечать за регистрацию и смену игроками персонажей
+		если игрок загружает персонажа в предстартовом меню, то мы ег
+]]
+
 
 function GS_PLY_Char:SendToClientSucces(ply, bool)
 	net.Start("gs_sys_char_send")
@@ -9,41 +15,113 @@ function GS_PLY_Char:SendToClientSucces(ply, bool)
 	net.Send(ply)
 end
 
-function GS_PLY_Char:GetPlyChar(ply)
-	local tocken = self.CharSelect[ply]
-	return self.Loaded[tocken] or false
-end
+function GS_PLY_Char:AddPredstartCharacter(ply, c_data)
 
-function GS_PLY_Char:SaveChar(ply, data)
-	if !IsValid(ply) then
+	-- validate character
+	--[[
+		predstart_character = {
+			data = {
+				name,
+				model,
+				examine_data,
+			}
+			job_setting = {
+				job_current,
+				job_wanted,
+			},
+			antag_setting = {
+				antag_current,
+				antag_wanted,
+			},
+			origin = "predstart_char",
+			owner = ply,
+		}
+	]]
+	
+	if !c_data.name or !c_data.model then
 		return
 	end
 
-	if self.Loaded[ply] then
-		if GS_Round_System:Status() != GS_ROUND_PREPARE and ply:Team() == TEAM_PLY  and ply:Alive() then
-			GS_MSG(ply:Nick().." want to spawn but he is alive or already have char")
-			return 
-		end
-	end
+	local pred_char = {
+		character = {
+			name = c_data.name,
+			model = c_data.model,
+			examine_data = c_data.model,
+		},
+		job_setting = {
+			current = false,
+			wanted  = c_data.job_prefer,
+		},
+		antag_setting = {
+			current = false
+		},
+		origin = "predstart",
+		owner = ply,
+	}
 
 	local tocken = gentocken()
 
-	data["unique_id"] = tocken
+	self.Chars[tocken] = pred_char
 	
-	self.Loaded[tocken] = data
-	self:SelectChar(ply, tocken)
+	if self.Selected_Chars[ply] then
+		self:RemoveChar(self.Selected_Chars[ply])
+	end
+
+	self.Selected_Chars[ply] = tocken
 
 	self:SendToClientSucces(ply, true)
 end
 
-function GS_PLY_Char:SelectChar(ply, tocken)
-	self.CharSelect[ply] = tocken
+function GS_PLY_Char:RemoveChar(tocken)
+	self.Chars[tocken] = nil
+end
+
+function GS_PLY_Char:Name(tocken)
+	if !self.Chars[tocken] then
+		GS_MSG(tocken .." - the system don't have this character")
+		return ""
+	end
+	local char = self.Chars[tocken]
+
+	return char.character.name
+end
+
+function GS_PLY_Char:GetPlyChar(ply)
+	local tocken = self.Selected_Chars[ply]
+
+	if !tocken then
+		return false
+	end
+
+	if !self.Chars[tocken] then
+		GS_MSG(tostring(ply).." player loaded char but char is NOTHING!")
+		return false
+	end
+	
+	return tocken
 end
 
 function GS_PLY_Char:HaveChar(ply)
-	return self.CharSelect[ply] != nil
+	local tocken = self.Selected_Chars[ply]
+	if !tocken then
+		return false
+	end
+	if !self.Chars[tocken] then
+		GS_MSG(tostring(ply).." player loaded char but char is NOTHING!")
+		return false
+	end
+	return tocken != false
+end
+
+function GS_PLY_Char:ChangeCharacter(ply, id)
+	--[[
+		cant change char while alive
+		only if ghost or
+	]]
 end
 
 net.Receive("gs_sys_char_send", function(_, ply)
 	local data = net.ReadTable()
+
+	GS_PLY_Char:NewCharacter(ply, data)
 end)

@@ -1,12 +1,25 @@
 cl_handler = {}
 cl_handler.derma = {}
 
+
+function MakeDermaAction(name, func, arg)
+    net.Start("gs_cl_derma_handler")
+    net.WriteString(name)
+    net.WriteString(func)
+    net.WriteTable(arg)
+    net.SendToServer()
+end 
+
+--[[
+
+черезмерный кал
+
 function cl_handler:add(panel)
     local tocken = gentocken()
     self.derma[tocken] = panel
 
     net.Start("gs_cl_derma_open")
-    net.WriteString(tocken)
+    net.WriteString(name)
     net.WriteBool(true)
     net.SendToServer()
 
@@ -45,9 +58,9 @@ function cl_handler:remove(tocken)
 end
 
 function cl_handler:closeByServer(tocken)
-    --[[
+
         close panel
-    ]]
+
     local panel = self.derma[tocken]
     
     if panel == nil then
@@ -72,3 +85,4 @@ net.Receive("gs_cl_derma_open", function()
     local 
 
 end)
+-]]

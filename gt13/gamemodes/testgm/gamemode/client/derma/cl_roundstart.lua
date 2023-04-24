@@ -49,7 +49,7 @@ function CreateNewChar()
             model = 1,
             person_notes = "",
             examine_info = "",
-            job_prefer   = "",
+            job_prefer   = {},
             char_settings = {},
         }
     }
@@ -116,10 +116,6 @@ function FindAllCharacters()
     
     return chars_tbl
 end
-
-
-
-
 
 function DrawCharacterEditor()
     --local derma_table = {}

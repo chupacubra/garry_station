@@ -47,6 +47,7 @@ function GS_Round_System:Status()
 end
 
 function GS_Round_System:PlayerReady(ply,ready)
+    print(ply,ready)
     if self.Round_Status != GS_ROUND_PREPARE then 
         return false
     end
@@ -54,9 +55,9 @@ function GS_Round_System:PlayerReady(ply,ready)
     --[[
         only ply who have char can be ready
     ]]
-
+    --print(GS_PLY_Char:HaveChar(ply), !GS_PLY_Char:HaveChar(ply))
     if !GS_PLY_Char:HaveChar(ply) then
-
+        GS_MSG("WTF player don't have char and want to READY!?!?")
         return false
     end
 
@@ -70,14 +71,16 @@ end
 
 function GS_Round_System:StartRoundSpawnPlayer()
     for ply,ready in pairs(self.ReadyPly) do
-        if ready and GS_PLY_Char:GetPlyChar(ply) then
+        print(ready,GS_PLY_Char:GetPlyChar(ply),"123" )
+        if ready and GS_PLY_Char:GetPlyChar(ply) != nil then
             ply:SetTeam( TEAM_PLY )
             ply:UnSpectate()
+            local char_tocken =  GS_PLY_Char:GetPlyChar(ply)
+            ply:SetCharacter(char_tocken)
             ply:Spawn()
+            
             print("spawn", ply)
-            local char =  GS_PLY_Char:GetPlyChar(ply)
-            PrintTable(char)
-            player_manager.RunClass(ply, "SetCharacterData", char)
+            --player_manager.RunClass(ply, "SetCharacterData", char)
             --[[
                 set plydata
                 set job
@@ -109,12 +112,17 @@ function GS_Round_System:RoundSpawnPlayer(ply)
 
     ply:SetTeam( TEAM_PLY )
     ply:UnSpectate()
+
+    local char =  GS_PLY_Char:GetPlyChar(ply)
+    ply:SetCharacter(char)
+    
     ply:Spawn()
     
     print("spawn", ply)
-    local char =  GS_PLY_Char:GetPlyChar(ply)
-    PrintTable(char)
-    player_manager.RunClass(ply, "SetCharacterData", char)
+
+
+
+    --player_manager.RunClass(ply, "SetCharacterData", char)
 end
 
 function GS_Round_System:StartPreparationPhase()

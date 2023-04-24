@@ -1,5 +1,7 @@
 PLAYER_CHAR = {}
-
+--[[
+	класс не должен отвечать за хранение данных о персонаже, это будут делать остальные системы
+]]
 function PLAYER_CHAR:SetCharacterData(char)
 	--[[
 		Setup chararcter in spawn

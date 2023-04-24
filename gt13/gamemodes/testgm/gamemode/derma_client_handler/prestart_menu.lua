@@ -19,7 +19,8 @@ function handler.actions.loadchar(ply,arg)
         arg is whole char_data
     ]]
 
-    GS_PLY_Char:SaveChar(ply, arg)
+    --GS_PLY_Char:SaveChar(ply, arg)
+    GS_PLY_Char:AddPredstartCharacter(ply, arg)
 end
 
 AddMenuHandler("menu_prestart", handler)

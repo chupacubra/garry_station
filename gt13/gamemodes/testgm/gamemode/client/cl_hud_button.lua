@@ -33,6 +33,4 @@ function PANEL:SetText(a, b)
     self.Text = ""
 end
 
-
-
 vgui.Register( "gt_button", PANEL, "DButton" )
