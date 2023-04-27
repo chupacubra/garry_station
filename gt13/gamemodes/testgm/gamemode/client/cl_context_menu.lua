@@ -384,15 +384,17 @@ function ContextMenu:ContextMenuOpen()
             local slot = vgui.Create("gt_button")
             slot:SetSize(100,100)
             slot:SetPos(10 + (110 * (k-1)), (H - ((H / 8) + ((i-1) * 110))))
-            slot.type = "equipment"
-            slot.key  = eq_i
-            --slot.e_key = v
+            slot.type = "equip"
+            slot.key  = k
 
             if GS_ClPlyStat then
                 if GS_ClPlyStat.init then
                     slot:SetText(v, GS_ClPlyStat:GetEquipName(v))
                 end
             end
+            
+            slot:Receiver( "item_drop", DragAndDropItem )
+            slot:Droppable("item_drop")
 
             self.derma_equip[v] = slot
             self.derma["equip_"..v] = slot            

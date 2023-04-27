@@ -1,6 +1,6 @@
 PLAYER_CHAR = {}
 --[[
-	класс не должен отвечать за хранение данных о персонаже, это будут делать остальные системы
+	PoC
 ]]
 function PLAYER_CHAR:SetCharacterData(char)
 	--[[
@@ -17,12 +17,7 @@ function PLAYER_CHAR:SetCharacterData(char)
 	]]
 
 	self.Character = char
-	print("apply?")
-	PrintTable(self.Character)
-end
 
-function PLAYER_CHAR:GetCharName()
-	return self.Character.name
 end
 
 function PLAYER_CHAR:Examine(ply)
@@ -41,8 +36,15 @@ function PLAYER_CHAR:Examine(ply)
 	local examine = {}
 
 	table.insert(examine, "It's a "..self.Character.name.."!")
-
+--[[
 	for k, v in pairs(examine) do
 		ply:ChatPrint(v)
 	end
+--]]
+	--if have mask or something преграждает осмотр лица
+	--		dont show examine data
+
+	--if !self.hidingface then
+
+	return examine
 end

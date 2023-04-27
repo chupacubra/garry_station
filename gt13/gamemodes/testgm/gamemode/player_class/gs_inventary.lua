@@ -17,6 +17,11 @@ function PLAYER_INVENTARY:SetupInventary()
 end
 
 function PLAYER_INVENTARY:InsertItemInPocket(item, pocket)
+	if !FitInContainer(ITEM_SMALL, item.Entity_Data) then
+		self.Player:ChatPrint(item.Entity_Data.Name.." is not fit in pocket")
+		return false
+	end
+
 	if !table.IsEmpty(self.Player.Pocket[pocket]) then
 		return false
 	end
@@ -150,7 +155,12 @@ function PLAYER_INVENTARY:InsertItemInBackpack(data)
 	if self.Player.Equipment.BACKPACK == 0 then
 		return 
 	end
-	-- cursed
+	
+	if !FitInContainer(self.Player.Equipment.BACKPACK.Entity_Data.Item_Max_Size, data.Entity_Data) then
+		self.Player:ChatPrint(data.Entity_Data.Name.." is not fit in "..self.Player.Equipment.BACKPACK.Entity_Data.Name)
+		return false
+	end
+
 	table.insert(self.Player.Equipment.BACKPACK.Private_Data.Items, data)
 
 	return true
@@ -339,6 +349,10 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 				self:UpdateItemInContext(drop.from, drop_rez, drop.key)
 			end
 		end
+	elseif receiver.from == CONTEXT_EQUIPMENT then
+		print("INSERT ITEM IN EQUIPMENT")
+		local drop_item = self:GetItemFromContext(drop.from,drop.key)
+	
 	else
 		local receiver_item = self:GetItemFromContext(receiver.from, receiver.key)
 
@@ -362,7 +376,7 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 
 				local succes = self:InsertItemInContext(receiver.from, data, receiver.key)
 				if succes then
-					self.Player:StripWeapon( weapon:GetClass() )
+					self.Player:StripWeapon( drop.entity:GetClass() )
 				end
 				return
 			else
@@ -376,7 +390,7 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 						self:RemoveItemFromContext(drop.from, drop.key)
 					end-- ____     
 				end--    ||/\||     | => | 
-			end --_______||  ||_____________     
+			end --_______||  ||_____________
 		end-- -- --  O  /     / -- 0  o -- --
 	end  -- -- 0 -- 0  /     / 0  O -- O -- o
 end  -- o  0 -- o --  ______  0 -- o -- 0 -- o

@@ -6,7 +6,8 @@ GS_EntityList.tech_plate = {
             Model = "models/props/cs_office/computer_caseb_p3a.mdl",
             ENT_Name = "board_vendomat",
             ENUM_Type = GS_ITEM_BOARD,
-            Simple_Examine = true
+            Simple_Examine = true,
+            Size = ITEM_SMALL,
         },
         Private_Data = {
             Machine = "gs_entity_vendomat",

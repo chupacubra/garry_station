@@ -29,3 +29,4 @@ SWEP.Entity_Data.Name = "HN 40"
 SWEP.Entity_Data.Desc  = "A favorite machine among bodyguards and killers."
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_WEAPON
 SWEP.Entity_Data.ENUM_Subtype = GS_W_SMG
+SWEP.Entity_Data.Size = ITEM_MEDIUM

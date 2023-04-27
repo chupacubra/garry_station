@@ -169,3 +169,14 @@ function GS_ReturnExamineTable(ply, tbl)
 	net.WriteTable(tbl)
 	net.Send(ply)
 end
+--[[
+function ClassRun(...)
+	local ply = arg[1]
+	local func = arg[2]
+	
+	if !IsValid(ply) then
+		GS_MSG("CLASSRUN: "..tostring().." is not a ply")
+		return
+	end
+end
+--]]

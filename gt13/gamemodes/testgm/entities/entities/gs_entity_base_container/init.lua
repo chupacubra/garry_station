@@ -38,6 +38,11 @@ function ENT:InsertItemInContainer(item)
         return false
     end
 
+    if !FitInContainer(self.Entity_Data.Item_Max_Size, item.Entity_Data) then
+		self.Player:ChatPrint(item.Entity_Data.Name.." is not fit in "..self.Entity_Data.Name)
+		return false
+	end
+
     table.insert(self.Private_Data.Items, item)
     player_manager.RunClass( self.ContainerUser, "OpenEntContainer", self)
     return true

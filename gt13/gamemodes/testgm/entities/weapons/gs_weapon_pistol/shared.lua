@@ -28,3 +28,4 @@ SWEP.Entity_Data.Name = "Tekov P9"
 SWEP.Entity_Data.Desc  = "The most popular pistol for hijacking a space shuttle."
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_WEAPON
 SWEP.Entity_Data.ENUM_Subtype = GS_W_PISTOL
+SWEP.Entity_Data.Size = ITEM_SMALL

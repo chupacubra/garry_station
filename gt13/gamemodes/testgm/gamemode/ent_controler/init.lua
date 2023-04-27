@@ -34,6 +34,11 @@ function GS_EntityControler:MakeEntity2(name, typ, pos, ang)
     if edata.Examine_Data then
         entity.Examine_Data = edata.Examine_Data
     end
+
+    if edata.Functions then
+        entity.Functions = edata.Functions
+    end
+
     entity:SetPos(pos)
     entity:Spawn()
 end

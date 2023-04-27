@@ -46,7 +46,7 @@ function GS_PLY_Char:AddPredstartCharacter(ply, c_data)
 		character = {
 			name = c_data.name,
 			model = c_data.model,
-			examine_data = c_data.model,
+			examine_data = c_data.examine_info,
 		},
 		job_setting = {
 			current = false,
@@ -54,6 +54,9 @@ function GS_PLY_Char:AddPredstartCharacter(ply, c_data)
 		},
 		antag_setting = {
 			current = false
+		},
+		db_info = {
+			p_notes = c_data.person_notes,
 		},
 		origin = "predstart",
 		owner = ply,
@@ -119,6 +122,18 @@ function GS_PLY_Char:ChangeCharacter(ply, id)
 		only if ghost or
 	]]
 end
+
+function GS_PLY_Char:GetChar(tocken)
+	if !self.Chars[tocken] then
+		GS_MSG(tostring(tocken).." no loaded chars on this tocken")
+		return {}
+	end
+
+	local char = self.Chars[tocken]
+
+	return char["character"]
+end
+
 
 net.Receive("gs_sys_char_send", function(_, ply)
 	local data = net.ReadTable()

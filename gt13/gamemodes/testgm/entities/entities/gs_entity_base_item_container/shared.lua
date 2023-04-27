@@ -11,9 +11,10 @@ ENT.Entity_Data = {
     Desc = "container_desc",
     Model = "models/props_junk/cardboard_box001a.mdl",
     Type = "container",
+    Item_Max_Size = ITEM_MEDIUM,
 }
 
 ENT.Private_Data = {
-    Max_Items = 8,
+    Max_Items = 4,
     Items = {}
 }

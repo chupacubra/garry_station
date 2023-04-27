@@ -2,6 +2,15 @@ local PLAYER = FindMetaTable("Player")
 
 function PLAYER:SetCharacter(tocken)
     self.Character_ID = tocken
+
+    if !player_manager.GetPlayerClass(self) == "gs_human" then
+        GS_MSG("The player have char but no class gs_human")
+        return
+    end
+
+    PrintTable(GS_PLY_Char:GetChar(tocken))
+
+    player_manager.RunClass(self, "SetCharacterData", GS_PLY_Char:GetChar(tocken))
 end
 
 function PLAYER:GetCharacter()
@@ -42,12 +51,15 @@ function PLAYER:GS_GetAccess()
     -- get access from ID
 end
 
-function PLAYER:Examine()
-    local name = self:GS_GetName()
+function PLAYER:Examine(ply)
+    local ex = player_manager.RunClass(self, "Examine")
 
-    if !name then
+    if !ex then
+        GS_MSG("examine person, but no examine data! - "..tostring(ply))
         return
     end
 
-    return "It's a "..name.."!"
+    for k,v in pairs(ex) do
+        ply:ChatPrint(v)
+    end
 end

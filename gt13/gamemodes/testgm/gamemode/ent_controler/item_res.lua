@@ -7,6 +7,7 @@ GS_EntityList.resource = {
             ENT_Name = "pile_wood",
             ENUM_Type = GS_ITEM_MATERIAL,
             --ENUM_Subtype = GS_ITEM_COMMON,
+            Size = ITEM_MEDIUM,
         },
         Private_Data = {
             Stack = 1,

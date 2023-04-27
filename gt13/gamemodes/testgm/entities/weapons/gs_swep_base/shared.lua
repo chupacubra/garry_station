@@ -27,3 +27,4 @@ SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
 SWEP.Entity_Data.Type = "toolname"
 
 SWEP.Private_Data = {}
+SWEP.Damage = {7,2}

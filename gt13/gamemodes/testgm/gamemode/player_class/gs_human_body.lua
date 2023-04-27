@@ -1,6 +1,5 @@
 PLAYER_HP = {}
 
-
 function PLAYER_HP:SetupHPSystem()
 	self.Player.BODY = {
 		head   = {0,0}, --BRUTE and BURN
@@ -274,3 +273,5 @@ function PLAYER_HP:Loadout()
 
 	self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
 end
+
+

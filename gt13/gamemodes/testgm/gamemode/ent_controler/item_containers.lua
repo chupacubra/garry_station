@@ -1,4 +1,3 @@
-
 GS_EntityList.ent_container_small = {
     cardboard_box = { 
         entity_base = "gs_entity_base_item_container",
@@ -7,7 +6,12 @@ GS_EntityList.ent_container_small = {
             Desc = "You can put something in it",
             Model = "models/props_junk/cardboard_box003a.mdl",
             ENUM_Type = GS_ITEM_CONTAINER,
-            Simple_Examine = true
+            Simple_Examine = true,
+            --[[
+                how about this?
+            --]]
+            Item_Max_Size = ITEM_MEDIUM,
+            Size = ITEM_MEDIUM,
         },
         Private_Data = {
             Max_Items = 6,
@@ -23,6 +27,7 @@ GS_EntityList.ent_chem_container_small = {
             Desc = "Dear god...",
             Model = "models/props_junk/MetalBucket01a.mdl",
             ENUM_Type = GS_ITEM_CHEM_CONTAINER,
+            Size = ITEM_MEDIUM,
         },
         Private_Data = {
             Unit = 0,

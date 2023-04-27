@@ -23,20 +23,10 @@ function SWEP:SoundHit(hit)
         self:GetOwner():EmitSound(Sound(self.PrimarySound..".Single"))
     end
 end
---[[
-function SWEP:Hit(trace)
-    if trace.Enity:IsPlayer() then
-        print("hit padlu")
-		player_manager.RunClass( trace.Entity, "HurtPart", trace.PhysicsBone, {[D_BRUTE] = math.random(7, 12)})
-    else
-
-    end
-end
---]]
 
 function SWEP:HitPlayer(ply, bone)
 	print("hit padlu")
-	player_manager.RunClass(ply, "HurtPart", bone, {[D_BRUTE] = math.random(7, 12)})
+	player_manager.RunClass(ply, "HurtPart", bone, {[D_BRUTE] = math.random(self.Damage[1], self.Damage[2])})
 end
 
 function SWEP:MakeTrace()

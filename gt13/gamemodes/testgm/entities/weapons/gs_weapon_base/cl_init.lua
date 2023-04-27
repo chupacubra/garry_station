@@ -173,7 +173,7 @@ net.Receive("gs_weapon_base_effect", function()
 
     local traceEf = EffectData()
     traceEf:SetOrigin(ef.origin)
-    traceEf:SetScale(5000)
+    traceEf:SetScale(10000)
     traceEf:SetFlags(4)
     traceEf:SetStart(ef.startpos)
     util.Effect( "Tracer", traceEf )

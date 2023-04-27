@@ -63,7 +63,6 @@ function PLAYER:SetupThink()
 		local procent = math.random(1, 100)
 		local dmg = self:GetSumDMG()
 		
-
 		if dmg >= 200 then -- death
 			self:Death()
 			self:HealthPartClientUpdate()
@@ -127,8 +126,6 @@ end
 function PLAYER:Spawn()
 	self:SetupSystems()
 end
-
-
 
 player_manager.RegisterClass( "gs_human", PLAYER, "player_default" )
 

@@ -56,3 +56,15 @@ end
 function ItemType(item)
     return item.Entity_Data.ENUM_Type
 end
+
+function ItemSubType(item)
+    return item.Entity_Data.ENUM_Subtype
+end
+
+function FitInContainer(maxsize, drp )
+    if drp.ENUM_Type == GS_ITEM_CONTAINER  or (drp.ENUM_Type == GS_ITEM_EQUIP and drp.ENUM_Type == GS_EQUIP_BACKPACK) then
+        return maxsize > drp.Size
+    else
+        return maxsize + 1 > drp.Size
+    end
+end

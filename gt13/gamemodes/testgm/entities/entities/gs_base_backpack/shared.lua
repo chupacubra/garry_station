@@ -12,7 +12,7 @@ ENT.CanExamine = true
 ENT.EType = "type"
 ENT.CanUse = false
 ENT.CanBreak = false
-ENT.CanPickup = false
+ENT.CanPickup = true
 
 
 ENT.backpack_model = "model/backpack"
@@ -24,7 +24,8 @@ ENT.Entity_Data.Desc = "test"
 ENT.Entity_Data.Model = ENT.backpack_model
 ENT.Entity_Data.ENUM_Type = GS_ITEM_EQUIP
 ENT.Entity_Data.ENUM_Subtype = GS_EQUIP_BACKPACK
-
+ENT.Entity_Data.Item_Max_Size =  ITEM_MEDIUM
+ENT.Entity_Data.Size = ITEM_V_MEDIUM
 
 if SERVER then
     --ENT.Private_Data = {}

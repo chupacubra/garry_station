@@ -134,13 +134,28 @@ CONTEXT_ITEM_IN_BACK = 5
 CONTEXT_CONTAINER    = 6
 CONTEXT_ITEM_IN_CONT = 7
 CONTEXT_HAND = 8
--- if ITEM_MEDIUM than they don't fit in box
--- if ITEM_BIG then they don't fit in backpack
--- if ITEM_V_BIG then can't handle (special)
+
+-- if ITEM_SMALL then they fit in anywhere
+-- if ITEM_MEDIUM then they don't fit in small box and pockets
+-- if ITEM_BIG then they don't fit in backpacks
+-- if ITEM_V_BIG then they don't fit in big box and can't handle
+
+-- IDEA: How about CONTAINER_ITEM_MAX_SIZE?
+-- For mega bluespace backpacks...
+
+-- ITEM_V_MEDIUM for medium containers
+
+ITEM_VERY_SMALL = 0
 ITEM_SMALL  = 1
 ITEM_MEDIUM = 2
-ITEM_BIG    = 3
-ITEM_V_BIG  = 4
+ITEM_V_MEDIUM = 3
+ITEM_BIG    = 4
+ITEM_V_BIG  = 5
+
+
+
+
+
 
 --[[
 ENUM_D = {}

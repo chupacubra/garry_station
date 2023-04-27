@@ -75,10 +75,10 @@ function GS_Round_System:StartRoundSpawnPlayer()
         if ready and GS_PLY_Char:GetPlyChar(ply) != nil then
             ply:SetTeam( TEAM_PLY )
             ply:UnSpectate()
-            local char_tocken =  GS_PLY_Char:GetPlyChar(ply)
-            ply:SetCharacter(char_tocken)
             ply:Spawn()
             
+            local char_tocken =  GS_PLY_Char:GetPlyChar(ply)
+            ply:SetCharacter(char_tocken)
             print("spawn", ply)
             --player_manager.RunClass(ply, "SetCharacterData", char)
             --[[
@@ -111,12 +111,11 @@ function GS_Round_System:RoundSpawnPlayer(ply)
     end
 
     ply:SetTeam( TEAM_PLY )
-    ply:UnSpectate()
+    ply:UnSpectate()    
+    ply:Spawn()
 
     local char =  GS_PLY_Char:GetPlyChar(ply)
     ply:SetCharacter(char)
-    
-    ply:Spawn()
     
     print("spawn", ply)
 

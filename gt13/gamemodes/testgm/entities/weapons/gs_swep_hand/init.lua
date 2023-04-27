@@ -236,6 +236,18 @@ function SWEP:PrimaryItemAction()
     if ItemType(self.hand_item.item) == GS_ITEM_CONTAINER then
         self:OpenHandContainer()
         self.OpenContainer = true
+        return
+    end
+
+    if self.hand_item.item.Functions then
+        local usef = self.hand_item.item.Functions.inHand
+
+        if !usef then
+            return
+        end
+        
+        usef(self.hand_item.item, self:GetOwner())
+
     end
 end
 

@@ -45,16 +45,19 @@ function SWEP:DrawHUD()
 end 
 
 function SWEP:WorldModelTriger(bool)
+    print(bool)
     if bool then
         if self.itemModel and !IsValid(self.IWorldModel) then
             self.IWorldModel = ClientsideModel(self.itemModel)
             self.IWorldModel:SetNoDraw( true )
+            print(self.IWorldModel:GetPos())
         end
     else
         if IsValid(self.IWorldModel) then
             self.IWorldModel:Remove()
         end
     end
+    print(self.IWorldModel:GetPos())
 end
 
 function SWEP:Deploy()
@@ -178,7 +181,7 @@ end
 
 function SWEP:DrawWorldModel()
     local _Owner = self:GetOwner()
-    
+
     if (IsValid(_Owner) and IsValid(self.IWorldModel)) then
         local offsetVec = Vector(3, -3, -1)
         local offsetAng = Angle(0, 0, 180)
@@ -204,6 +207,7 @@ function SWEP:DrawWorldModel()
 
     end
 
+    print(self.IWorldModel)
 end
 
 function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
@@ -233,10 +237,13 @@ net.Receive("gs_hand_draw_model",function()
     if haveItem then
         hands.itemModel = model
         hands.Item_ENUM = e_type
+        hands.WorldModel = model
     else
         hands.itemModel = nil
         hands.Item_ENUM = 0
+        hands.WorldModel = ""
     end
+
 
     hands:WorldModelTriger(haveItem)
 end)

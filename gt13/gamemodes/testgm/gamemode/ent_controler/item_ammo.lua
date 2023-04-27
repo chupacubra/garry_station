@@ -7,7 +7,8 @@ ammo_name = {
             ENUM_Type = GS_ITEM_AMMOBOX,
             ENUM_Subtype = AMMO_9MM,
             ENT_Name = "pistol_ab",
-            Simple_Examine = false -- if need request data from server
+            Simple_Examine = false, -- if need request data from server
+            Size = ITEM_MEDIUM,
         },
         
         Private_Data = {
@@ -28,6 +29,7 @@ ammo_name = {
             ENUM_Type = GS_ITEM_AMMOBOX,
             ENUM_Subtype = AMMO_9MM_R,
             ENT_Name = "pistol_resin_ab",
+            Size = ITEM_MEDIUM,
         },
         Private_Data = {
             AmmoInBox = 40,
@@ -38,14 +40,16 @@ ammo_name = {
         },
         Examine_Data = BaseExamine.ammobox 
     },
+
     tekov_magazine = {
         Entity_Data = {
             Name = "Tekov P9 Magazine",
             Desc = "For Tekov P9",
             ENUM_Type = GS_ITEM_AMMO_MAGAZINE,
-            ENUM_Subtype = {AMMO_9MM, AMMO_9MM_R},
+            ENUM_Subtype = {AMMO_9MM, AMMO_9MM_R}, -- wtf
             ENT_Name = "tekov_magazine",
             Model = "models/weapons/unloaded/pist_p228_mag.mdl",
+            Size = ITEM_SMALL,
         },
         Private_Data = {
             Max_Bullets = 12,
@@ -55,6 +59,7 @@ ammo_name = {
         Examine_Data = BaseExamine.gun_magazine
 
     },
+    
     hn40_magazine = {
         Entity_Data = {
             Name = "HN 40 Magazine",
@@ -63,6 +68,7 @@ ammo_name = {
             ENUM_Subtype = {AMMO_9MM, AMMO_9MM_R},
             ENT_Name = "hn40_magazine",
             Model = "models/weapons/unloaded/smg_mp5_mag.mdl",
+            Size = ITEM_SMALL,
         },
         Private_Data = {
             Max_Bullets = 25,
@@ -106,13 +112,13 @@ ammo_name = {
 }
 
 BULLETS = {
-    {
+    {  -- normal
         BulletDamage = {
             [D_BRUTE] = 10,
             [D_STAMINA] = 10,
         }
     },
-    {             
+    {  -- resin  
         BulletDamage = {
             [D_BRUTE] = 1,
             [D_STAMINA] = 30,
