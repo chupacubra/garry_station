@@ -65,3 +65,7 @@ util.AddNetworkString("gs_round_status")
 util.AddNetworkString("gs_cl_f_button")
 util.AddNetworkString("gs_cl_derma_handler")
 util.AddNetworkString("gs_cl_derma_open")
+
+
+--craft
+util.AddNetworkString("gs_cl_craft_request")

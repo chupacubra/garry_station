@@ -6,6 +6,8 @@ ENT.Author			= "chupa"
 ENT.Spawnable = false
 ENT.Category = "gs"
 
+ENT.ItemBox =  true
+
 ENT.Entity_Data = { 
     Name = "container",
     Desc = "container_desc",

@@ -1,43 +1,61 @@
 GS_EntityControler = {}
 GS_EntityList = {}
 
-include("item_base_examine.lua")
 include("item_data_operations.lua")
-include("item_ammo.lua")
-include("item_containers.lua")
-include("ent_containers.lua")
-include("item_board.lua")
-include("item_res.lua")
-include("item_common.lua")
+include("sh_item_list.lua")
+AddCSLuaFile("sh_item_list.lua")
+
+
+--[[
+for k,v in pairs(files) do
+    include(v)
+    AddCSLuaFile(v)
+end
+--]]
+--[[
+    WE NEED TO MAKE GS_EntityList SHARED
+    
+    and custom/base entity
+
+    BASE entity:
+        когда проп спавниться, на клиент отправляется пометка, что этот проп базовый,
+        И все действия, связанные с получением каких либо Entity_Data данных ссылаются на GS_Entity_List
+
+    CUSTOM entity:
+        когда проп спавниться, на клиент отправляются полные данные о пропе
+
+    Это больше относится к item
+]]
 
 
 function GS_EntityControler:MakeEntity2(name, typ, pos, ang)
     print(typ,name)
     PrintTable(GS_EntityList[typ])
     if !GS_EntityList[typ] then
-        return false
+        return
     elseif !GS_EntityList[typ][name] then
-        return false
+        return
     end
     print("spawning")
     local edata = table.Copy(GS_EntityList[typ][name])
     local entity = ents.Create(edata.entity_base or "gs_entity_base_item")
+    
+    entity:SetData(edata.Entity_Data)
+    entity.Private_Data = edata.Private_Data
+    entity.Examine_Data = edata.Examine_Data
+    --[[
+        
+    entitys dont save this functions
+    entity.GetFunctions = edata.GetFunctions
+    entity.RunFunction  = edata.RunFunction
 
-    if edata.Entity_Data then
-        entity:SetData(edata.Entity_Data)
-    end 
+    --]]
+    print(entity.GetFunctions)
 
-    if edata.Private_Data then
-        entity.Private_Data = edata.Private_Data
-    end
-
-    if edata.Examine_Data then
-        entity.Examine_Data = edata.Examine_Data
-    end
-
-    if edata.Functions then
-        entity.Functions = edata.Functions
-    end
+    entity.Data_Labels = {
+        id = name,
+        type = typ,
+    } 
 
     entity:SetPos(pos)
     entity:Spawn()
@@ -104,3 +122,26 @@ function GS_EntityControler:CreateFullMagazine(name,typ,pos,ang)
     entity:Spawn()
 end
 
+function GS_EntityControler.GetFunctionsEntity(id, typ, entity, ply, context)
+    local getfunc = GS_EntityList[typ][id]["GetFunctions"]
+
+    if !getfunc then
+        return
+    end
+
+    local tbl = getfunc(entity, ply, context)
+
+    return tbl
+end
+
+function GS_EntityControler.RunFunctionEntity(action, id, typ, entity, ply, context)
+    local runfunc = GS_EntityList[typ][id]["RunFunction"]
+
+    if !runfunc then
+        return false
+    end
+
+    local rez = runfunc(action, entity, ply, context)
+
+    return rez
+end

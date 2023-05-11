@@ -13,6 +13,7 @@ AddCSLuaFile( "client/cl_chemia.lua" )
 AddCSLuaFile( "client/cl_task.lua" )
 AddCSLuaFile( "client/cl_systems.lua" )
 AddCSLuaFile( "client/derma/cl_roundstart.lua" )
+AddCSLuaFile( "client/derma/cl_craft_menu.lua" )
 
 include( "shared.lua" )
 include( "player.lua" )
@@ -25,6 +26,7 @@ include( "chemical/sv_init.lua")
 include( "derma_client_handler/init.lua" )
 include( "global/sv_init.lua")
 include( "resource.lua")
+
 
 hook.Add("GS_PlayerDead", "MakePersonDead", function(plyID)
     GS_Round_System:AddDeadPly(plyID)

@@ -6,9 +6,9 @@ ENT.Spawnable = false
 ENT.Category = "gs"
 ENT.CanPickup = true
 
-ENT.GS_Entity = true
-
-ENT.CanPickup = true
+ENT.GS_Entity  = true
+ENT.GS_Item    = true
+ENT.CanPickup  = true
 ENT.CanExamine = true
 ENT.CanUse = false
 ENT.ItemBox =  false

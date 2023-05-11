@@ -1,5 +1,7 @@
 -- ENUM
-
+-- The more I create enums, the more I think it's a sin
+--
+--
 GS_HUD_100 = 1
 GS_HUD_75  = 2
 GS_HUD_50  = 3
@@ -79,7 +81,6 @@ D_BRUTE = 1
 D_BURN  = 2
 D_TOXIN = 3
 D_STAMINA = 4
-
 REVERSE_DMG = {
     D_BRUTE = 1,
     D_BURN  = 2,
@@ -105,8 +106,9 @@ REVERSE_AMMO = {
 }
 
 GS_W_PISTOL = 1
-GS_W_SMG = 2
+GS_W_SMG     = 2
 GS_W_SHOTGUN = 3
+GS_W_RIFLE   = 4
 
 GS_AW_MAGAZINE = 1
 GS_AW_PUMP     = 2
@@ -153,10 +155,6 @@ ITEM_BIG    = 4
 ITEM_V_BIG  = 5
 
 
-
-
-
-
 --[[
 ENUM_D = {}
 ENUM_D.enum = {}
@@ -179,6 +177,16 @@ GS_ROUND_WAIT_PLY = -1
 GS_ROUND_PREPARE = 0
 GS_ROUND_RUNNING = 1
 GS_ROUND_END     = 2
+
+T_SCREWDRIVER = 0
+T_CROWBAR     = 1
+T_WRENCH      = 2
+T_HAMMER      = 3
+
+CB_FLOOR      = 1
+CB_HAND       = 2
+CB_EQUIP      = 3
+
 
 function roundstr(stat)
     if stat == GS_ROUND_WAIT_PLY then

@@ -133,3 +133,10 @@ concommand.Add( "gs_task", function( ply, cmd, args, str )
         end
     },{},"Screwdriving some...")
 end )
+
+
+
+concommand.Add( "gs_craft", function( ply, cmd, args, str )
+    GS_Craft:CraftEntity(ply)
+end )
+--GS_Craft:CraftEntity

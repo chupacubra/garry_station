@@ -33,5 +33,6 @@ SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "Screwdriver"
 SWEP.Entity_Data.Desc  = "flathead"
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
+SWEP.Entity_Data.ENUM_Subtype = T_SCREWDRIVER
 
 SWEP.Damage = {3,5}

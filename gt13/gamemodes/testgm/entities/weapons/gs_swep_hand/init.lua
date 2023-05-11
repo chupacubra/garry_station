@@ -47,6 +47,7 @@ function SWEP:BeatEntity()
     if self.BCooldown > CurTime() then
         return
     end
+    self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 
     local VModel = self:GetOwner():GetViewModel()
     
@@ -54,10 +55,6 @@ function SWEP:BeatEntity()
     self:EmitSound(SwingSound)
 
     self.BCooldown = CurTime() + 0.8
-
-    --[[
-    -- fuc this
-    --]]
 
     timer.Simple(0.2, function()
         if !IsValid(self) then
@@ -76,17 +73,14 @@ function SWEP:BeatEntity()
             if trace.Entity:IsPlayer() then
                 player_manager.RunClass( trace.Entity, "HurtPart", trace.PhysicsBone, {[D_BRUTE] = math.random(3, 5)})
             end
-    
         end
+
     end)
-
-
 
 end
 
 function SWEP:PickupEntity()
     if self:HaveItem() then
-
         return
     end
     
@@ -194,24 +188,27 @@ function SWEP:GetItem()
 end
 
 function SWEP:UpdateItem(itm)
-    if self.hand_item.item then
-
-        self.hand_item.item = itm
-        self:SendToClientDrawModel(self.hand_item != nil)
-        self:HoldTypeTriger(self.hand_item != nil)
-        
-        return true
+    if !self:HaveItem()  then
+        return false
     end
+
+    self.hand_item.item = itm
+    self:SendToClientDrawModel(self.hand_item != nil)
+    self:HoldTypeTriger(self.hand_item != nil)
+    
+    return true
 end
 
 function SWEP:RemoveItem()
-    if self.hand_item.item then
-        self:SendToClientDrawModel(false)
-        self.hand_item.item = nil
-        self:HoldTypeTriger(self.hand_item != nil)
-        
-        return true
+    if !self:HaveItem()  then
+        return false
     end
+
+    self:SendToClientDrawModel(false)
+    self.hand_item.item = nil
+    self:HoldTypeTriger(self.hand_item != nil)
+    
+    return true
 end
 
 function SWEP:PutItemInHand(itemA)
@@ -228,7 +225,6 @@ function SWEP:PutItemInHand(itemA)
 end
 
 function SWEP:PrimaryItemAction()
-
     if self:HaveItem() == false then
         return false
     end
@@ -239,16 +235,22 @@ function SWEP:PrimaryItemAction()
         return
     end
 
-    if self.hand_item.item.Functions then
-        local usef = self.hand_item.item.Functions.inHand
+    
+    local id,typ = self.hand_item.item.Data_Labels.id, self.hand_item.item.Data_Labels.type
 
-        if !usef then
-            return
+    local rez_func = GS_EntityControler.RunFunctionEntity("hand_primary", id ,typ, self.hand_item.item, self:GetOwner(), CB_HAND)
+
+    if rez_func != false then
+        if rez_func == nil then
+            self:RemoveItem()
+        else
+            self:UpdateItem(rez_func)
         end
-        
-        usef(self.hand_item.item, self:GetOwner())
 
     end
+
+
+
 end
 
 function SWEP:GetItemsContainer()
@@ -298,6 +300,9 @@ function SWEP:CloseContainer()
 end
 
 function SWEP:Holster()
+    if self.OpenContainer then
+        self:CloseContainer()
+    end
     return true
 end
 
@@ -312,8 +317,12 @@ function SWEP:Deploy()
 end
 
 function SWEP:DropItem()
-    if !self.hand_item.item then
+    if !self:HaveItem() then
         return
+    end
+
+    if self.OpenContainer then
+        self:CloseContainer()
     end
 
     local trace = {

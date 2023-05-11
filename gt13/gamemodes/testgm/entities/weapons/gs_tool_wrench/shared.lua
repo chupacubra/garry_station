@@ -28,8 +28,8 @@ SWEP.ViewModelBoneMods = {
 	["ValveBiped.Bip01_Spine4"] = { scale = Vector(1, 1, 1), pos = Vector(-8.334, 0, 0), angle = Angle(0, 0, 0) }
 }
 
-
 SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "Wrench"
 SWEP.Entity_Data.Desc  = "iron wrench"
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
+SWEP.Entity_Data.ENUM_Subtype = T_WRENCH

@@ -334,11 +334,9 @@ function PLAYER_INVENTARY:CompareEntAndEnt(receiver, drop)
 	end
 end
 
-
 function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 	if receiver.from == CONTEXT_WEAPON_SLOT and receiver.entity != self.Player.Hands  then
 		local drop_ent = self:GetItemFromContext(drop.from, drop.key)
-		print(drop_ent, drop.key)
 		if drop_ent then
 			local drop_rez = receiver.entity:CompareWithEnt(drop_ent)
 			if drop_rez == false then
@@ -350,9 +348,18 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 			end
 		end
 	elseif receiver.from == CONTEXT_EQUIPMENT then
-		print("INSERT ITEM IN EQUIPMENT")
 		local drop_item = self:GetItemFromContext(drop.from,drop.key)
-	
+
+		local key = FAST_EQ_TYPE[ItemSubType(drop_item)]
+		if !self:HaveEquipment(key) then
+			local success = self.Player:EquipItem(drop_item, key)
+
+			if success then
+				self:RemoveItemFromContext(drop.from, drop.key)
+			end
+		else
+			self.Player:ChatPrint("Already have this one")
+		end
 	else
 		local receiver_item = self:GetItemFromContext(receiver.from, receiver.key)
 

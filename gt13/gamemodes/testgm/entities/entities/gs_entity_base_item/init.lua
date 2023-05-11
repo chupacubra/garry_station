@@ -21,13 +21,16 @@ function ENT:Initialize()
     if self.Entity_Data.ENUM_Type == GS_ITEM_MATERIAL then
         timer.Create("gs_ent_find_material", 1, 1, function()
             for k,v in pairs(ents.FindInSphere( self:GetPos(), 100 )) do
-                if v.GS_Entity then
-                    if v.Entity_Data.ENUM_Type == self.Entity_Data.ENUM_Type and v.Entity_Data.ENUM_Subtype == self.Entity_Data.ENUM_Subtype and v != self then
-                        print("adding to stack")
-                        self:AddStack(v)
-                        return
-                    end
+                if !v.GS_Entity then
+                    return
                 end
+
+                if v.Entity_Data.ENUM_Type == self.Entity_Data.ENUM_Type and v.Entity_Data.ENUM_Subtype == self.Entity_Data.ENUM_Subtype and v != self then
+                    print("adding to stack")
+                    self:AddStack(v)
+                    return
+                end
+                
             end
         end)
     end
@@ -69,6 +72,8 @@ function ENT:LoadInfoAboutItem() -- !!!!!!
     net.Start("gs_ent_update_info_item")
     net.WriteEntity(self)
     net.WriteTable(self.Entity_Data)
+    net.WriteString(self.Data_Labels.id)
+    net.WriteString(self.Data_Labels.type)
     net.Broadcast()
 end
 
@@ -125,48 +130,9 @@ function ENT:RequestPrivateData(ply)
     net.WriteTable(examine)
     net.Send(ply)
 end
---[[
-function ENT:GrabEntity(ply)
-    if !self:OnGround() then
-        return
-    end
 
-    if self.GrabPlayer then
-        if self.GrabPlayer == ply then
-            self:UnGrabEntity() -- simple ungrab
-            return
-        else
-            self:UnGrabEntity() -- drive by entity
-        end
-    end
-    
-    self.GrabPlayer = ply
-    self.Grabed     = true
-    self.GrabPos    = ply:WorldToLocal(self:GetPos())
-    self.GrabAng    = self:GetAngles()
-    self.GrabMat    = self:GetPhysicsObject():GetMaterial()
 
-    player_manager.RunClass( ply, "EffectSpeedAdd", "grab_entity", -150, -350 )
-    construct.SetPhysProp( self:GetOwner(), self, 0, nil, { GravityToggle = true, Material = "slipperyslime" } )
-    GS_ChatPrint(self.GrabPlayer, "You grab the "..self.Entity_Data.Name)
-    
-end
 
-function ENT:UnGrabEntity()
-    if self.GrabPlayer then
-        player_manager.RunClass( self.GrabPlayer, "EffectSpeedRemove", "grab_entity")
-        GS_ChatPrint(self.GrabPlayer, "You stop grabbing "..self.Entity_Data.Name)
-    end
-
-    construct.SetPhysProp( self:GetOwner(), self, 0, nil, { GravityToggle = true, Material = self.GrabMat } )
-
-    self.GrabPlayer = nil
-    self.Grabed     = false
-    self.GrapPos    = nil
-    self.GrabAng    = nil
-    self.GrabMat    = nil
-end
---]]
 function ENT:Think()
     if self.Grabed then
         if !IsValid(self.GrabPlayer) then

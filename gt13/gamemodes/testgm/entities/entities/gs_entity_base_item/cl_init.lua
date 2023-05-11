@@ -60,7 +60,11 @@ function ENT:GS_Equip()
 end
 
 function ENT:AddContextMenu()
+    if !self.GetContextButtons then
+        return {}
+    end
 
+    return self.GetContextButtons(self, CB_FLOOR)
 end
 
 function ENT:GetContextMenu()
@@ -122,7 +126,7 @@ function ENT:GetContextMenu()
     table.insert(contextButton,button)
     
 
-    --local add = self:AddContextMenu()
+    local add = self:AddContextMenu()
     
     if add then
         table.Add(contextButton, add)
@@ -133,10 +137,18 @@ end
 
 
 net.Receive("gs_ent_update_info_item", function()
-    local ent = net.ReadEntity()
+    local ent  = net.ReadEntity()
     local data = net.ReadTable()
-    
+    local id   = net.ReadString()
+    local type = net.ReadString()
+
     ent.Entity_Data = data
+    ent.Data_Labels = {id = id, type = type}
+    --[[
+        check for having context buttons in files
+    ]]
+    ent.GetContextButtons = GS_EntityList[type][id]["GetContextButtons"]
+
 end)
 
 net.Receive("gs_ent_get_private_info",function()

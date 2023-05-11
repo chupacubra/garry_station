@@ -35,7 +35,7 @@ GS_EntityList.parts = {
 }
 
 
-GS_EntityList.food = {
+GS_EntityList.food = { 
     hotdog = { 
         Entity_Data = {
             Name = "Hot dog",
@@ -50,11 +50,58 @@ GS_EntityList.food = {
         Private_Data = {
             food_qual = 20,
         },
-        Functions = {
-            inHand = function(self_item, ply)
-                ply:ChatPrint(self_item.Entity_Data.Name .." is delightios!")
+        GetFunctions = function(ent_data, ply, context)
+            functions = {}
+            
+            if context == CB_HAND then
+                functions["hand_primary"] = function(ply, ent_data, ent_context)
+                    ply:ChatPrint("mmm delicios rap snitch knishes")
+                    return false
+                end
             end
-        }
+
+            return functions
+        end,
+
+        RunFunction = function (name, ent_data, ply, context)
+            local funcs = GS_EntityControler.GetFunctionsEntity(ent_data.Data_Labels.id, ent_data.Data_Labels.type, ent_data, ply, context)
+
+            local action = funcs[name]
+
+            if action then
+                rez = action(ply, ent_data, context)
+                return rez
+            end
+        end,
+        --[[
+            after send data about entity in client
+            from shared files move context buttons to entity 
+        
+            only 3 context - HAND and FLOOR and EQUIP -- for equip
+            
+            if context == "EQUIP" then
+                
+            end
+            ]]
+        GetContextButtons = function(ent_data, context)
+            local buttons = {}
+
+            if context == CB_HAND then
+
+            end
+
+            if context == CB_FLOOR then
+                local button = {
+                    label = "Touch",
+                    icon = "icon16/add.png", 
+                    click = function()
+                        print(ent_data, "touch")
+                    end
+                }
+            end
+
+            return buttons
+        end
     }
 }
 

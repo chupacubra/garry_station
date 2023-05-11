@@ -1,0 +1,23 @@
+-----------------------------------------------------------
+|menu  options  about                                   X |
+|---------------------------------------------------------|
+|                                                         |
+| icon1                                                   |
+|                                                         |
+| icon2                                                   |
+|               ----------------                          |
+|               |              |                          |
+|               |  application |                          |
+|               |              |                          |
+|               ----------------                          |
+|                                                         |
+-----------------------------------------------------------
+
+ITS all derma with skin win98xp from workshop
+
+background = some photo (example: for cargo comps - photo with cargo boxs etd)
+menu = buttons -> {turn off, move to login(if have (exmpl: capitan comps secured password))}
+about = about
+
+applications = console motherboard
+and some base application (notebook, clocks, messenger)

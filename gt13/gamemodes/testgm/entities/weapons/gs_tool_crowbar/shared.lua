@@ -20,3 +20,4 @@ SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "Crowbar"
 SWEP.Entity_Data.Desc  = "enemy of cargobox"
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
+SWEP.Entity_Data.ENUM_Subtype = T_CROWBAR

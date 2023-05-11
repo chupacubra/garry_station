@@ -7,16 +7,22 @@ include( "client/cl_plyhud.lua" )
 include( "client/cl_context_menu.lua" )
 include( "client/cl_stat.lua" )
 include( "client/cl_systems.lua" )
+include( "client/derma/cl_craft_menu.lua" )
+--include("global/sh_craftlist.lua")
 --include( "client/cl_corpse.lua" )
+include( "client/derma/cl_roundstart.lua" )
 
-include("client/derma/cl_roundstart.lua" )
+include("ent_controler/sh_item_list.lua")
 
 local hide = {
 	["CHudHealth"]  = true,
 	["CHudBattery"] = true,
     ["CHudAmmo"]    = true,
     ["CHudCrosshair"] = true,
-    --["CHudWeaponSelection"] = true, 
+    --["CHudWeaponSelection"] = true,
+    --[[
+        need weapon selection
+    ]]
 }
 
 hook.Add( "HUDShouldDraw", "HideHUD", function( name )
