@@ -213,6 +213,3 @@ function itemfrom(str)
     elseif str == "c_item" then return CONTEXT_ITEM_IN_CONT end
 end
 
-function formattime(time)
-    return string.format("%02d:%02d:%02d", time.h,time.m,time.s)
-end

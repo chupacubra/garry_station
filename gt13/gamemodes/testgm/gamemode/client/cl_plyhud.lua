@@ -74,10 +74,8 @@ function GS_HUD.DrawHud()
     end
 
 
-    --]]
+ 
     --draw hp
-
-
     if GS_ClPlyStat then
         if GS_ClPlyStat.init then
             local i = 1
@@ -88,8 +86,16 @@ function GS_HUD.DrawHud()
                 surface.DrawText( k .. " ".. v .. " %" )
                 i = i + 1
             end
+            
+            --hunger level
+            surface.SetDrawColor( 64, 64, 64, 255 )
+            surface.DrawOutlinedRect( W - 100, 200, 20, 90, 1 )
+            surface.SetDrawColor( GS_ClPlyStat:HungerColor():Unpack() )
+            surface.DrawRect(W - 99, 201, 18, Lerp( 100 / GS_ClPlyStat:HungerStatus(), 0, 88 ) )
+
         end
     end
+
     surface.SetMaterial( hpicon[GS_ClPlyStat:GetHPStatIcon()])
 	surface.SetDrawColor( 255, 255, 255, 255 )
 	surface.DrawTexturedRect( W - 150, 500, 96, 96 )

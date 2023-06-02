@@ -52,3 +52,5 @@ function GS_Craft_List:GetAll()
     return self.Receipts
 end
 
+GS_Craft_List:NewReceipt("Hot dog", "shitpost", "food_hotdog", 1, {pile_wood = 1}, {})
+

@@ -56,6 +56,7 @@ GS_EntityList.food = {
             if context == CB_HAND then
                 functions["hand_primary"] = function(ply, ent_data, ent_context)
                     ply:ChatPrint("mmm delicios rap snitch knishes")
+                    player_manager.RunClass(ply, "InjectChemical","fiber", 10)
                     return false
                 end
             end

@@ -1,5 +1,35 @@
 PLAYER_EFFECT = {}
 
+local function SpeedRegulator(speed_tbl, def_speed)
+--[[
+	making two tables of effects:
+		negative
+		positive
+
+	get maxs in tables
+
+	return DefSpeed + (max_positive + min_negative)
+]]
+	if table.Count(speed_tbl) == 0 then
+		return 0
+	end
+
+	local max_speed = table_max(speed_tbl)
+	local min_speed = table_min(speed_tbl)
+
+	if min_speed > 0 then 
+		min_speed = 0
+	end
+ 
+	if max_speed < 0 then
+		max_speed = 0
+	end 
+
+	print(def_speed , (max_speed + min_speed), "shiza")
+
+	return def_speed + (max_speed + min_speed)
+end
+
 function PLAYER_EFFECT:SetSpeed(walk, run)
 	self.Player:SetWalkSpeed(walk)
 	self.Player:SetRunSpeed(run)
@@ -11,32 +41,47 @@ function PLAYER_EFFECT:EffectSpeedSet()
 end
 
 function PLAYER_EFFECT:EffectSpeedAdd(effect, walk, run)
-	if self.EffectSpeed[effect] then
-		return
-	end
+	--if self.EffectSpeed[effect] then
+		--return
+	--end
 
 	self.EffectSpeed[effect] = {walk, run}
-	self.CurSpeedRun = self.CurSpeedRun + run
-	self.CurSpeedWalk = self.CurSpeedWalk + walk
+
+	local rez_walk = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,1), self.WalkSpeed)
+	local rez_run  = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,2), self.RunSpeed)
+
+	print(rez_walk, rez_run)
+
+
+	self.CurSpeedWalk = rez_walk
+	self.CurSpeedRun = rez_run
 
 	self:EffectSpeedSet()
 end
 
 function PLAYER_EFFECT:EffectSpeedRemove(effect)
 	if self.EffectSpeed[effect] == nil then
+		GS_MSG("want to remove speed effect, but is nothing!!!1  "..tostring(self.Player))
 		return
-	end
-	local walk, run = unpack(self.EffectSpeed[effect])
-
-	self.CurSpeedRun = self.CurSpeedRun - run
-	self.CurSpeedWalk = self.CurSpeedWalk - walk
+	end 
 
 	self.EffectSpeed[effect] = nil 
+
+	local rez_walk = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,1), self.WalkSpeed)
+	local rez_run  = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,2), self.RunSpeed)
+
+	self.CurSpeedWalk = rez_walk
+	self.CurSpeedRun = rez_run
 
 	self:EffectSpeedSet()
 end
 
+function PLAYER_EFFECT:EffectSpeedHave(effect)
+	return self.EffectSpeed[effect] != nil
+end
+
 function PLAYER_EFFECT:Ragdollize() -- from ragmod
+	debug.Trace()
 	if self.Ragdolled then
 		return 
 	end

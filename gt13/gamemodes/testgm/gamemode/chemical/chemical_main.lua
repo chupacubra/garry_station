@@ -63,7 +63,6 @@ function CHEMIC_CONTAINER:Component(name,unit)
 	if unit < 1 then
 		return
 	end
-  
   	local obj = {}
   
   	obj.unit = unit
@@ -79,7 +78,7 @@ function CHEMIC_CONTAINER:Component(name,unit)
   	end
   
 	function obj:DecUnit(int)
-		self.unit = self.unit + int
+		self.unit = self.unit - int
 		if self.unit < 1 then
 	  		self.content[name] = nil
 			return
@@ -126,20 +125,22 @@ function CHEMIC_CONTAINER:Component(name,unit)
 		end
 	end
   
-  function obj:OnPlyClbck(ply)
-	CHEMICALS[self:getName()]["callbackInPly"](self,ply)
-  end
-  
-  function obj:OnFirstMix(self)
-	if self.fm then
-	  return
+	function obj:OnPlyClbck(ply, unit) -- function metabolizm
+		CHEMICALS[self:getName()]["callbackInPly"](ply)
+		self:DecUnit(unit)
 	end
-	CHEMICALS[self:getName()]["callBackInMix"](self,self)
-	self.fm = true
-  end
-  
-  setmetatable(obj, self)
-  self.__index = self; self.content[name] = obj
+
+	function obj:OnFirstMix(self)
+		if self.fm then
+		return
+	end
+		CHEMICALS[self:getName()]["callBackInMix"](self,self)
+		self.fm = true
+	end
+
+	setmetatable(obj, self)
+	self.__index = self; self.content[name] = obj
+	
 end
 
 function CHEMIC_CONTAINER:MixComp()
@@ -174,7 +175,6 @@ function CHEMIC_CONTAINER:MixComp()
 		end
 	end
 end
-
 
 
 function CHEMIC:New(name,data)

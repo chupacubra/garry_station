@@ -1,5 +1,7 @@
 include("chemical_main.lua")
 include("chemical_list_base.lua")
+include("chemical_list_food.lua")
+
 
 if SERVER then
 	for k,v in pairs(CHEMICALS) do
@@ -28,6 +30,6 @@ if SERVER then
 		net.Broadcast()
 	end)
 
-	PrintTable(CHEMIC)
-	PrintTable(FAST_REC)
+	--PrintTable(CHEMIC)
+	--PrintTable(FAST_REC)
 end

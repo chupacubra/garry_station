@@ -68,3 +68,76 @@ function FitInContainer(maxsize, drp )
         return maxsize + 1 > drp.Size
     end
 end
+
+function formattime(time)
+    return string.format("%02d:%02d:%02d", time.h,time.m,time.s)
+end
+
+function haveNegativeVals(tbl_ints)
+    return math.min(unpack(tbl_ints) or 0) < 0
+end
+
+function tbl_get_from_index(tbl, ind)
+    local rez = {}
+
+    for k, v in pairs(tbl) do
+        table.insert(rez,v[ind])
+    end
+
+    --PrintTable(rez)
+    --print("123123")
+    return rez
+end
+
+function hungerColor(int)
+    --[[
+        100 - 0,200,0
+        75  - 100,200,0
+        50  - 200,200,0
+        25  - 200,100,0
+        0   - 200,0,0
+    ]]
+
+    if int == 100 then
+        return Color(0,200,0,255)
+    end
+
+    if int > 50 then
+        local red = (100 - int) * 4
+
+        return Color(red, 200, 0, 255)
+    else
+        local green = int * 4
+
+        return Color(200, green, 0, 255)
+    end
+end
+
+function table_max(tbl)
+    local m = 0
+    for k,v in pairs(tbl) do
+        m = math.max(m, v)
+    end
+
+    return m
+end
+
+function table_min(tbl)
+    local m = tbl[1]
+
+    for k,v in pairs(tbl) do
+        m = math.min(m, v)
+    end
+
+    return m
+end
+
+function flipcoin()
+    return math.random(1, 2) == 1
+end
+
+function PrintBones( entity )
+    for i = 0, entity:GetBoneCount() - 1 do
+        print( i, entity:GetBoneName( i ) )
+    end
+end

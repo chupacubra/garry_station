@@ -17,6 +17,7 @@ util.AddNetworkString("gs_ply_equip_item")
 util.AddNetworkString("gs_cl_contex_item_action")
 util.AddNetworkString("gs_cl_chatprint")
 util.AddNetworkString("gs_cl_actions_human")
+util.AddNetworkString("gs_ply_hunger")
 
 -- ent update info
 util.AddNetworkString("gs_ent_client_init")

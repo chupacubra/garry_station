@@ -1,6 +1,7 @@
 if SERVER then
 	include("gs_inventary.lua")
-	include("gs_human_body.lua")
+	include("gs_human_body_new.lua")
+	include("gs_human_body_organs.lua")
 	include("gs_effects.lua")
 	include("gs_char.lua")
 end
@@ -44,12 +45,18 @@ if SERVER then
 		PLAYER[k] = v
 	end
 
+
+
 end
 
 function PLAYER:GetHandsModel()
 	local playermodel = player_manager.TranslateToPlayerModelName( self.Player:GetModel() )
 	return player_manager.TranslatePlayerHands( playermodel )
 end
+
+--[[
+
+	OUTDATED develop
 
 function PLAYER:SetupThink()
 	timer.Create("gs_player_think_"..self.Player:EntIndex(), 1, 0, function()
@@ -58,8 +65,10 @@ function PLAYER:SetupThink()
 			return
 		end
 
-		print('think player '..self.Player:GetName())
+		--print('think player '..self.Player:GetName())
 		
+		self:Metabolize()
+
 		local procent = math.random(1, 100)
 		local dmg = self:GetSumDMG()
 		
@@ -71,10 +80,11 @@ function PLAYER:SetupThink()
 			
 			self.Player.HealthStatus = GS_HS_CRIT
 
-			if procent <= 50 then
-				self:CritParalyze(0,true)
-				self:DamageHypoxia(4)
-			end
+			--if procent <= 50 then
+			--	self:CritParalyze(0,true)
+			--	self:DamageHypoxia(4)
+			--end
+
 			
 			self:HealthPartClientUpdate() --softcrit
 
@@ -82,10 +92,11 @@ function PLAYER:SetupThink()
 
 			self:EffectSpeedAdd("krit_status",-150, -250)
 			self.Player.HealthStatus = GS_HS_CRIT
-			
-			if procent <= 40 then
-				self:CritParalyze()
-			end
+
+			--if procent <= 40 then
+			--	self:CritParalyze()
+			--end
+
 			
 			self:HealthPartClientUpdate()
 		
@@ -95,10 +106,13 @@ function PLAYER:SetupThink()
 				self:HealthPartClientUpdate()
 			end
 		end
-
+		
+		self:HungerThink()
 	end)
 
+	self:StartSaturationTimer()
 end
+--]]
 
 function PLAYER:StopThink()
 	timer.Destroy("gs_player_think_"..self.Player:EntIndex())
@@ -118,7 +132,7 @@ end
 
 function PLAYER:SetupSystems()
 	self:SetupInventary()
-	self:SetupHPSystem()
+	self:SetupHPSystem() -- !!!
 	self:InitHudClient()
 	self:SetupThink()
 end
@@ -126,6 +140,15 @@ end
 function PLAYER:Spawn()
 	self:SetupSystems()
 end
+
+function PLAYER:Loadout()
+    self.Player:RemoveAllAmmo()
+	GS_EquipWeapon(self.Player, "gs_swep_hand")
+
+	self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
+end
+
+
 
 player_manager.RegisterClass( "gs_human", PLAYER, "player_default" )
 

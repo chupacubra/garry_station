@@ -1,5 +1,6 @@
 surface.CreateFont( "GS_CEFont", {
-	font = "DermaDefault",
+	--font = "DermaDefault",
+    font = "Tahoma",
 	extended = false,
 	size = 14,
 	weight = 1000,
@@ -10,11 +11,12 @@ surface.CreateFont( "GS_CEFont", {
 } )
 
 surface.CreateFont( "GS_CEFontHead", {
-	font = "DermaDefault",
+	--font = "DermaDefault",
+    font = "Tahoma",
 	extended = false,
 	size = 20,
 	weight = 1000,
-	blursize = 0,
+	blursize = 0, 
 	scanlines = 0,
 	antialias = true,
 	underline = true,

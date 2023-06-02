@@ -1,6 +1,15 @@
+include("organism_status.lua")
+
 PLAYER_HP = {}
 
 function PLAYER_HP:SetupHPSystem()
+	--[[
+	REWRITE:
+		F:SetupParts()
+		F:SetupOrgans()
+	]]
+
+
 	self.Player.BODY = {
 		head   = {0,0}, --BRUTE and BURN
 		hand_l = {0,0},
@@ -15,26 +24,30 @@ function PLAYER_HP:SetupHPSystem()
 		stamina = 0,
 		hypoxia = 0,
 	}
-	--[[]]
-	self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(1000)
-	self.Player.BloodLevel = 100
-	self.Player.BloodBleed = false
-	self.Player.BloodBleedRate  = 0
+
+	self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(200)
 	self.Player.HealthStatus = GS_HS_OK
 
+	self.Player.Special_stats = {
+		blood = {
+			level = 100,
+			bleed = false,
+			bleed_rate = 0
+		},
+
+		saturation = 100,
+		organism_status = {}
+	}
+
 	if self.Ragdolled != true then
-		self.Chemicals = CHEMIC_CONTAINER:New_Container(1000)
-		--self.HealthStatus = GS_HS_OK
 		self.LastDamage = 0 
 		self.CritParalyzeDelay = 0
 		self.Ragdolled = false
-		--self.BloodLevel = 100
-		--self.BloodBleed = false
-		--self.BloodBleedRate  = 0
 		self.CurSpeedRun = self.RunSpeed
 		self.CurSpeedWalk = self.WalkSpeed
 		self.EffectSpeed  = {}
 	end
+
 end
 
 
@@ -52,11 +65,15 @@ function PLAYER_HP:CritParalyze(delay,hard)
 		self.CritParalyzeDelay = CurTime() + delay + 7
 		
 		timer.Simple(delay, function()
+			if !IsValid(self.Player) then
+				return
+			end
+
 			self:Unragdollize()
 		end)
 	end
 
-	GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
+	--GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
 end
 
 function PLAYER_HP:HurtPart(bone, dmg)
@@ -100,6 +117,25 @@ function PLAYER_HP:HurtPart(bone, dmg)
 	self:HealthPartClientUpdate(mainpart)
 end
 
+function PLAYER_HP:BloodThinkStatus()
+	local blood = self.Player.Special_stats.blood.level
+
+	if blood > 50 then
+		self:EffectSpeedRemove("low_blood")
+		self:OrganismStatusRemove("heart_failure", "blood")
+		--self:OrganismStatusRemove("stamina_crit", "blood")
+	elseif blood > 40 then
+		self:EffectSpeedAdd("low_blood",-100, -200)
+		--[[
+			randomize int 1/12
+			stamina crit
+		]]
+	
+	else
+		self:OrganismStatus("heart_failure", "blood")
+	end
+end
+
 function PLAYER_HP:SetHP(body)
 	self.Player.BODY = body
 
@@ -116,14 +152,8 @@ function PLAYER_HP:GetHealthPercentPart(part)
 	if self.Player.BODY[part] == nil then
 		return 0
 	end
-	local dmg--[[
-	if part != "toxin" and part != "stamina" then
-		dmg = 100 - (self.Player.BODY[part][1] + self.Player.BODY[part][2] or 0)
-	else
-		dmg = 100 - self.Player.BODY[part][1]
-	end
-	--]]
-	dmg = 100 - (self.Player.BODY[part][1] + self.Player.BODY[part][2] or 0)
+
+	local dmg = 100 - (self.Player.BODY[part][1] + self.Player.BODY[part][2] or 0)
 
 	if dmg < -100 then
 		dmg = -100
@@ -134,7 +164,7 @@ end
 
 
 function PLAYER_HP:GetHealthPercent()
-	local dmg = 0
+	local dmg = 0 
 
 	for k,v in pairs(self.Player.BODY) do
 		dmg = dmg + self:GetHealthPercentPart(k)
@@ -176,16 +206,9 @@ function PLAYER_HP:HealthPartClientUpdate(part)
 	net.WriteString(part)   -- if we hurt the leg
 	net.WriteInt(parthp, 8) -- the hp of leg
 	net.WriteInt(hp, 8)     -- the ALL hp (100%...)
-	net.WriteUInt(self.Player.HealthStatus,5)
+	net.WriteUInt(self.Player.HealthStatus, 5)
 	net.Send(self.Player)
 end
-
---[[
-function PLAYER_HP:HealthEffectClienUpdate()
-	-- if we have crit or smth
-
-end
---]]
 
 function PLAYER_HP:HealHealth(part, typeD, hp)
 	if self.Player.BODY[part] == nil then
@@ -231,47 +254,153 @@ function PLAYER_HP:GetToxin()
 	return self.Player.HP_Effect.toxin
 end
 
-function PLAYER_HP:InjectChemical(chem,unit) -- insert in human chem  food, poison etc
-	self.Player.Chemicals:Component(chem,unit)
-	PrintTable(self.Chemicals)
+function PLAYER_HP:InjectChemical(chem, unit) -- insert in human chem  food, poison etc
+	self.Player.Chemicals:Component(chem, unit)
 end
 
-function PLAYER_HP:RemoveChemical(chem,unit)
+function PLAYER_HP:RemoveChemical(chem, unit)
 	self.Player.Chemicals:Component(chem,-unit)
 end
 
+
+
+
+
 function PLAYER_HP:Metabolize()
 	-- activate 1 unit of chemicals on timer
-	-- and mixing with another
+	for k,v in pairs(self.Player.Chemicals.content) do
+		v:OnPlyClbck(self.Player, 1)
+	end
+end
+
+function PLAYER_HP:GetSaturation()
+	return self.Player.Special_stats.saturation
+end
+
+function PLAYER_HP:AddSaturation(unit)
+	self.Player.Special_stats.saturation = math.Clamp(self.Player.Special_stats.saturation + unit, 0, 100)
+end
+
+function PLAYER_HP:SubSaturation(unit)
+	self.Player.Special_stats.saturation = math.Clamp(self.Player.Special_stats.saturation - unit, 0, 100)
+end
+
+function PLAYER_HP:SaturationStatusTrigger()
+
+	net.Start("gs_ply_hunger")
+	net.WriteUInt(self:GetSaturation(), 7)
+	net.Send(self.Player)
+
+	print(self:GetSaturation())
+end
+
+function PLAYER_HP:StartSaturationTimer()
+	timer.Create( self.Player:EntIndex().."_hunger", 40, 0, function()
+		if !self.Player:IsValid() then
+			self:StopSaturationTimer()
+			return
+		end
+
+		self:SubSaturation(2)
+		self:SaturationStatusTrigger()
+	end)
+end
+
+function PLAYER_HP:HungerThink()
+	if !self.Player:IsValid() then
+		return
+	end
+
+	local hunger = self:GetSaturation()
+	
+	if hunger < 10 then
+		--self:OrganismStatus("heart_failure", "hunger")
+	elseif hunger < 25 then
+		self:EffectSpeedAdd("hunger", -100, -225)
+		--self:OrganismStatusRemove("heart_failure", "hunger")
+	else
+		self:EffectSpeedRemove("hunger")
+		--self:OrganismStatusRemove("heart_failure", "hunger")
+	end
+end
+
+function PLAYER_HP:StopSaturationTimer()
+	timer.Destroy(self.Player:UserID().."_hunger")
 end
 
 function PLAYER_HP:Death()
-	--[[
-		move to ghost
-		spawn a ragdoll, ragdoll of death person
-		set him equipments and other
-	]]
+
+	--	move to ghost
+	--	spawn a ragdoll, ragdoll of death person
+	--	set him equipments and other
+--[[
 	if self.Ragdolled then
 		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
 	else
-		--[[ create ragdoll]]
+		 --create ragdoll
 		self:Ragdollize()
 		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
 	end
+
 	self:StopThink()
 	self:CloseHudClient()
+
 	PlayerSpawnAsSpectator(self.Player)
 	
 	hook.Run("GS_PlayerDead", self.Player:SteamID())
 	player_manager.ClearPlayerClass( self.Player )
+
+	print(self.Player.Special_stats)
+--]]
 end
 
+function PLAYER_HP:OrganismStatus(newStatus, origin)
+	if organism_status_list[newStatus] == nil then
+		return
+	end
+	
+	local start_status = false
 
-function PLAYER_HP:Loadout()
-    self.Player:RemoveAllAmmo()
-	GS_EquipWeapon(self.Player, "gs_swep_hand")
+	if self.Player.Special_stats.organism_status[newStatus] == nil then
+		self.Player.Special_stats.organism_status[newStatus] = {}
+		start_function = true
+	end
 
-	self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
+	if self.Player.Special_stats.organism_status[newStatus][origin] then
+		return
+	end
+
+	self.Player.Special_stats.organism_status[newStatus][origin] = true
+
+	if start_status then 
+		organism_status_list[newStatus]["start_function"](self)
+	end
 end
 
+function PLAYER_HP:OrganismStatusThink()
+	for k, _ in self.Player.Special_stats.organism_status do
+		organism_status_list[k]["think_function"](self)
+	end
+end
+
+function PLAYER_HP:OrganismStatusRemove(status, origin)
+	if !self.Player.Special_stats.organism_status[status] then
+		return
+	end
+
+	if !self.Player.Special_stats.organism_status[status][origin] then
+		return
+	end
+
+	self.Player.Special_stats.organism_status[status][origin] = nil
+
+	if table.Count(self.Player.Special_stats.organism_status[status]) == 0 then
+		organism_status_list[status]["end_function"](self)
+		self.Player.Special_stats.organism_status[status] = nil
+	end
+end
+
+function PLAYER_HP:OrganismStatusRemoveAll()
+	self.Player.Special_stats.organism_status = {}
+end
 

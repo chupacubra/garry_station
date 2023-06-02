@@ -28,6 +28,8 @@ function GS_ClPlyStat:InitHP()
 	}
     
     self.allhp = 100
+    self.hunger = 100
+    self.hungerColor = hungerColor(self.hunger)
     self.icon_stat = GS_HS_OK
 end
 
@@ -175,6 +177,8 @@ function GS_ClPlyStat:OpenContainer(items)
 
 end
 --]]
+
+
 function GS_ClPlyStat:ClientCloseContainer()
     net.Start("gs_ent_container_close")
     net.SendToServer()
@@ -209,7 +213,25 @@ function GS_ClPlyStat:DeathStatus()
     self.init = false
 end
 
+function GS_ClPlyStat:HungerStatus()
+    return self.hunger
+end
 
+function GS_ClPlyStat:HungerColor()
+    return self.hungerColor
+end
+
+function GS_ClPlyStat:HungerSet(int)
+    self.hunger = int
+
+    self.hungerColor = hungerColor(int)
+end
+
+net.Receive("gs_ply_hunger", function()
+    local hunger = net.ReadUInt(7)
+
+    GS_ClPlyStat:HungerSet(hunger)
+end)
 
 net.Receive("gs_cl_init_stat", function()
     local bool = net.ReadBool()
