@@ -20,6 +20,8 @@ function SWEP:OnDrop()
             self:TriggerLoadWorldModel(self.magazine != nil)
         end
     end)
+
+    self:SendClientDrop()
 end
 
 function SWEP:Deploy()
@@ -194,3 +196,8 @@ function SWEP:TriggerLoadWorldModel(bool)
     net.Broadcast()
 end
 
+function SWEP:SendClientDrop()
+    net.Start("gs_weapon_base_weapon_dropped")
+    net.WriteEntity(self)
+    net.Broadcast()
+end

@@ -61,20 +61,24 @@ FAST_EQ_TYPE = {
     "BACKPACK",
     "KEYCARD",
     "PDA",
-    --[[
-    BELT
-    GLOVES
-    PDA
-    VEST
-    HEAD
-    MASK
-    EAR--]]
+    "BELT",
+    "GLOVES",
+    "VEST",
+    "HEAD",
+    "MASK",
+    "EAR",--]]
 }
 
 FAST_HUD_TYPE = {
     BACKPACK = 1,
     KEYCARD  = 2,
     PDA      = 3,
+    BELT     = 4,
+    GLOVES   = 5,
+    VEST     = 6,
+    HEAD     = 7,
+    MASK     = 8,
+    EAR      = 9,
 }
 
 D_BRUTE = 1

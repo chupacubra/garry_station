@@ -56,7 +56,10 @@ function ENT:Draw()
 end
 
 function ENT:GS_Equip()
-
+    net.Start("gs_ply_equip_item")
+    net.WriteEntity(LocalPlayer())
+    net.WriteEntity(self)
+    net.SendToServer()
 end
 
 function ENT:AddContextMenu()
@@ -140,15 +143,19 @@ net.Receive("gs_ent_update_info_item", function()
     local ent  = net.ReadEntity()
     local data = net.ReadTable()
     local id   = net.ReadString()
-    local type = net.ReadString()
+    local typ = net.ReadString()
 
     ent.Entity_Data = data
-    ent.Data_Labels = {id = id, type = type}
+    ent.Data_Labels = {id = id, type = typ}
     --[[
         check for having context buttons in files
     ]]
-    ent.GetContextButtons = GS_EntityList[type][id]["GetContextButtons"]
+    print(typ, id)
+    local tbl = GS_EntityList[typ][id]
 
+    if tbl.GetContextButtons then
+        ent.GetContextButtons = tbl.GetContextButtons
+    end
 end)
 
 net.Receive("gs_ent_get_private_info",function()

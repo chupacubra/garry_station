@@ -13,6 +13,7 @@ include( "client/derma/cl_craft_menu.lua" )
 include( "client/derma/cl_roundstart.lua" )
 
 include("ent_controler/sh_item_list.lua")
+include("client/cl_equip_config.lua")
 
 local hide = {
 	["CHudHealth"]  = true,

@@ -147,10 +147,10 @@ net.Receive("gs_ply_equip_item",function()
 	local ply = net.ReadEntity()
 	local ent = net.ReadEntity()
 
-	if player_manager.RunClass( ply, "HaveEquipment", FAST_EQ_TYPE[ent.TypeEq] ) == false then
+	if player_manager.RunClass( ply, "HaveEquipment", FAST_EQ_TYPE[ent.Entity_Data.ENUM_Subtype] ) == false then
 		local itemData = duplicator.CopyEntTable(ent)
 
-		local succes = player_manager.RunClass( ply, "EquipItem", itemData, FAST_EQ_TYPE[ent.TypeEq] )
+		local succes = player_manager.RunClass( ply, "EquipItem", itemData, FAST_EQ_TYPE[ent.Entity_Data.ENUM_Subtype])
 		if succes then ent:Remove() end
 		PrintTable(itemData)
 	end
@@ -180,3 +180,13 @@ function ClassRun(...)
 	end
 end
 --]]
+
+function GM:GetFallDamage( ply, speed )
+	-- TODO
+	-- if big speed:
+	--		death
+    -- elseif medium:
+	--      hurt legs
+	--      break l\r leg bone
+	return 0
+end

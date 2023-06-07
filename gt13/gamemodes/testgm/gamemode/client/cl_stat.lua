@@ -27,7 +27,7 @@ function GS_ClPlyStat:InitHP()
 		leg_r  = 100,
 	}
     
-    self.allhp = 100
+    self.iconhp = 1
     self.hunger = 100
     self.hungerColor = hungerColor(self.hunger)
     self.icon_stat = GS_HS_OK
@@ -37,7 +37,7 @@ function GS_ClPlyStat:GetHPStatIcon()
     if self.icon_stat == GS_HS_CRIT then
         return 7
     end
-    return 7 - math.floor(self.allhp / 16)
+    return self.iconhp
 end
 
 function GS_ClPlyStat:RequestItemsFromBackpack()
@@ -89,7 +89,7 @@ function GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
         self.hp[part] = parthp
     end
 
-    self.allhp = hp
+    self.iconhp = hp
     self.icon_stat = iconstat
 end
 
@@ -231,6 +231,8 @@ net.Receive("gs_ply_hunger", function()
     local hunger = net.ReadUInt(7)
 
     GS_ClPlyStat:HungerSet(hunger)
+
+    print(hunger)
 end)
 
 net.Receive("gs_cl_init_stat", function()
@@ -263,9 +265,9 @@ end)
 net.Receive("gs_health_update",function()
     local part = net.ReadString()
     local parthp = net.ReadInt(8)
-    local hp = net.ReadInt(8)
+    local iconhp =  net.ReadUInt(5)
     local iconstat = net.ReadUInt(5)
-    GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
+    GS_ClPlyStat:UpdateHP(iconhp, part, parthp, iconstat)
 end)
 
 net.Receive("gs_ent_container_open", function()

@@ -7,6 +7,7 @@ function SWEP:Initialize()
     self.WorldModelDraw = ClientsideModel(self.WorldModel, RENDER_GROUP_VIEW_MODEL_OPAQUE)
     self.WorldModelDraw:SetSkin(1)
     self.WorldModelDraw:SetNoDraw(true)
+
     self:SetHoldType(self.HoldType)
 end
 
@@ -78,6 +79,13 @@ end
 function SWEP:Deploy() 
     print(self.HoldType)
     self:SetHoldType(self.HoldType)
+
+    self.WorldModelDraw:SetPos(self:GetOwner():GetPos())
+    self.WorldModelDraw:SetParent(self:GetOwner())
+end
+
+function SWEP:Holster()
+    self.WorldModelDraw:SetParent(nil)
 end
 
 function SWEP:StripMagazine()
@@ -123,7 +131,7 @@ end
 function SWEP:DrawWorldModel()
     local _Owner = self:GetOwner()
 
-    if (IsValid(_Owner)) then
+    if (IsValid(self:GetParent())) then
         local offsetVec = self.OffsetVector
         local offsetAng = Angle(180, 180, 0)
         
@@ -135,13 +143,15 @@ function SWEP:DrawWorldModel()
 
         local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
 
-        self.WorldModelDraw:SetPos(newPos)
-        self.WorldModelDraw:SetAngles(newAng)
 
+        self.WorldModelDraw:SetRenderOrigin(newPos)
+        self.WorldModelDraw:SetRenderAngles(newAng)
+ 
         self.WorldModelDraw:SetupBones()
     else
-        self.WorldModelDraw:SetPos(self:GetPos())
-        self.WorldModelDraw:SetAngles(self:GetAngles())
+        self.WorldModelDraw:SetRenderOrigin(self:GetPos())
+        self.WorldModelDraw:SetRenderAngles(self:GetAngles())
+        self.WorldModelDraw:SetupBones()
     end
 
     self.WorldModelDraw:DrawModel()
@@ -191,4 +201,16 @@ net.Receive("gs_weapon_base_set_magazine_model", function()
             gun.WorldModelDraw:SetModel(gun.UnloadedWorldModel)
         end
     end)
+end)
+
+net.Receive("gs_weapon_base_weapon_dropped", function()
+    local ent = net.ReadEntity()
+    
+    timer.Simple(0.1, function()
+        print(ent.WorldModelDraw:GetParent())
+        if ent.WorldModelDraw then
+            ent.WorldModelDraw:SetParent(nil)
+        end 
+    end)
+    print("123234fdsf")
 end)

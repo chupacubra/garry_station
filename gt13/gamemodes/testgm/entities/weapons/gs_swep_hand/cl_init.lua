@@ -57,7 +57,6 @@ function SWEP:WorldModelTriger(bool)
             self.IWorldModel:Remove()
         end
     end
-    print(self.IWorldModel:GetPos())
 end
 
 function SWEP:Deploy()
@@ -68,7 +67,7 @@ function SWEP:Deploy()
 end
 
 function SWEP:Holster()
-    self:WorldModelTriger(false)
+   self:WorldModelTriger(false)
    return true
 end
 

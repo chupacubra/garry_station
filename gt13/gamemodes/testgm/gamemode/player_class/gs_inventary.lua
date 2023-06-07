@@ -302,6 +302,19 @@ function PLAYER_INVENTARY:EquipmentEquipClient(itemData, key)
 	net.WriteUInt(FAST_HUD_TYPE[key], 5)
 	net.WriteString(itemData.Entity_Data.Name)
 	net.Send(self.Player)
+
+	local eq_sync = {}
+
+	for k, v in pairs(self.Player.Equipment) do
+		if v != 0 then
+			eq_sync[k] = v.Entity_Data.Model
+		end
+	end
+
+	net.Start("gs_ply_equip_draw_sync")
+	net.WriteEntity(self.Player)
+	net.WriteTable(eq_sync)
+	net.Broadcast()
 end 
 
 function PLAYER_INVENTARY:ExamineItemFromInventory(keyitem, from)

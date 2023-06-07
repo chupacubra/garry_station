@@ -63,7 +63,7 @@ ORGANS:
 
 ]]--
 
-function PLAYER_ORGANS:RoundStartSetupOrgans()
+function PLAYER_ORGANS:SetupOrgans()
     self.Player.Organs = {
         heart = {
             hp = 100,
@@ -133,14 +133,19 @@ function PLAYER_ORGANS:BrainThink()
         -- no brain - no life
         return
     end
-    -- need check here for oxygen
-    -- for going in unconsisios due lack of oxygen
-    
-    if self.Player.Organism_Value.oxygen < 0.6 --[[ or hipoxia.damage]] then
+
+    if self.Player.Organism_Value.oxygen == 0 then
         -- show hypoxia icon
         -- damage organism hypoxia damage
         -- hypoxia dmg - result of lack of oxygen 
         return
+    end
+
+    if self.Player.Spec_Damage.hypoxia > 25 then
+        if flipcoin() then
+            self:CritParalyze()
+            self:DamageOrgan("brain", 4)
+        end
     end
 
     if self.Player.Organs.brain.hp == 0 then
@@ -161,8 +166,10 @@ function PLAYER_ORGANS:LungsThink()
     if hp == 0 then
         --dead lungs
         return
-    elseif hp <= 20 then
-        self:AddOxygenInBlood(0.1)
+    elseif hp <= 20 or self:GetSaturation() == 0 then
+        if flipcoin() then
+            self:AddOxygenInBlood(0.05)
+        end
     else
         self:AddOxygenInBlood(0.15)
     end
@@ -206,8 +213,8 @@ function PLAYER_ORGANS:DamageOrgan(organ, dmg)
     self.Player.Organs[organ]["hp"] = math.Clamp(self.Player.Organs[organ]["hp"] - dmg, 0, 100) 
 end
 
-function PLAYER_ORGANS:DamageOrgan(heal, dmg)
-    self.Player.Organs[organ]["hp"] = math.Clamp(self.Player.Organs[organ]["hp"] + dmg, 0, 100) 
+function PLAYER_ORGANS:HealthOrgan(heal, dmg)
+    self.Player.Organs[organ]["hp"] = math.Clamp(self.Player.Organs[organ]["hp"] + heal, 0, 100) 
 end
 
 function PLAYER_ORGANS:StomachThink()
@@ -244,7 +251,7 @@ function PLAYER_ORGANS:OrgansDamageToxin(target, dmg)
             self:DamageOrgan(target, dmg * (1 - (liver_hp / 100)))
             self:DamageOrgan("liver", dmg)
         elseif kidneys_hp != 0 then
-            self:DamageOrgan(target, dmg // 2)
+            self:DamageOrgan(target, dmg / 2)
             self:DamageOrgan("kidneys", dmg)
         else
             self:DamageOrgan(target, dmg)
@@ -274,7 +281,7 @@ end
 function PLAYER_ORGANS:HeartMoveBlood()
     local blood = self:BloodLevel()
     local oxygen = math.Round( 0.13 * (blood/100) * (self.Player.Organs.heart.hp / 100), 2)
-    self:SubOxygenInBlood(oxygen)
+    self:SubOxygenInBlood(0.13)
     self:AddOxygen(oxygen)
 end
 

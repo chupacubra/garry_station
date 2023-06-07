@@ -91,7 +91,10 @@ function GS_HUD.DrawHud()
             surface.SetDrawColor( 64, 64, 64, 255 )
             surface.DrawOutlinedRect( W - 100, 200, 20, 90, 1 )
             surface.SetDrawColor( GS_ClPlyStat:HungerColor():Unpack() )
-            surface.DrawRect(W - 99, 201, 18, Lerp( 100 / GS_ClPlyStat:HungerStatus(), 0, 88 ) )
+            
+            local hunger_val = math.floor((GS_ClPlyStat:HungerStatus() / 100) * 88)
+
+            surface.DrawRect(W - 99, 201 + (88 - hunger_val), 18, hunger_val)
 
         end
     end

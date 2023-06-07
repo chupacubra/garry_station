@@ -122,13 +122,15 @@ function PLAYER_EFFECT:Unragdollize()
 	local sweps = self.Player.SWEP
 	local equip = self.Player.Equipment
 	local pocket = self.Player.Pocket
-	local body   = self.Player.BODY
-	local blood, blood_level, blool_rate = self.Player.BloodBleed, self.Player.BloodLevel, self.Player.BloodBleedRate
+	local body   = self.Player.Body_Parts
 	local chem = self.Player.Chemicals
 	local hp_stat = self.Player.HealthStatus
 	local walks  = self.Player:GetWalkSpeed()
 	local runs   = self.Player:GetRunSpeed()
-	
+	local organ_val = self.Player.Organism_Value
+	local spec_d = self.Player.Spec_Damage
+	local organs = self.Player.Organs
+
 	--[[this shit don't save after respawn]]
 
 	self.Player:UnSpectate()
@@ -175,6 +177,11 @@ function PLAYER_EFFECT:Unragdollize()
 	self:SetHP(body)
 	self:SetSpeed(walks, runs)
 	self.Player.HealthStatus = hp_stat
+	self.Player.Organs = organs
+	self.Player.Organism_Value = organ_val
+	self.Player.Spec_Damage = spec_d
+
+	self:HealthPartClientUpdate(part)
 end
 
 function PLAYER_EFFECT:IsRagdolled()

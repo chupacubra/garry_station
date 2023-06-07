@@ -14,6 +14,7 @@ AddCSLuaFile( "client/cl_task.lua" )
 AddCSLuaFile( "client/cl_systems.lua" )
 AddCSLuaFile( "client/derma/cl_roundstart.lua" )
 AddCSLuaFile( "client/derma/cl_craft_menu.lua" )
+AddCSLuaFile( "client/cl_equip_config.lua" )
 
 include( "shared.lua" )
 include( "player.lua" )

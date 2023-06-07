@@ -4,6 +4,10 @@ if SERVER then
 	include("gs_human_body_organs.lua")
 	include("gs_effects.lua")
 	include("gs_char.lua")
+
+	AddCSLuaFile("gs_cl_equipment.lua")
+else
+	include("gs_cl_equipment.lua")
 end
 DEFINE_BASECLASS( "player_default" )
 
@@ -35,6 +39,10 @@ if SERVER then
 		PLAYER[k] = v
 	end
 
+	for k,v in pairs(PLAYER_ORGANS) do
+		PLAYER[k] = v
+	end
+
 	--INCLUDE EFFECTS
 	for k,v in pairs(PLAYER_EFFECT) do
 		PLAYER[k] = v
@@ -47,72 +55,18 @@ if SERVER then
 
 
 
+else
+	--INCLUDE CLIENT VIEW EQUIP FUNCTION
+	for k,v in pairs(PLAYER_CL_EQ) do
+		PLAYER[k] = v
+	end
+
 end
 
 function PLAYER:GetHandsModel()
 	local playermodel = player_manager.TranslateToPlayerModelName( self.Player:GetModel() )
 	return player_manager.TranslatePlayerHands( playermodel )
 end
-
---[[
-
-	OUTDATED develop
-
-function PLAYER:SetupThink()
-	timer.Create("gs_player_think_"..self.Player:EntIndex(), 1, 0, function()
-		if !self.Player:IsValid() then
-			self:StopThink()
-			return
-		end
-
-		--print('think player '..self.Player:GetName())
-		
-		self:Metabolize()
-
-		local procent = math.random(1, 100)
-		local dmg = self:GetSumDMG()
-		
-		if dmg >= 200 then -- death
-			self:Death()
-			self:HealthPartClientUpdate()
-
-		elseif dmg >= 150 then --mega crit
-			
-			self.Player.HealthStatus = GS_HS_CRIT
-
-			--if procent <= 50 then
-			--	self:CritParalyze(0,true)
-			--	self:DamageHypoxia(4)
-			--end
-
-			
-			self:HealthPartClientUpdate() --softcrit
-
-		elseif dmg >= 100 then
-
-			self:EffectSpeedAdd("krit_status",-150, -250)
-			self.Player.HealthStatus = GS_HS_CRIT
-
-			--if procent <= 40 then
-			--	self:CritParalyze()
-			--end
-
-			
-			self:HealthPartClientUpdate()
-		
-		elseif dmg < 100 then
-			if self.Player.HealthStatus != GS_HS_OK then
-				self.Player.HealthStatus = GS_HS_OK
-				self:HealthPartClientUpdate()
-			end
-		end
-		
-		self:HungerThink()
-	end)
-
-	self:StartSaturationTimer()
-end
---]]
 
 function PLAYER:StopThink()
 	timer.Destroy("gs_player_think_"..self.Player:EntIndex())
@@ -130,15 +84,24 @@ function PLAYER:CloseHudClient()
 	net.Send(self.Player)
 end
 
+function PLAYER:SetupEquipDraw()
+	net.Start("gs_ply_equip_setup")
+	net.WriteEntity(self.Player)
+	net.Broadcast()
+end
+
 function PLAYER:SetupSystems()
 	self:SetupInventary()
 	self:SetupHPSystem() -- !!!
 	self:InitHudClient()
-	self:SetupThink()
+	--self:SetupThink()
 end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
+	timer.Simple(1, function()
+		self:SetupEquipDraw()
+	end)
 end
 
 function PLAYER:Loadout()

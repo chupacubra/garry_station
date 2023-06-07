@@ -6,6 +6,7 @@ function PLAYER_HP:SetupHPSystem()
     self:SetupOrgans()
     self:SetupBones()
     self:SetupOrganismThink()
+	self:SetupEffectSystem()
 end
 
 function PLAYER_HP:SetupParts()
@@ -30,7 +31,6 @@ function PLAYER_HP:SetupOrganismValues()
         saturation = 100,
         toxin = 0,
         last_dmg = 0,
-        
         blood = {
             level = 100,
             bleed = false,
@@ -40,12 +40,19 @@ function PLAYER_HP:SetupOrganismValues()
         organism_status = {}
     }
 
+	self.Player.Spec_Damage =  {
+		toxin = 0,
+		hypoxia = 0,
+	}
+
     if !self.Ragdolled then
         self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(200)
         self.Player.HealthStatus = GS_HS_OK
         self.Ragdolled = false
         self.CritParalyzeDelay = 0
+		self.EffectSpeed  = {}
     end
+
 end
 
 function PLAYER_HP:SetupOrganismThink()
@@ -58,18 +65,35 @@ function PLAYER_HP:SetupOrganismThink()
 			return
 		end
 
+		self:SubOxygen(0.12)
+		
+		if self.Player.Organism_Value.oxygen <= 0.1 then
+			self.Player.Spec_Damage.hypoxia = self.Player.Spec_Damage.hypoxia + 1
+		elseif self.Player.Spec_Damage.hypoxia != 0 and self.Player.Organism_Value.oxygen > 0.7 then
+			self.Player.Spec_Damage.hypoxia = self.Player.Spec_Damage.hypoxia - 1
+		end
+
+
         local dmg = self:GetSumDMG()
+		print(dmg, "1231231")
+
 
         if dmg < 100 then
             self.Player.HealthStatus = GS_HS_OK
+			self:EffectSpeedRemove("status_crit")
         elseif dmg > 100 then
+			self:EffectSpeedAdd("status_crit", 150, 250)
             -- crit status
             self.Player.HealthStatus = GS_HS_CRIT
         end
 
-        self:SubOxygen(0.1)
-    end
 
+		self:HungerThink()
+		self:HealthPartClientUpdate(mainpart)
+
+		--PrintTable(self.Player.Organism_Value)
+		--PrintTable(self.Player.Spec_Damage)
+	end)
 end
 
 function PLAYER_HP:IncreasePain(int)
@@ -90,6 +114,7 @@ function PLAYER_HP:AddOxygen(int)
 end
 
 function PLAYER_HP:SubOxygen(int)
+	print(self.Player.Organism_Value.oxygen , int, self.Player.Organism_Value.oxygen - int, math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1) )
     self.Player.Organism_Value.oxygen = math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1)
 end
 
@@ -102,7 +127,7 @@ function PLAYER_HP:SubOxygenInBlood(int)
 end
 
 function PLAYER_HP:BloodLevel(int)
-    return self.Player.Organism_Value.blool.level
+    return self.Player.Organism_Value.blood.level
 end
 
 
@@ -129,6 +154,7 @@ function PLAYER_HP:BleedThink()
 
     self.Player.Organism_Value.blood.level = self.Player.Organism_Value.blood.level - self.Player.Organism_Value.blood.bleed_rate
     self.Player.Organism_Value.blood.bleed_rate = self.Player.Organism_Value.blood.bleed_rate - 1
+	self:IncreasePain(0.5 * self.Player.Organism_Value.blood.bleed_rate)
 end
 
 function PLAYER_HP:SetHP(body)
@@ -161,8 +187,8 @@ function PLAYER_HP:HurtPart(bone, dmg)
 		self:DamageHealth(mainpart, k, v)
 	end
 
-	print(mainpart.. " = " ..self:GetHealthPercentPart(mainpart).. "%")
-	print("HP: "..self:GetHealthPercent())
+	--print(mainpart.. " = " ..self:GetHealthPercentPart(mainpart).. "%")
+	--print("HP: "..self:GetHealthPercent())
 	print(self:GetSumDMG())
 
 	self:HealthPartClientUpdate(mainpart)
@@ -198,7 +224,6 @@ function PLAYER_HP:RemoveChemical(chem, unit)
 end
 
 
-
 function PLAYER_HP:SetHP(body)
 	self.Player.Body_Parts = body
 
@@ -227,15 +252,22 @@ end
 
 
 function PLAYER_HP:GetHealthPercent()
+	--[[
 	local dmg = 0 
 
 	for k,v in pairs(self.Player.Body_Parts) do
 		dmg = dmg + self:GetHealthPercentPart(k)
 	end
 
-	dmg = dmg / 6
+	for k,v in pairs(self.Player.Spec_Damage) do
 
+		dmg = dmg + v
+	end
+
+	dmg = (dmg / 8)
+	print(dmg, "123")
 	return dmg
+	--]]
 end
 
 function PLAYER_HP:GetSumDMG()
@@ -245,7 +277,7 @@ function PLAYER_HP:GetSumDMG()
 		dmg = dmg + v[1] + v[2]
 	end
 
-	dmg = dmg + self.Player.Organism_Value.toxin 
+	dmg = dmg + self.Player.Spec_Damage.toxin + self.Player.Spec_Damage.hypoxia
 	return dmg
 end
 
@@ -262,14 +294,41 @@ function PLAYER_HP:HealthPartClientUpdate(part)
 	
 		parthp = math.floor(self:GetHealthPercentPart(part))
 	end
+
+	local icon = 1 -- the base 100% icon
+	local dmg = math.floor(self:GetSumDMG())
+
+	--[[
+		!
+	]]
+	print(dmg)
 	
-	local hp = math.floor(self:GetHealthPercent())
+	if dmg != 0 then
+		if dmg < 30 then
+			icon = 2
+		elseif dmg < 50 then
+			icon = 3
+		elseif dmg < 70 then
+			icon = 4
+		elseif dmg < 90 then
+			icon = 5
+		else 
+			icon = 6
+		end
+	end
+
+	--local hp = math.floor(self:GetHealthPercent())
+
+	--[[
+		hp = icon on client
+		BUT the healthStatus is OP
+	]]
 
 	net.Start("gs_health_update")
 	net.WriteString(part)   -- if we hurt the leg
 	net.WriteInt(parthp, 8) -- the hp of leg
-	net.WriteInt(hp, 8)     -- the ALL hp (100%...)
-	net.WriteUInt(self.Player.HealthStatus, 5)
+	net.WriteUInt(icon, 5)     -- the hp icon status
+	net.WriteUInt(self.Player.HealthStatus, 5) -- the CRIT or DEAD icon stat
 	net.Send(self.Player)
 end
 
@@ -316,17 +375,8 @@ function PLAYER_HP:SubSaturation(unit)
 	self.Player.Organism_Value.saturation = math.Clamp(self.Player.Organism_Value.saturation - unit, 0, 100)
 end
 
-function PLAYER_HP:SaturationStatusTrigger()
-
-	net.Start("gs_ply_hunger")
-	net.WriteUInt(self:GetSaturation(), 7)
-	net.Send(self.Player)
-
-	print(self:GetSaturation())
-end
-
 function PLAYER_HP:StartSaturationTimer()
-	timer.Create( self.Player:EntIndex().."_hunger", 20, 0, function()
+	timer.Create( self.Player:EntIndex().."_hunger", 30, 0, function()
 		if !self.Player:IsValid() then
 			self:StopSaturationTimer()
 			return
@@ -382,17 +432,17 @@ function PLAYER_HP:HungerThink()
 	end
 
 	local hunger = self:GetSaturation()
-	--[[
+	
 	if hunger < 10 then
-		self:OrganismStatus("heart_failure", "hunger")
+		--self:OrganismStatus("heart_failure", "hunger")
 	elseif hunger < 25 then
 		self:EffectSpeedAdd("hunger", -100, -225)
-		self:OrganismStatusRemove("heart_failure", "hunger")
+		--self:OrganismStatusRemove("heart_failure", "hunger")
 	else
 		self:EffectSpeedRemove("hunger")
-		self:OrganismStatusRemove("heart_failure", "hunger")
+		--self:OrganismStatusRemove("heart_failure", "hunger")
 	end
-    --]]
+
 end
 
 function PLAYER_HP:StopSaturationTimer()

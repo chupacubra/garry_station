@@ -6,6 +6,7 @@ local files = {
     "item_board.lua",
     "item_res.lua",
     "item_common.lua",
+    "equip_simple_accessories.lua",
 }
 
 GS_EntityList = {}
@@ -13,7 +14,6 @@ GS_EntityList = {}
 if SERVER then
     for k, v in pairs(files) do
         include(v)
-        print("wtf")
         AddCSLuaFile(v)
     end
 else
