@@ -89,6 +89,30 @@ function PLAYER_INVENTARY:EquipItem(itemData,key)
 	return true
 end
 
+function PLAYER_INVENTARY:GetEquipItem(key)
+	if !self:HaveEquipment(key) then
+		return false
+	end
+
+	return self.Player.Equipment[key]
+end
+
+function PLAYER_INVENTARY:RemoveEquip(key)
+	if !self:HaveEquipment(key) then
+		return false
+	end
+
+	if self.Player.Hands:HaveItem() then
+		self.Player:ChatPrint("Your hands is full!")
+		return false -- deequip item only in hands
+	end
+	
+	self.Player.Hands:PutItemInHand(self.Player.Equipment[key])
+	self.Player.Equipment[key] = 0
+
+	self:DeEquipItemClient(key)
+end
+
 function PLAYER_INVENTARY:GetItemFromBackpack(key)
 	if self.Player.Equipment.BACKPACK == 0 then
 		return
@@ -209,6 +233,8 @@ function PLAYER_INVENTARY:GetItemFromContext(context, key)
 		print("get item from container",key)
 		print(self.OpenContainer:GetItemFromContainer(key))
 		return self.OpenContainer:GetItemFromContainer(key)
+	elseif context == CONTEXT_EQUIPMENT then
+		return self:GetEquipItem(key)
 	elseif context == CONTEXT_HAND then
 		return self.Player.Hands:GetItem()
 	end
@@ -300,9 +326,23 @@ end
 function PLAYER_INVENTARY:EquipmentEquipClient(itemData, key)
 	net.Start("gs_equipment_update")
 	net.WriteUInt(FAST_HUD_TYPE[key], 5)
-	net.WriteString(itemData.Entity_Data.Name)
+	net.WriteBool(true)
+	net.WriteTable(itemData.Entity_Data)
 	net.Send(self.Player)
 
+	self:DrawEquipSync()
+end 
+
+function PLAYER_INVENTARY:DeEquipItemClient(key)
+	net.Start("gs_equipment_update")
+	net.WriteUInt(FAST_HUD_TYPE[key], 5)
+	net.WriteBool(false)
+	net.Send(self.Player)
+
+	self:DrawEquipSync()
+end
+
+function PLAYER_INVENTARY:DrawEquipSync()
 	local eq_sync = {}
 
 	for k, v in pairs(self.Player.Equipment) do
@@ -315,13 +355,17 @@ function PLAYER_INVENTARY:EquipmentEquipClient(itemData, key)
 	net.WriteEntity(self.Player)
 	net.WriteTable(eq_sync)
 	net.Broadcast()
-end 
+end
+
 
 function PLAYER_INVENTARY:ExamineItemFromInventory(keyitem, from)
-	local examine
-
 	local item = self:GetItemFromContext(from, keyitem)
-	examine = {item.Entity_Data.Name, item.Entity_Data.Desc}
+	
+	if !item then
+		return
+	end
+
+	local examine = {item.Entity_Data.Name, item.Entity_Data.Desc}
 	local priv = GS_EntityControler:ExamineData(item)
 
 	table.Add(examine, priv)
@@ -398,24 +442,21 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 				if succes then
 					self.Player:StripWeapon( drop.entity:GetClass() )
 				end
-				return
 			else
 				local drop_item = self:GetItemFromContext(drop.from, drop.key)
 
 				if drop_item then
-					print(drop_item)
 					local succes = self:InsertItemInContext(receiver.from, drop_item, receiver.key)
-					print(succes,"13")
 					if succes then
 						self:RemoveItemFromContext(drop.from, drop.key)
 					end-- ____     
-				end--    ||/\||     | => | 
+				end--    ||/\||      
 			end --_______||  ||_____________
 		end-- -- --  O  /     / -- 0  o -- --
 	end  -- -- 0 -- 0  /     / 0  O -- O -- o
 end  -- o  0 -- o --  ______  0 -- o -- 0 -- o
 --___________________--------_________
 --| the whole world   0    is theatre|
---| and YOU are the  /|\   main clown
---                   /\
+--| and YOU are the  /|\   main clown|
+--|                  /\              |
 

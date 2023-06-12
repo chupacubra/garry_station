@@ -21,6 +21,7 @@ util.AddNetworkString("gs_ply_hunger")
 util.AddNetworkString("gs_ply_equip_draw_sync")
 util.AddNetworkString("gs_ply_equip_setup")
 -- ent update info
+
 util.AddNetworkString("gs_ent_client_init")
 util.AddNetworkString("gs_ent_client_init_item")
 util.AddNetworkString("gs_ent_update_info")
@@ -31,6 +32,9 @@ util.AddNetworkString("gs_ent_grab")
 
 util.AddNetworkString("gs_ent_container_open")
 util.AddNetworkString("gs_ent_container_close")
+
+util.AddNetworkString("gs_wire_action")
+
 --hands
 util.AddNetworkString("gs_hand_draw_model")
 util.AddNetworkString("gs_hand_vm")
@@ -72,3 +76,7 @@ util.AddNetworkString("gs_cl_derma_open")
 
 --craft
 util.AddNetworkString("gs_cl_craft_request")
+
+--map
+util.AddNetworkString("gs_map_entity_get_type")
+util.AddNetworkString("gs_map_ent_action")

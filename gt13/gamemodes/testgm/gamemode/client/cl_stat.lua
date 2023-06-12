@@ -49,16 +49,6 @@ function GS_ClPlyStat:RequestItemsFromBackpack()
     net.SendToServer()
 end
 
-function GS_ClPlyStat:EquipItem(name, typ)
-    self.equipment[FAST_EQ_TYPE[typ]] = name
-    
-    if typ == GS_EQUIP_BACKPACK then
-        ContextMenu:DrawBackpackButton()
-    end
-
-    ContextMenu:UpdateEquipmentItem()
-end
-
 function GS_ClPlyStat:InitInventory()
     self.equipment = {
             BELT      = 0, 
@@ -75,9 +65,33 @@ function GS_ClPlyStat:InitInventory()
     self.pocket = {{},{}}
 end
 
+function GS_ClPlyStat:EquipItem(item, typ)
+    self.equipment[FAST_EQ_TYPE[typ]] = item 
+    
+    if typ == GS_EQUIP_BACKPACK then
+        ContextMenu:DrawBackpackButton()
+    end
+
+    ContextMenu:UpdateEquipmentItem()
+end
+
+function GS_ClPlyStat:RemoveEquip(key)
+    self.equipment[FAST_EQ_TYPE[key]] = 0
+
+    ContextMenu:UpdateEquipmentItem()
+end
+
 function GS_ClPlyStat:GetEquipName(key)
     if self.equipment[key] == nil or self.equipment[key] == 0 then
         return ""
+    end
+
+    return self.equipment[key]["Name"]
+end
+
+function GS_ClPlyStat:GetEquipItem(key)
+    if self.equipment[key] == nil or self.equipment[key] == 0 then
+        return {}
     end
 
     return self.equipment[key]
@@ -156,8 +170,6 @@ end
 
 function GS_ClPlyStat:UpdatePockets(items)
     self.pocket = items
-    --PrintTable(self.pocket)
-    --print(self.pocket[1]["Name"])
 end
  
 function GS_ClPlyStat:UpdateInventoryItems(items, from)
@@ -181,6 +193,12 @@ end
 
 function GS_ClPlyStat:ClientCloseContainer()
     net.Start("gs_ent_container_close")
+    net.SendToServer()
+end
+
+function GS_ClPlyStat:DeEquipItem(key)
+    net.Start("gs_equipment_update")
+    net.WriteUInt(key, 5)
     net.SendToServer()
 end
 
@@ -246,10 +264,17 @@ end)
 
 net.Receive("gs_equipment_update",function()
     local key = net.ReadUInt(5)
-    local itemName = net.ReadString()
+    local bool = net.ReadBool()
+    if bool then
+        local item = net.ReadTable()
 
-    GS_ClPlyStat:EquipItem(itemName, key)
+        PrintTable(item)
+        GS_ClPlyStat:EquipItem(item, key)
+    else
+        GS_ClPlyStat:RemoveEquip(key)
+    end
 end)
+
 
 net.Receive("gs_cl_inventary_update", function()
     local from  = net.ReadUInt(5)

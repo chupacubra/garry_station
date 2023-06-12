@@ -145,10 +145,6 @@ CONTEXT_HAND = 8
 -- if ITEM_MEDIUM then they don't fit in small box and pockets
 -- if ITEM_BIG then they don't fit in backpacks
 -- if ITEM_V_BIG then they don't fit in big box and can't handle
-
--- IDEA: How about CONTAINER_ITEM_MAX_SIZE?
--- For mega bluespace backpacks...
-
 -- ITEM_V_MEDIUM for medium containers
 
 ITEM_VERY_SMALL = 0
@@ -217,3 +213,40 @@ function itemfrom(str)
     elseif str == "c_item" then return CONTEXT_ITEM_IN_CONT end
 end
 
+W_RED   = 1
+W_GREEN = 2
+W_BLUE  = 3
+W_GOLD  = 4
+W_GRAY  = 5
+W_BLACK = 6
+W_PINK  = 7
+W_WHITE = 8
+
+W_NAME = {
+    "red",
+    "green",
+    "blue",
+    "gold",
+    "gray",
+    "black",
+    "pink",
+    "white"
+}
+
+W_COLOR = {
+    Color(240,20,20),
+    Color(0,178,0),
+    Color(0,0,153),
+    Color(255,215,0),
+    Color(128,128,128),
+    Color(0,0,0),
+    Color(255,151,187),
+    Color(255,255,255),
+}
+
+W_CUT = 0
+W_CONNECT = 1
+W_PULSE = 2
+
+A_EXAMINE = 0
+A_USE     = 1

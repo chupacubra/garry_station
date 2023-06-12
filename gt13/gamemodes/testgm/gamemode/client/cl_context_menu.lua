@@ -118,12 +118,13 @@ function ContextMenu:MakeContextItem(key, itemData,from, x, y)
     print(key,itemData,x,y,from)
     --1 make all actions in array
     --2 generate all "buttons"
+
     if !itemData.Name then
         return
     end
     
     local option = {}
-    PrintTable(itemData)
+
     if itemData.Name and itemData.Desc then  -- examine
         local button = {
             label = "Examine",
@@ -137,7 +138,7 @@ function ContextMenu:MakeContextItem(key, itemData,from, x, y)
         }
         table.insert(option, button)
     end
-    
+    --[[
     if itemData.ENUM_Type == GS_ITEM_BOX then
         local button = {
             label = "Open box",
@@ -148,7 +149,7 @@ function ContextMenu:MakeContextItem(key, itemData,from, x, y)
         }
         table.insert(option, button)
     end
-
+--]]
     if itemData.ENUM_Type == GS_ITEM_WEAPON then
         local button = {
             label = "Use",
@@ -161,12 +162,23 @@ function ContextMenu:MakeContextItem(key, itemData,from, x, y)
     end
 
     local drop = {
-        label = "Drop this s#!t",
+        label = "Drop this",
         icon  = "icon16/arrow_down.png",
         click = function()
             GS_ClPlyStat:DropEntFromInventary(key, from)
         end
     }
+
+    if from == CONTEXT_EQUIPMENT then
+        local button = {
+            label = "Take off",
+            icon  = "icon16/add.png",
+            click = function()
+                GS_ClPlyStat:DeEquipItem(key)
+            end
+        }
+        table.insert(option, button)
+    end
     table.insert(option, drop)
 
 
@@ -395,6 +407,10 @@ function ContextMenu:ContextMenuOpen()
             
             slot:Receiver( "item_drop", DragAndDropItem )
             slot:Droppable("item_drop")
+            
+            function slot:DoClick()
+                context:MakeContextItem(k, GS_ClPlyStat:GetEquipItem(v), CONTEXT_EQUIPMENT, self:GetPos())
+            end
 
             self.derma_equip[v] = slot
             self.derma["equip_"..v] = slot            
@@ -439,10 +455,10 @@ function ContextMenu:ContextMenuClose()
 end
 
 function GM:GUIMousePressed( mouse,vector )
-
     if !ContextMenu.Open then
         return
     end
+
     local trace = {
         start = LocalPlayer():EyePos(),
         endpos = LocalPlayer():EyePos() +  vector * 80 ,
@@ -451,22 +467,27 @@ function GM:GUIMousePressed( mouse,vector )
     
     trace = util.TraceLine(trace)
 
-
-    -- THE context menu for entities
     if trace.Entity != Entity(0) and trace.Entity:IsValid() then
-
         local scrpos = trace.HitPos:ToScreen()
         local Menu = DermaMenu()
         
         Menu:SetPos(scrpos.x,scrpos.y)
         local entity = trace.Entity
         local cntx = {}
+
         if entity.corpse then
             print("trup")
             cntx = CL_GS_Corpse.GetContextMenu(entity)
         else
-            cntx = entity:GetContextMenu()
+            if entity.GetContextMenu then
+                cntx = entity:GetContextMenu()
+            else
+                -- if getcontexmenu == nil:
+                --     how about request for this entity context from server
+                MapEntityGetContext(entity)
+            end
         end 
+
         if cntx != nil then
             for k,v in pairs(cntx) do
                 local button = Menu:AddOption(v.label)
@@ -476,4 +497,5 @@ function GM:GUIMousePressed( mouse,vector )
         end
 
     end
+
 end

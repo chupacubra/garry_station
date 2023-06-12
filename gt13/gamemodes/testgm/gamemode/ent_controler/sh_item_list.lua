@@ -7,6 +7,7 @@ local files = {
     "item_res.lua",
     "item_common.lua",
     "equip_simple_accessories.lua",
+    "map_entity_context.lua"
 }
 
 GS_EntityList = {}

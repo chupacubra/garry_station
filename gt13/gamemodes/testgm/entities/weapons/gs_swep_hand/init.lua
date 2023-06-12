@@ -221,6 +221,8 @@ function SWEP:PutItemInHand(itemA)
     self:SendToClientDrawModel(true)
     self:HoldTypeTriger(self.hand_item != nil)
     
+    self:GetOwner():SelectWeapon( self:GetClass() )
+
     return true
 end
 

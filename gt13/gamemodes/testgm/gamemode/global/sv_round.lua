@@ -21,7 +21,11 @@ function GS_Round_System:InitGame()
         self:UpdateClientStatus()
     end)
 
-    self:StartPreparationPhase()
+    local succes = gs_map.load()
+    
+    if succes then
+        self:StartPreparationPhase()
+    end
 end
 
 function GS_Round_System:UpdateClientStatus()

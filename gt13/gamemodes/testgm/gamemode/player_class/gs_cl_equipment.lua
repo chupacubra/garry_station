@@ -32,7 +32,6 @@ function PLAYER_CL_EQ:CreateEqModel(eq_model, id_eq)
     local ent = ClientsideModel( eq_model )
     ent:SetModel(eq_model)
     ent:SetPos(self.Player:GetPos())
-    --ent:SetMaterial(ArmorInfo.mat or "")
     ent:SetParent(self.Player)
     ent:SetNoDraw(true)
 
@@ -46,7 +45,6 @@ function PLAYER_CL_EQ:CreateEqModel(eq_model, id_eq)
 end
 
 function PLAYER_CL_EQ:DeleteEqModel(id_eq)
-
     self.Player.EqModelDraw[id_eq]["model"]:Remove()
     self.Player.EqModelDraw[id_eq] = {}
 end
@@ -85,10 +83,8 @@ function PLAYER_CL_EQ:DrawEquip()
             
             local newpos, newang = LocalToWorld(cl_equip_config[eq.model:GetModel()]["vec"], cl_equip_config[eq.model:GetModel()]["ang"], matrix:GetTranslation(), matrix:GetAngles() )
             
-            --eq.model:SetPos( newpos )
             eq.model:SetRenderOrigin(newpos)
             eq.model:SetRenderAngles(newang)
-            --eq.model:SetAngles( newang )
             eq.model:SetupBones()
             eq.model:DrawModel()
         end
@@ -112,7 +108,7 @@ net.Receive("gs_ply_equip_draw_sync", function()
     PrintTable(tbl)
     player_manager.RunClass(ply, "EquipSync", tbl)
 end)
-
+ 
 net.Receive("gs_ply_equip_setup", function()
     local ply = net.ReadEntity()
     

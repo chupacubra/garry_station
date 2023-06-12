@@ -9,6 +9,7 @@ if SERVER then
 else
 	include("gs_cl_equipment.lua")
 end
+
 DEFINE_BASECLASS( "player_default" )
 
 local PLAYER = {}
@@ -52,8 +53,6 @@ if SERVER then
 	for k,v in pairs(PLAYER_CHAR) do
 		PLAYER[k] = v
 	end
-
-
 
 else
 	--INCLUDE CLIENT VIEW EQUIP FUNCTION
@@ -172,4 +171,10 @@ net.Receive("gs_cl_actions_human", function(_, ply)
 	local act    = net.ReadUInt(3)
 
 	player_manager.RunClass(target, "MakeAction", ply, act)
+end)
+
+net.Receive("gs_equipment_update", function(_, ply)
+	local key = net.ReadUInt(5)
+
+	player_manager.RunClass(ply, "RemoveEquip", FAST_EQ_TYPE[key] )
 end)

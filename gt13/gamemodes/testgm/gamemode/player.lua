@@ -190,3 +190,25 @@ function GM:GetFallDamage( ply, speed )
 	--      break l\r leg bone
 	return 0
 end
+
+function GM:PlayerUse(ply, ent)
+	if !ent:CreatedByMap() then
+		return true
+	end
+
+	print(ply, ent)
+end
+
+function GM:AcceptInput( ent, input, activator, caller, value )
+	--print(ent, input, activator, caller, value)
+end
+
+function GM:PlayerNoClip( ply, desiredState )
+	return GetConVar("sv_cheats"):GetBool()
+end
+
+concommand.Add("gs_open", function(ply,cmd, arg)
+	local id = arg[1]
+
+	Entity(arg[1]):Fire("Use")
+end)

@@ -11,9 +11,11 @@ include( "client/derma/cl_craft_menu.lua" )
 --include("global/sh_craftlist.lua")
 --include( "client/cl_corpse.lua" )
 include( "client/derma/cl_roundstart.lua" )
-
+include("client/derma/cl_wires.lua")
 include("ent_controler/sh_item_list.lua")
 include("client/cl_equip_config.lua")
+include("client/computer_derma/cl_main.lua")
+include("client/win98skin.lua")
 
 local hide = {
 	["CHudHealth"]  = true,
