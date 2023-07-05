@@ -28,3 +28,6 @@ SWEP.Entity_Data.Type = "toolname"
 
 SWEP.Private_Data = {}
 SWEP.Damage = {7,2}
+
+SWEP.MissSound = util.PrecacheSound( SWEP.PrimarySound..".Single" )
+SWEP.HitSound = util.PrecacheSound(SWEP.PrimarySound..".Melee_HitWorld")

@@ -141,3 +141,22 @@ function PrintBones( entity )
         print( i, entity:GetBoneName( i ) )
     end
 end
+
+function generateID(str)
+    -- simple
+    -- 1. rand_str = str + number day of the year(365)
+    -- 2. rez = util.SHA1(rand_str)
+    -- 3. strip all letters
+    -- 4. stay only 5 digits
+    -- 5. ???
+    -- 6. !!!profit!!!
+
+    local rand_str = str .. os.date("%j")
+    local rez = util.SHA1(rand_str)
+    
+    rez = string.gsub(rez, "%a", "")
+    rez = string.Left(rez, 5)
+
+    return rez
+end
+

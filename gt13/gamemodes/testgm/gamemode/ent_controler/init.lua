@@ -145,3 +145,19 @@ function GS_EntityControler.RunFunctionEntity(action, id, typ, entity, ply, cont
 
     return rez
 end
+
+function EntityCanBeSpawned(ent) -- check ent model out of bounds
+    local pos = {ent:OBBCenter(),  ent:OBBMaxs(),  ent:OBBMins()}
+
+    PrintTable(pos)
+    debugoverlay.Cross( pos[1], 1, 5)
+    debugoverlay.Cross( pos[2], 1, 5)
+    debugoverlay.Cross( pos[3], 1, 5)
+
+    for k, v in pairs(pos) do
+        if !util.IsInWorld(v) then
+            return false
+        end
+    end
+    return true
+end

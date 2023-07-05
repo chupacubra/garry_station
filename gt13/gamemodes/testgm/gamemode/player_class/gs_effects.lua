@@ -11,7 +11,7 @@ local function SpeedRegulator(speed_tbl, def_speed)
 	return DefSpeed + (max_positive + min_negative)
 ]]
 	if table.Count(speed_tbl) == 0 then
-		return 0
+		return def_speed
 	end
 
 	local max_speed = table_max(speed_tbl)
@@ -36,6 +36,7 @@ function PLAYER_EFFECT:SetSpeed(walk, run)
 end
 
 function PLAYER_EFFECT:EffectSpeedSet()
+	print(self.CurSpeedWalk, self.CurSpeedRun , "setup speed")
 	self.Player:SetWalkSpeed(self.CurSpeedWalk)
 	self.Player:SetRunSpeed(self.CurSpeedRun) 
 end
@@ -46,6 +47,8 @@ function PLAYER_EFFECT:EffectSpeedAdd(effect, walk, run)
 	--end
 
 	self.EffectSpeed[effect] = {walk, run}
+
+	print(self.WalkSpeed,self.RunSpeed,"def speed")
 
 	local rez_walk = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,1), self.WalkSpeed)
 	local rez_run  = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,2), self.RunSpeed)
@@ -66,6 +69,8 @@ function PLAYER_EFFECT:EffectSpeedRemove(effect)
 	end 
 
 	self.EffectSpeed[effect] = nil 
+
+	print(self.WalkSpeed,self.RunSpeed,"def speed")
 
 	local rez_walk = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,1), self.WalkSpeed)
 	local rez_run  = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,2), self.RunSpeed)

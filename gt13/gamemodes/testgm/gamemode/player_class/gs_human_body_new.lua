@@ -369,10 +369,12 @@ end
 
 function PLAYER_HP:AddSaturation(unit)
 	self.Player.Organism_Value.saturation = math.Clamp(self.Player.Organism_Value.saturation + unit, 0, 100)
+	self:SaturationStatusTrigger()
 end
 
 function PLAYER_HP:SubSaturation(unit)
 	self.Player.Organism_Value.saturation = math.Clamp(self.Player.Organism_Value.saturation - unit, 0, 100)
+	self:SaturationStatusTrigger()
 end
 
 function PLAYER_HP:StartSaturationTimer()
@@ -384,9 +386,12 @@ function PLAYER_HP:StartSaturationTimer()
 
 		--self:SubSaturation(2)
         self:BodyUseEnergy()
-        self:SaturationStatusTrigger()
+        --self:SaturationStatusTrigger()
 	end)
 end
+
+
+
 
 -- think func in end
 

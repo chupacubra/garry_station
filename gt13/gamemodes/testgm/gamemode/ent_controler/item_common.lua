@@ -48,7 +48,9 @@ GS_EntityList.food = {
             Size = ITEM_SMALL,
         },
         Private_Data = {
-            food_qual = 20,
+            chemicals = {
+                fiber = 20
+            }
         },
         GetFunctions = function(ent_data, ply, context)
             functions = {}
@@ -56,7 +58,9 @@ GS_EntityList.food = {
             if context == CB_HAND then
                 functions["hand_primary"] = function(ply, ent_data, ent_context)
                     ply:ChatPrint("mmm delicios rap snitch knishes")
+                    local hand = ply:GetActiveWeapon()
                     player_manager.RunClass(ply, "InjectChemical","fiber", 10)
+                    --ent_data.Private_Data.food_qual = 
                     return false
                 end
             end
@@ -119,6 +123,41 @@ function GS_EntityList.GetPartNiceName(ent_name)
         return GS_EntityList.parts[key]["Entity_Data"]["Name"]
     end
     return false
+end
+
+-- the bite - 10 chems 
+-- ex:
+-- a,b,c = 10,10,10
+-- 
+-- bite:
+-- a,b,c = 3.3,3.3,3.3
+--
+--[[
+    a = 10
+    b = 8
+    c = 16
+
+    sum = 34
+    sred = 11.3
+    
+]]
+
+function chemicalBite(chem)
+    local l = table.Count(chem)
+    local m = 0
+    local n = math.floor( 10 / l,1 )
+    local bite = {}
+    for k, v in pairs(chem) do
+        if v < n then
+            bite[k] = v
+            chem[k] = 0
+        else
+            bite[k] = n
+
+        end
+    end
+
+    return chem, bite
 end
 
 

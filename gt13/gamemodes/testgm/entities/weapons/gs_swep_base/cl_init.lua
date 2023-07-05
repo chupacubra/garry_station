@@ -76,7 +76,9 @@ function SWEP:GetContextMenu()
     return contextButton
 end
 
+function SWEP:ContextSlot()
 
+end
 
 function SWEP:GS_Pickup()
     net.Start("gs_ply_pickup_weapon")

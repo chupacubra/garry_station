@@ -6,6 +6,7 @@ GS_EntityList.tech_plate = {
             Model = "models/props/cs_office/computer_caseb_p3a.mdl",
             ENT_Name = "board_vendomat",
             ENUM_Type = GS_ITEM_BOARD,
+            ENUM_Subtype = GS_BOARD_MACHINE,
             Simple_Examine = true,
             Size = ITEM_SMALL,
         },
@@ -16,6 +17,48 @@ GS_EntityList.tech_plate = {
                 part_electronic = 2,
             },
         },
+    }
+}
+ 
+GS_EntityList.pc_plate = {
+    cargo_order = {
+        Entity_Data = {
+            Name = "Cargo order console board",
+            Desc = "Need for creating cargo order console ",
+            Model = "models/props/cs_office/computer_caseb_p3a.mdl",
+            ENT_Name = "board_cargo_order",
+            ENUM_Type = GS_ITEM_BOARD,
+            ENUM_Subtype = GS_BOARD_COMPUTER,
+            Simple_Examine = true,
+            Size = ITEM_SMALL,
+        },
+        Plate_functions = {
+            --[[
+                arg[1] = ply
+                arg[2] = ent
+                arg[next] = arguments
+                ]]
+
+            setup = function(ply, ent, arg)
+                return {
+                    access = CARGO_ACCESS, -- place holder
+                    --insert_id = false,
+                    --insert_limit = 0,
+                }
+            end,
+
+            order = function(ply, ent, arg)
+                print(ply, ent, arg)
+            end,
+
+            getOrders = function(ply, ent, arg)
+
+            end,
+
+            removeOrder = function(ply, ent, arg)
+
+            end
+        }
     }
 }
 
@@ -29,3 +72,4 @@ GS_EntityList.tech_plate = {
     models/props/cs_office/computer_caseb_p6a.mdl harddrive 
     models/props/cs_office/computer_caseb_p5a.mdl rom plate verysmol
 ]]
+

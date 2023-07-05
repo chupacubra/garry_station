@@ -1,26 +1,22 @@
 ENT.Type = "anim"
+ENT.Base = "gs_entity_base"
  
-ENT.PrintName		= "gs_entity_base"
-ENT.Author			= "chupa"
+ENT.PrintName		= "gs_computer"
 ENT.Spawnable = false
-ENT.Category = "gs"
 
-ENT.GS_Entity = true
 
 ENT.CanExamine = true
 ENT.CanUse     = true
 ENT.CanBreak   = false
 ENT.CanBolted  = true
-ENT.ItemReceiver = false
+ENT.ItemReceiver = true
 
 ENT.Entity_Data = {
-    Name = "NAME_ENT",
-    Desc = "DESC",
-    Model = "model",
-    Type = "base",
+    Name = "Computer",
+    Desc = "for unusable things",
+    Model = "models/props_lab/monitor02.mdl",
+    Type = "computer_base",
 }
-
-
 --[[
 ENT.Entity_Status = {
     build     = false, 

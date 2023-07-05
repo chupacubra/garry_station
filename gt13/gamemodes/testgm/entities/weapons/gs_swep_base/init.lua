@@ -17,10 +17,14 @@ local anim_list = {
 }
 
 function SWEP:SoundHit(hit)
+	-- cant change the volume of hit
     if hit then
-        self:GetOwner():EmitSound(Sound(self.PrimarySound..".Melee_HitWorld"))
+        self:GetOwner():EmitSound(self.HitSound,SNDLVL_20dB,255,0.5)
+
+		--EmitSound(self.HitSound, self:GetPos(), self:EntIndex(), CHAN_AUTO, 0.5, 75,  0,  100,  0 )
     else
-        self:GetOwner():EmitSound(Sound(self.PrimarySound..".Single"))
+        self:GetOwner():EmitSound(self.MissSound,SNDLVL_20dB,100,0.5)
+		--EmitSound(self.MissSound, self:GetPos(), self:EntIndex(), CHAN_AUTO, 0.5, 75,  0,  100,  0 )
     end
 end
 

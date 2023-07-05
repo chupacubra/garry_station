@@ -16,25 +16,52 @@ function ENT:Initialize()
 
     self:SetMaterial("phoenix_storms/metalfloor_2-3")
     self:SetExamine({name = "machine empty case", desc = "something is missing"})
+    
     self.Items = {}
     self.HaveBoard = false
 end
 
 function ENT:Screwdriver(ply)
-
+    if !self:CanMakeMachine() then
+        ply:ChatPrint("Where parts?")
+        return
+    end
+    
+    local s = self:MakeMachine(ply)
+    if s then
+        ply:ChatPrint(s)
+    end
 end
 
 function ENT:Crowbar(ply)
     self:EjectItem()
 end
 
+function ENT:CanMakeMachine()
+    if !self.HaveBoard then
+        return false
+    end
+    PrintTable(self.Items)
+    for part, amount in pairs(self.Items[self.HaveBoard]["item"]["Private_Data"]["Parts"]) do
+        local item = self.Items[part]
+        print(part)
+        if !item then
+            return false
+        end
+        if item.count != amount then
+            return false
+        end
+    end
+
+    return true
+end
+
 function ENT:EjectItem()
-    
     if table.IsEmpty(self.Items) then
         return
     end
-    local ent,key = table.Random( self.Items )
     
+    local ent,key = table.Random( self.Items ) 
 
     if key == self.HaveBoard then -- check this
         if table.Count(self.Items) > 1 then
@@ -69,30 +96,7 @@ function ENT:InsertPlate(item)
 end
 
 function ENT:InsertItem(ply, item)
-    --[[
-        if board == nil then
-            receive ONLY boards
-        else have board then
-            receive ONLY parts in board RECEIPT       
-]]
---[[
-    if item.Entity_Data.ENUM_Type == GS_ITEM_BOARD and !self.board then
-        return self:InsertPlate(item)
-    end
-    if self.Items[item.Entity_Data.ENT_Name] == nil then
-        local new = {
-            item = item,
-            count = 1,
-        }
-        self.Items[item.Entity_Data.ENT_Name] = new
-    else
-        self.Items[item.Entity_Data.ENT_Name]["count"] = self.Items[item.Entity_Data.ENT_Name]["count"] + 1
-    end
-    --PrintTable(self.Items)
-    --print(self.Items)
-    return nil
-    --]]
-    if self.HaveBoard == false and item.Entity_Data.ENUM_Type == GS_ITEM_BOARD then
+    if self.HaveBoard == false and item.Entity_Data.ENUM_Type == GS_ITEM_BOARD and item.Entity_Data.ENUM_Subtype  == GS_BOARD_MACHINE then
         return self:InsertPlate(item)
     else
         local inReceipt, amount = GS_EntityControler.ItemInBoardReceipt(self.Items[self.HaveBoard]["item"], item)
@@ -114,8 +118,51 @@ function ENT:InsertItem(ply, item)
     end
 end
 
-function ENT:MakeMachine()
+function ENT:MakeMachine(ply)
+    if !self:CanMakeMachine() then
+        return "wtf"
+    end
 
+    print("1fdf")
+    local rez_ent = ents.Create(self.Items[self.HaveBoard]["item"]["Private_Data"]["Machine"])
+
+    local zpos = rez
+
+    rez_ent:SetPos(self:GetPos())
+    -- check can model of rezult ent out of world
+    -- and this not work!
+    print(EntityCanBeSpawned(rez_ent))
+
+    if !EntityCanBeSpawned(rez_ent) then
+        rez_ent:Remove()
+        return "Object dont fit in here"
+    end
+
+
+    GS_Task:CreateNew(ply,"make_machine", 5, self,{
+        start  = function(ply,_)
+            ply:ChatPrint("You start screwing the machine casing")
+        end,
+        succes = function(ply,_)
+            ply:ChatPrint("You screwed machine case")
+            --rez_ent:SetPos(self:GetPos())
+            rez_ent:Spawn()
+
+            local pos = {rez_ent:OBBCenter(),  rez_ent:OBBMaxs(),  rez_ent:OBBMins()}
+            
+            local npos = (pos[1] - pos[3])
+
+            rez_ent:SetPos(self:GetPos() + Vector(0,0,npos.z))
+
+            debugoverlay.Axis( pos[1], Angle(0,0,0), 1, 5, true)
+            debugoverlay.Axis( pos[2],Angle(0,0,0), 1, 5, true)
+            debugoverlay.Axis( pos[3], Angle(0,0,0),1, 5,true)
+            self:Remove()
+        end,
+        unsucces = function(ply,_)
+            ply:ChatPrint("You stop screwing machine case")
+        end
+    },{},"Screwdriving some...")
 end
 
 function ENT:Use()
@@ -149,6 +196,7 @@ function ENT:ExamineParts(ply)
 
         for part_name, r_amount in pairs(receipt) do
             if self.Items[part_name] == nil then
+                print(part_name)
                 local n_name = GS_EntityList.GetPartNiceName(part_name)--["Entity_Data"]["Name"]
                 print(n_name)
                 table.insert(parts_in_ent,{nice_name = n_name, amount = 0, need = r_amount })

@@ -63,3 +63,6 @@ function PLAYER:Examine(ply)
         ply:ChatPrint(v)
     end
 end
+
+-- tarakani begaut po hate
+-- kupite dihlofoz
