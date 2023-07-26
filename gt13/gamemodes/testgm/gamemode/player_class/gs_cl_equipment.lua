@@ -8,6 +8,9 @@ print("asdasdas")
 
 ]]
 function PLAYER_CL_EQ:SetupEquip()
+    if self.Player.Loaded then
+        return
+    end
     print("SETUP EQUIPMENT FOR "..tostring(ply))
     
     self.Player.EqModelDraw = {
@@ -21,10 +24,11 @@ function PLAYER_CL_EQ:SetupEquip()
 		MASK      = {},
 		EAR       = {},
     }
+
+    self.Player.Loaded = true
 end
 
 function PLAYER_CL_EQ:CreateEqModel(eq_model, id_eq)
-
     local offseta = cl_equip_config[eq_model]["ang"]
     local offsetv = cl_equip_config[eq_model]["vec"]
     local bone    = cl_equip_config[eq_model]["bone"]
@@ -41,7 +45,6 @@ function PLAYER_CL_EQ:CreateEqModel(eq_model, id_eq)
         ang = offseta,
         bone = bone
     }
-
 end
 
 function PLAYER_CL_EQ:DeleteEqModel(id_eq)
@@ -50,6 +53,9 @@ function PLAYER_CL_EQ:DeleteEqModel(id_eq)
 end
 
 function PLAYER_CL_EQ:EquipSync(tbl) -- syncing ALL equip
+    if self.Player.EqModelDraw == nil then
+        self:SetupEquip()
+    end
     for k,v in pairs(self.Player.EqModelDraw) do
         if tbl[k] then
             if !table.IsEmpty(self.Player.EqModelDraw[k]) then
@@ -67,6 +73,10 @@ function PLAYER_CL_EQ:EquipSync(tbl) -- syncing ALL equip
 end
 
 function PLAYER_CL_EQ:DrawEquip()
+    if self.Player.EqModelDraw == nil then
+        self:SetupEquip()
+    end
+
     for k, eq in pairs(self.Player.EqModelDraw) do
         if !table.IsEmpty(eq) then
             local boneid = self.Player:LookupBone( eq.bone )
@@ -92,10 +102,7 @@ function PLAYER_CL_EQ:DrawEquip()
 end
 
 
-
-
 hook.Add( "PostPlayerDraw" , "gs_draw_equip_model", function( ply )
-    
     if ply:IsValid() then
         player_manager.RunClass(ply, "DrawEquip")
     end

@@ -1,7 +1,7 @@
 "testgm"
 {
 	"base"		"base"
-	"title"		"AMOGUS"
+	"title"		"ИЧИ ТРИГЕР ФИНГЕР НИГАЗ"
 	"maps"		"^sk_"
 	"menusystem"	"1"
 	"workshopid"	"15895"

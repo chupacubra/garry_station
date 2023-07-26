@@ -41,6 +41,7 @@ GS_EQUIP_VEST     = 6
 GS_EQUIP_HEAD     = 7
 GS_EQUIP_MASK     = 8
 GS_EQUIP_EAR      = 9
+GS_EQUIP_SUIT     = 10
 
 GS_ENT_PROP     = 1
 GS_ENT_MACHINE  = 2
@@ -74,6 +75,7 @@ FAST_EQ_TYPE = {
     "HEAD",
     "MASK",
     "EAR",--]]
+    "SUIT"
 }
 
 FAST_HUD_TYPE = {
@@ -258,8 +260,36 @@ W_PULSE = 2
 A_EXAMINE = 0
 A_USE     = 1
 
+KS_MAINTANCE = 1
+KS_BOLT      = 2
+KS_BROKEN    = 3
+KS_ROTATING  = 4
 
-KS_MAINTANCE = 0
-KS_BOLT      = 1
-KS_BROKEN    = 2
+JOB_LIST_DERMA = {
+    ["Cargo Department"] = {
+        --quartermaster = "Quartermaster",
+        cargo_technician = "Cargo Technician",
+    },
 
+    ["Security"] = {
+        sec_guard = "Security guard",
+        --hos = "Head of Security",
+    },
+
+    ["Medical Department"] = {
+        doctor = "Doctor",
+        --cmo = "Chief Medical Officer",
+    },
+
+    ["Research Department"] = {
+        scientist = "Scientist",
+    },
+
+    ["Engineers"] = {
+        technician = "Technician"
+    },
+
+    ["Control Department"] = {
+        station_master = "Station Master"
+    }
+}

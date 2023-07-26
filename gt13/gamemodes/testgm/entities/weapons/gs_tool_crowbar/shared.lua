@@ -21,3 +21,8 @@ SWEP.Entity_Data.Name = "Crowbar"
 SWEP.Entity_Data.Desc  = "enemy of cargobox"
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
 SWEP.Entity_Data.ENUM_Subtype = T_CROWBAR
+
+
+SWEP.PrimarySound = "Weapon_Crowbar"
+SWEP.MissSound = Sound(SWEP.PrimarySound..".Single" )
+SWEP.HitSound = Sound(SWEP.PrimarySound..".Melee_HitWorld")

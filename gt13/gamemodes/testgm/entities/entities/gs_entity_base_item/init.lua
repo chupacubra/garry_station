@@ -35,14 +35,12 @@ function ENT:Initialize()
         end)
     end
 
-
 end
 
 function ENT:SetItemModel(model)
     self.Entity_Data.Model = model or ""
     self:SetModel(model)
 end
-
 
 function ENT:SetData(data)
     self.Entity_Data = data
@@ -106,8 +104,8 @@ function ENT:AddStack(pile)
     end
 end
 
-function ENT:BuildPrivateExamine()
-    local arr = {}
+function ENT:PrivateExamine(ply)
+    local arr = {self.Entity_Data.Name, self.Entity_Data.Desk}
 --    local examine_f = self.Examine_Data.examine_string
     for k,v in pairs(self.Examine_Data) do
         local str = v.examine_string
@@ -118,20 +116,10 @@ function ENT:BuildPrivateExamine()
         arr[k] = string.format(str, unpack(arg))
     end
 
-    return arr
+    for k, v in pairs(arr) do
+        ply:ChatPrint(v)
+    end
 end
-
-function ENT:RequestPrivateData(ply)
-    local examine = self:BuildPrivateExamine()
-    GS_MSG(ply:GetName().. " requested private info for "..self.Entity_Data.Name.." ("..self:EntIndex()..")", MSG_INFO)
-
-    net.Start("gs_ent_get_private_info")
-    net.WriteEntity(self)
-    net.WriteTable(examine)
-    net.Send(ply)
-end
-
-
 
 function ENT:Think()
     if self.Grabed then
@@ -166,8 +154,8 @@ net.Receive("gs_ent_client_init_item", function()
     ent:LoadInfoAboutItem() 
 end)
 
-net.Receive("gs_ent_request_private_info", function(_,ply)
+net.Receive("gs_ent_request_examine", function(_,ply)
     local ent = net.ReadEntity()
 
-    ent:RequestPrivateData(ply) 
+    ent:PrivateExamine(ply) 
 end)

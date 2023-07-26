@@ -23,8 +23,8 @@ function SWEP:PrimaryAttack()
         return
     end
 
-    local class = entity:GetClass()
-    if class == "gs_entity_base" or class == "gs_entity_base_container" then
+
+    if entity.Wrench then
         local succes, text =  entity:Wrench(self:GetOwner())
         if succes and text then
             self:GetOwner():ChatPrint(text)

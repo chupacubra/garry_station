@@ -6,6 +6,8 @@ include("shared.lua")
 local SwingSound = Sound( "WeaponFrag.Throw" )
 local HitSound = Sound( "Flesh.ImpactHard" )
 
+-- repeat this: i regret nothing
+
 function SWEP:Deploy()
     self:HoldTypeTriger(self.hand_item != nil)
 end
@@ -47,8 +49,14 @@ function SWEP:BeatEntity()
     if self.BCooldown > CurTime() then
         return
     end
-    self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 
+    -- why is this dont work?
+    --self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
+--[[
+    net.Start("gs_hands_punch_anim")
+    net.WriteEntity(self:GetOwnert())
+    net
+--]]
     local VModel = self:GetOwner():GetViewModel()
     
     VModel:SendViewModelMatchingSequence( math.random(3, 5) )
@@ -250,9 +258,7 @@ function SWEP:PrimaryItemAction()
         end
 
     end
-
-
-
+    
 end
 
 function SWEP:GetItemsContainer()
@@ -332,7 +338,9 @@ function SWEP:DropItem()
         endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 50 ,
         filter =  function( ent ) return ( ent != self:GetOwner() ) end
     }
+
     trace = util.TraceLine(trace)
+
     self:SendToClientDrawModel(false)
 
 
@@ -349,10 +357,7 @@ function SWEP:DropItem()
 end
 
 function SWEP:Reload()
-    if self:HaveItem() then
-        self:DropItem()
-    end
-
+    self:DropItem()
 end
 
 function SWEP:ExamineItem()

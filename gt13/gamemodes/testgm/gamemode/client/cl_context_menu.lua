@@ -303,6 +303,10 @@ function ContextMenu:RequestBackpack()
 end
 
 function ContextMenu:DrawBackpackButton()
+    if self.derma == nil then
+        return
+    end 
+    
     local H = ScrH()
     local W = ScrW()
 

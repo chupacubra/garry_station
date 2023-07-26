@@ -42,10 +42,50 @@ in the card we put information about the person and his access
 
 GS_ID = {}
 
-function GS_ID:PrestartGenerateID(char, access, job)
+ID_base = {
+    Entity_Data = {
+        Name = "card",  -- Cargo ID
+        Desc = "desc",  -- It is a Ivan Ivanich ID
+        Model = "models/weapons/helios/id_cards/w_idcard.mdl",
+        ENUM_Type = GS_ITEM_EQUIP,
+        ENUM_Subtype = GS_EQUIP_ID,
+        Simple_Examine = true,
+        Size = ITEM_VERY_SMALL,
+    },
+    Private_Data = {
+        tocken   = "",
+        access   =  0,
+        job_name = "",
+        job_dept = "",
+        name     = "",
+        color    = "",
+    }
+}
 
+function GS_ID:GenerateIDData(tocken, job)
+    local id = ID_base
+
+    local jn = GS_Job:GetChoosenJob(job)
+    local ac = GS_Job:GetAccess(job)
+    local name = GS_PLY_Char:Name(tocken)
+
+    id.Private_Data.tocken   = tocken
+    id.Private_Data.name     = name
+    id.Private_Data.job_name = jn.name
+    id.Private_Data.job_dept = GS_Job:GetDeptName(job)
+    id.Private_Data.access   = ac
+    id.Private_Data.color    = GS_Job:GetColor(job)
+
+    id.Entity_Data.Name = GS_Job:GetJobName(job).." ID card"
+    id.Entity_Data.Desc = "It is a "..name.." card"
+
+    return id
 end
 
 function CheckAccess(have, need)
     return bit.band(have, need) == need
+end
+
+function GS_ID:SpawnID(ply, job)
+
 end

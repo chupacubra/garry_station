@@ -28,7 +28,7 @@ end
 ]]
 
 
-function GS_EntityControler:MakeEntity2(name, typ, pos, ang)
+function GS_EntityControler:MakeEntity(name, typ, pos)
     print(typ,name)
     PrintTable(GS_EntityList[typ])
     if !GS_EntityList[typ] then
@@ -41,31 +41,31 @@ function GS_EntityControler:MakeEntity2(name, typ, pos, ang)
     local entity = ents.Create(edata.entity_base or "gs_entity_base_item")
     
     entity:SetData(edata.Entity_Data)
+
     entity.Private_Data = edata.Private_Data
     entity.Examine_Data = edata.Examine_Data
-    --[[
-        
-    entitys dont save this functions
-    entity.GetFunctions = edata.GetFunctions
-    entity.RunFunction  = edata.RunFunction
-
-    --]]
-    print(entity.GetFunctions)
 
     entity.Data_Labels = {
         id = name,
         type = typ,
     } 
 
+    PrintTable(entity.Data_Labels)
+
     entity:SetPos(pos)
     entity:Spawn()
-end
+    
+    PrintTable(entity.Data_Labels)
 
+    return entity
+end
+--[[
 function GS_EntityControler:MakeEntity(etype,name,pos,ang)
     local entity = ents.Create( "gs_entity_vendomat" )
     entity:SetPos(pos)
     entity:Spawn()
 end
+--]]
 
 function GS_EntityControler:MakeFromPattern(name,pos,ang)
 

@@ -21,9 +21,9 @@ PLAYER.BaseRunSpeed  = PLAYER.RunSpeed
 PLAYER.UseVMHands = true
 PLAYER.PLYModel  = "models/player/Group01/male_07.mdl"
 
-function PLAYER:SetModel()
-	local modelname = self.PLYModel
-
+function PLAYER:SetModel(name)
+	local modelname = name or self.PLYModel
+	
 	util.PrecacheModel( modelname )
 	self.Player:SetModel( modelname )
 end
@@ -98,9 +98,9 @@ end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
-	timer.Simple(1, function()
-		self:SetupEquipDraw()
-	end)
+	--timer.Simple(1, function()
+	self:SetupEquipDraw()
+	--end)
 end
 
 function PLAYER:Loadout()

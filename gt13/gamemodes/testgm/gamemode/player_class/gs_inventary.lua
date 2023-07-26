@@ -14,6 +14,7 @@ function PLAYER_INVENTARY:SetupInventary()
 	}
 
 	self.Player.Pocket = {{},{}}
+	self.Player.Suit = "casual"
 end
 
 function PLAYER_INVENTARY:InsertItemInPocket(item, pocket)
@@ -67,25 +68,39 @@ function PLAYER_INVENTARY:MoveSWEPToPocket(weapon, key)
 	local data = duplicator.CopyEntTable(weapon)
 
 	local succes = self:InsertItemInPocket(data, key)
+	
 	if succes then
 		self.Player:StripWeapon( weapon:GetClass() )
 		self:SendToClientItemsFromPocket()
 	end
+
 end
 
-function PLAYER_INVENTARY:HaveEquipment(key)
+function PLAYER_INVENTARY:HaveEquipment(key)	
 	if self.Player.Equipment[key] != 0 then 
 		return true
 	end
+
 	return false
 end
 
 function PLAYER_INVENTARY:EquipItem(itemData,key)
+	
+	debug.Trace()
+	PrintTable(itemData)
+	print(key)
+
+	if key == "SUIT" then
+		return self:ChangeSuit(itemData)
+	end
+
 	if self:HaveEquipment(key) then
 		return false
 	end
+	
 	self.Player.Equipment[key] = itemData
 	self:EquipmentEquipClient(itemData, key)
+	
 	return true
 end
 
@@ -106,7 +121,7 @@ function PLAYER_INVENTARY:RemoveEquip(key)
 		self.Player:ChatPrint("Your hands is full!")
 		return false -- deequip item only in hands
 	end
-	
+
 	self.Player.Hands:PutItemInHand(self.Player.Equipment[key])
 	self.Player.Equipment[key] = 0
 
@@ -459,4 +474,44 @@ end  -- o  0 -- o --  ______  0 -- o -- 0 -- o
 --| the whole world   0    is theatre|
 --| and YOU are the  /|\   main clown|
 --|                  /\              |
+
+
+
+function PLAYER_INVENTARY:SetSuit(suit)
+	if !suit then
+		return
+	end
+
+	local model = Ply_Models["male_0".. tostring(self.Character.model)][suit][1]
+	
+	if model then
+		self:SetModel(model)
+	end
+
+	self.Player.Suit = suit
+end
+
+
+function PLAYER_INVENTARY:ChangeSuit(itemData)
+	local ch_suit = itemData.Private_Data.suit
+	local ply_suit = self.Player.Suit
+
+	if !ch_suit then
+		return
+	end
+
+    local trace = {
+        start = self:GetOwner():EyePos(),
+        endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 50 ,
+        filter =  function( ent ) return ( ent != self:GetOwner() ) end
+    }
+
+    trace = util.TraceLine(trace)
+
+	GS_EntityControler:MakeEntity("suit_"..ply_suit, "suit", trace.HitPos)
+
+	self:SetSuit(ch_suit)
+	return true
+end
+
 

@@ -18,22 +18,6 @@ function ENT:GetRequest(dat)
 end
 
 function ENT:Examine(request, data) -- if bool then
-    if request then
-        local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
-        local exTable = {name, desc}
-
-        table.Add(exTable, data)
-
-        for k,v in pairs(exTable) do
-            if k == 1 then
-                v = "It is ".. v
-            end
-            LocalPlayer():ChatPrint(v)
-        end
-        
-        return
-    end
-
     if self.Entity_Data.Simple_Examine then
         local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
         local exTable = {name, desc}
@@ -45,7 +29,7 @@ function ENT:Examine(request, data) -- if bool then
             LocalPlayer():ChatPrint(v)
         end
     else
-        net.Start("gs_ent_request_private_info")
+        net.Start("gs_ent_request_examine")
         net.WriteEntity(self)
         net.SendToServer()
     end
@@ -145,7 +129,16 @@ net.Receive("gs_ent_update_info_item", function()
     local id   = net.ReadString()
     local typ = net.ReadString()
 
+    print(ent)
+    print(data)
+
+    debug.Trace()
     ent.Entity_Data = data
+
+    if id == "" or typ == "" then
+        return
+    end
+
     ent.Data_Labels = {id = id, type = typ}
     --[[
         check for having context buttons in files

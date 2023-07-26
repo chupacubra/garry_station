@@ -92,6 +92,11 @@ function gs_map.ent_make_action(ply, ent, act)
     end
 end
 
+function gs_map.get_spawn_pos(job)
+    return table.Random( MAP_Spawn[job] )
+end
+
+
 
 net.Receive("gs_wire_action", function(_, ply)
     local entity = net.ReadEntity()
@@ -115,7 +120,7 @@ end)
 
 net.Receive("gs_map_entity_get_type", function(_, ply)
     local entity = net.ReadEntity()
-    print("122312", entity)
+
     if !entity:CreatedByMap() then
         return
     end

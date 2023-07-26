@@ -107,6 +107,7 @@ end
 function FindAllCharacters()
     local chars_id = file.Find( "gs13/chars/*", "DATA" )
     local chars_tbl = {}
+
     for k,v in pairs(chars_id) do
         --chars_id[k] = string.StripExtension(v)
         local json = file.Read("gs13/chars/"..v , "DATA" )
@@ -124,6 +125,29 @@ function DrawCharacterEditor()
     local char_selected = {}
     local chat_selected_bool = false
 
+    local function DrawJobPanel()
+        local job_frame = vgui.Create("DFrame")
+        job_frame:SetSize(200, 400)
+        job_frame:Center()
+        job_frame:SetTitle("Job pre")
+        job_frame:MakePopup()
+    
+        local job_list = vgui.Create( "DCategoryList", job_frame )
+        job_list:Dock(FILL)
+    
+        for category, jobs  in pairs(JOB_LIST_DERMA) do
+            local categ = job_list:Add( category )
+            for str, name in pairs(jobs) do
+                local button = categ:Add( name )
+                button.key = str
+                function button:DoDoubleClick()
+                    char_selected.char_data.job_prefer[1] = self.key
+                    Derma_Message("Job '"..name.."' now prefer", "Character editor", "OK")
+                end
+            end
+        end
+        
+    end
 
     local CEFrame = vgui.Create("DFrame")
     CEFrame:SetSize(500, 240)
@@ -138,10 +162,10 @@ function DrawCharacterEditor()
 
     local icon = vgui.Create( "DModelPanel", DPModel )
     icon:SetSize(200,200)
-    icon:SetModel( "" )
-    function icon:LayoutEntity( Entity ) return end
+    icon:SetModel( Ply_Models["male_0"..tostring(math.random(1, 9))]["casual"][1] )
 
-    --function icon.Entity:GetPlayerColor() return Vector (1, 0, 0) end
+    function icon:LayoutEntity( Entity ) return end
+    function icon.Entity:GetPlayerColor() return Vector (1, 0, 0) end
 
     local DPOpt = vgui.Create( "DPanel", CEFrame )
     DPOpt:SetSize( 285, 200 )
@@ -154,7 +178,7 @@ function DrawCharacterEditor()
 
     function DCharList:ResetAndSelect(tocken)
         self:Clear()
-        for k,v in pairs(FindAllIDCharacters()) do
+        for k,v in pairs(FindAllCharacters()) do
             local append_id = DCharList:AddChoice(v.char_data.name, v)
             if v.id == tocken then
                 DCharList:ChooseOptionID( append_id )
@@ -167,13 +191,6 @@ function DrawCharacterEditor()
     BNewChar:SetPos(110,6)
 	BNewChar:SetSize(18,18)
 	BNewChar:SetIcon("icon16/page_add.png")
---[[
-    function BNewChar:DoClick()
-        local new = CreateNewChar()
-        local id_new = DCharList:AddChoice(new.char_data.name, new)
-        DCharList:ChooseOptionID( id_new )
-    end
---]]
 
     local BSaveChar = vgui.Create("DImageButton", DPOpt)
     BSaveChar:SetPos(132,6)
@@ -253,6 +270,7 @@ function DrawCharacterEditor()
         char_selected = char_data
         PNameChar:SetText("Name: "..char_selected.char_data.name)
         PrintTable(char_selected)
+        icon:SetModel( Ply_Models["male_0"..tostring(char_selected.char_data.model)]["casual"][1] )
     end
 
     function BSaveChar:DoClick()
@@ -312,7 +330,7 @@ function DrawCharacterEditor()
         Derma_StringRequest(
             "Examine data", 
             "Examine char",
-            char_selected.char_data.examine_info or "bald",
+            char_selected.char_data.examine_info or "",
             function(text)
                 if table.IsEmpty(char_selected) then
                     return
@@ -326,6 +344,33 @@ function DrawCharacterEditor()
     end
 
     function PJob:DoClick()
+        DrawJobPanel()
+    end
+
+    function PModel:DoClick()
+        Derma_StringRequest(
+            "Model change", 
+            "Only number 1-9",
+            tostring(char_selected.char_data.model) or "1",
+            function(model)
+                if table.IsEmpty(char_selected) then
+                    return
+                end
+                
+                if !tonumber(model) then
+                    return
+                end
+                
+                local m = tonumber(model)
+
+                if m > 0 and m < 10 then 
+                    char_selected.char_data.model = m
+                end
+                print("MODEL SELECT", char_selected.char_data.model)
+                icon:SetModel( Ply_Models["male_0"..tostring(char_selected.char_data.model)]["casual"][1] )
+            end,
+            function(text) print("Cancelled input") end
+        )
     end
 
     function PRole:DoClick()
@@ -348,15 +393,17 @@ function DrawCharacterEditor()
                 self:SetColor(Color(0,0,0))
             end
         end)
+        
     end
 
-end 
+end
+
 
 function DrawStartroundMenu()
     local loaded_char = {}
     local loaded_char_bool = false
-    local Menu = vgui.Create("DFrame")
 
+    local Menu = vgui.Create("DFrame")
     Menu:SetSize(200, 400)
     Menu:Center()
     Menu:SetTitle("Start menu")

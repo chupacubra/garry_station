@@ -9,7 +9,7 @@ ENT.Category = "gs"
 
 ENT.GS_Entity = true
 ENT.IsGS_Equip = true
-ENT.TypeEq = GS_EQUIP_HEAD
+--ENT.TypeEq = GS_EQUIP_HEAD
 ENT.CanExamine = true
 ENT.EType = "type" 
 ENT.CanUse = false

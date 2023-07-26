@@ -10,7 +10,15 @@ function SWEP:Initialize()
 end
 
 function SWEP:PrimaryAttack()
+    if self.FightHand then
+        if self.RCooldown > CurTime() then
+            return
+        end
 
+        self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
+
+        self.RCooldown = CurTime() + 0.8
+    end
 end
 
 function SWEP:SecondaryAttack()
@@ -205,8 +213,8 @@ function SWEP:DrawWorldModel()
         self.IWorldModel:DrawModel()
 
     end
-
-    print(self.IWorldModel)
+    print(self.IWorldModel:GetModel())
+    --print(self.IWorldModel)
 end
 
 function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
@@ -243,6 +251,7 @@ net.Receive("gs_hand_draw_model",function()
         hands.WorldModel = ""
     end
 
+    print(model)
 
     hands:WorldModelTriger(haveItem)
 end)

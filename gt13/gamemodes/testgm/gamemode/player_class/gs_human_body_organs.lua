@@ -106,6 +106,7 @@ end
 
 function PLAYER_ORGANS:SetupBones()
     self.Player.Bones = {
+        -- 💀 = false
         skull = false,
         spine = false,
         l_arm = false,
@@ -114,6 +115,10 @@ function PLAYER_ORGANS:SetupBones()
         r_leg = false,
         ribs  = false,
     }
+end
+
+function PLAYER_ORGANS:BoneBroken(bone)
+    return self.Player.Bones[bone]
 end
 
 function PLAYER_ORGANS:BreakBone(bone)
@@ -132,6 +137,12 @@ function PLAYER_ORGANS:BrainThink()
     if self.Player.Organs.brain == nil then
         -- no brain - no life
         return
+    end
+
+    if self:BoneBroken("skull") then
+        if flipquart() then
+            self:DamageOrgan("brain", math.random(1, 5))
+        end
     end
 
     if self.Player.Organism_Value.oxygen == 0 then
@@ -161,6 +172,12 @@ function PLAYER_ORGANS:LungsThink()
         return
     end
     
+    if self:BoneBroken("ribs") then
+        if flipquart() then
+            self:DamageOrgan("lungs", math.random(1, 5))
+        end
+    end
+
     local hp = self.Player.Organs.lungs.hp
 
     if hp == 0 then

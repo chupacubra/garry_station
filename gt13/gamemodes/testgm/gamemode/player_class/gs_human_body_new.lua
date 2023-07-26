@@ -395,6 +395,8 @@ end
 
 -- think func in end
 
+-- rewrite this
+--[[
 function PLAYER_HP:PainThink()
     if CurTime() - 10 > self.Player.Organism_Value.last_dmg then
         self:DecreasePain(0.05)
@@ -407,9 +409,22 @@ function PLAYER_HP:PainThink()
         end)
     end
 end
+--]]
+
+function PLAYER_HP:PainThink()
+    if CurTime() - 8 > self.Player.Organism_Value.last_dmg then
+        self:DecreasePain(0.05)
+    end
+
+    if self:GetPain() > 0.7 then
+        self.Player.Organism_Value.pain_shock = true
+	else
+		self.Player.Organism_Value.pain_shock = false
+	end
+end
+
 
 function PLAYER_HP:SaturationStatusTrigger()
-
 	net.Start("gs_ply_hunger")
 	net.WriteUInt(self:GetSaturation(), 7)
 	net.Send(self.Player)

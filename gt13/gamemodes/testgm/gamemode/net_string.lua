@@ -21,12 +21,13 @@ util.AddNetworkString("gs_ply_hunger")
 util.AddNetworkString("gs_ply_equip_draw_sync")
 util.AddNetworkString("gs_ply_equip_setup")
 
+util.AddNetworkString("gs_ply_sync_load")
 -- ent update info
 util.AddNetworkString("gs_ent_client_init")
 util.AddNetworkString("gs_ent_client_init_item")
 util.AddNetworkString("gs_ent_update_info")
 util.AddNetworkString("gs_ent_update_info_item")
-util.AddNetworkString("gs_ent_request_private_info")
+util.AddNetworkString("gs_ent_request_examine")
 util.AddNetworkString("gs_ent_get_private_info")
 util.AddNetworkString("gs_ent_grab")
 
@@ -36,7 +37,7 @@ util.AddNetworkString("gs_ent_container_close")
 util.AddNetworkString("gs_wire_action")
 util.AddNetworkString("gs_ent_comp_client_send_command")
 util.AddNetworkString("gs_ent_comp_client_get_data")
-
+util.AddNetworkString("gs_comp_show_derma")
 --hands
 util.AddNetworkString("gs_hand_draw_model")
 util.AddNetworkString("gs_hand_vm")
@@ -49,7 +50,7 @@ util.AddNetworkString("gs_weapon_base_effect")
 util.AddNetworkString("gs_weapon_base_strip_magazine")
 util.AddNetworkString("gs_weapon_base_set_magazine_model")
 util.AddNetworkString("gs_weapon_base_weapon_dropped")
-
+--util.AddNetworkString("gs_hands_punch_anim")
 --subsystems
 util.AddNetworkString("gs_sys_chem_list")
 
@@ -74,6 +75,8 @@ util.AddNetworkString("gs_round_status")
 util.AddNetworkString("gs_cl_f_button")
 util.AddNetworkString("gs_cl_derma_handler")
 util.AddNetworkString("gs_cl_derma_open")
+
+util.AddNetworkString("gs_cl_show_notify")
 
 
 --craft

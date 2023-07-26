@@ -23,40 +23,20 @@ function ENT:OnReloaded()
     net.SendToServer()
 end
 
-function ENT:AddContextMenu() -- need for adding new buttons
-    return nil
-end
-
 function ENT:GetContextMenu()
     local contextButton = {}
-    
-    if self.CanExamine then
-        local button = {
-            label = "Examine",
-            icon  = "icon16/eye.png",
-            click = function()
-                local examine = self:Examine()
-                for k,v in pairs(examine) do
-                    if k == 1 then
-                        v = "It is ".. v
-                    end
-                    LocalPlayer():ChatPrint(v)
-                end
-            end
-        }
-        table.insert(contextButton, button)
-    end
 
-    if self.CanUse then
-        local button = {
-            label = "Use",
-            icon  = "icon16/resultset_next.png" ,
-            click = function()
-                self:Use()
-            end
-        }
-        table.insert(contextButton, button)
-    end
+    local button = {
+        label = "Examine",
+        icon  = "icon16/eye.png",
+        click = function()
+            net.Start("gs_ent_request_examine")
+            net.WriteEntity(self)
+            net.SendToServer()
+        end
+    }
+    table.insert(contextButton, button)
+
 
     local button = {
         label = "Grab",
@@ -79,9 +59,7 @@ function ENT:GetContextMenu()
 end
 
 function ENT:OpenDerma(derma)
-    if derma then
-
-    end
+    OpenCompFrame(self, derma)
 end
 
 
@@ -90,12 +68,15 @@ function ENT:RequestDataFromServer(data_name)
 end
 
 
-
-
 net.Receive("gs_ent_update_info", function()
     local ent = net.ReadEntity()
     local tab = net.ReadTable()
     ent.Entity_Data = tab
 end)
 
-net.Receive()
+net.Receive("gs_comp_show_derma", function()
+    local ent = net.ReadEntity()
+    local board = net.ReadString()
+
+    ent:OpenDerma(board)
+end)

@@ -32,7 +32,7 @@ function MAP:GetExamineEntity(entity, context_type)
     elseif context_type == "button" then
         return {
             "button",
-            "it a red?"
+            "it's a red?"
         }
     end
 end

@@ -12,29 +12,33 @@ function CompPanel(name, parent)
     return gen_panel(parent)
 end
 
-NewCompPanel("cargo_order", function(parent)
+NewCompPanel("board_cargo_order", function(parent)
     local sheet = vgui.Create("DPropertySheet", parent, "category_list")
     sheet:Dock(FILL)
 
     local p_orderRequest = vgui.Create("DPanel")
     p_orderRequest:Dock(FILL)
 
+    local money_count = vgui.Create("DLabel", p_orderRequest, "money_label")
+    money_count:Dock(TOP)
+    money_count:DockMargin(10, 20, 0, 20)
+    money_count:SetColor(Color(0,0,0))
+    money_count:SetText("Current money: $2500")
     local listRequest = vgui.Create("DListView", p_orderRequest, "list_order")
+
     listRequest:Dock(FILL)
     listRequest:SetMultiSelect( false )
     listRequest:AddColumn( "Item Identifier (ID)" )
     listRequest:AddColumn( "Status" )
     listRequest.ListId = {}
 
-    SendCompCommand("get_list_orders", arg)
+    SendCompCommand("get_list_orders")
 
-    local p_orderList = vgui.Create("DPanel")
-    p_orderlist:Dock(FILL)
+    --local p_orderList = vgui.Create("DPanel")
+    --p_orderList:Dock(FILL)
 
     sheet:AddSheet("Delivery status", p_orderRequest, "icon16/tick.png")
     
-    local listorder = {}
---[[
     for kategory, orders in pairs(Cargo_order_list) do
         local list = vgui.Create("DListView", sheet)
         list:Dock(FILL)
@@ -46,8 +50,24 @@ NewCompPanel("cargo_order", function(parent)
     
         function list:DoDoubleClick( lineID, line )
             local menu = DermaMenu(line)
-            menu:AddOption( "Order")
-            menu:AddOption( "Order several" )
+
+            menu:AddOption( "Order", function()
+                local id_item = tonumber(line:GetColumnText(2))
+                SendCompCommand("order_id", {id_item})
+            end)
+            
+            menu:AddOption( "Order several", function()
+                Derma_StringRequest( "Specify the quantity of the item", "", "1",
+                    function (num)
+                        local id_item = tonumber(line:GetColumnText(2))
+                        SendCompCommand("order_id",{id_item,tonumber(num)})
+                    end,
+                    nil,
+                    "OK",
+                    "Cancel"
+                )
+            end )
+
             menu:AddSpacer()
             menu:AddOption( "View content" )
     
@@ -60,15 +80,6 @@ NewCompPanel("cargo_order", function(parent)
 
         sheet:AddSheet(kategory, list)
     end
-    --]]
-    --[[
-    sheet:AddSheet("Delivery status", test, "icon16/tick.png")
-    sheet:AddSheet("Other", test)
-    sheet:AddSheet("Medical", test)
-    sheet:AddSheet("Security", test)
-    sheet:AddSheet("Engineering", test)
-    sheet:AddSheet("Science", test)
-    --]]
 
 
     return sheet
@@ -102,9 +113,9 @@ end
 
 
 function SendCompCommand(cmd, arg)
-    if !CURRENT_COMP.entity:IsValid() then
-        return
-    end
+    --if !CURRENT_COMP.entity:IsValid() then
+    --    return
+    --end
 
     net.Start("gs_ent_comp_client_send_command")
     net.WriteEntity(CURRENT_COMP.entity)

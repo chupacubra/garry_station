@@ -9,7 +9,7 @@ GS_EntityControler = GS_EntityControler or {}
             connecting succesful!
         end)
     end)
-
+ 
 ]]
 function GS_EntityControler:MakeActionEntData(receiver, drop)
     if receiver.Entity_Data.ENUM_Type == GS_ITEM_AMMO_MAGAZINE and (drop.Entity_Data.ENUM_Type == GS_ITEM_AMMOBOX or drop.Entity_Data.ENUM_Type == GS_ITEM_MATERIAL) then
@@ -67,4 +67,94 @@ function GS_EntityControler.ItemInBoardReceipt(board, part)
         return true, board.Private_Data.Parts[part.Entity_Data.ENT_Name]
     end
     return false, 0
+end
+
+function GS_EntityControler.InsertInENTItem(ent, typ, name)
+
+end
+
+function GS_EntityControler:MakeEntData(typ, id)
+    -- make entity, after copy entity, then delete
+    -- cringe
+    local ent = GS_EntityControler:MakeEntity(id, typ, Vector(0,0,0))
+
+    local ent_data = duplicator.CopyEntTable(ent)
+
+    ent:Remove()
+
+    return ent_data
+end
+
+--[[
+    array = {
+        equipment = {
+            BACKPACK = {
+                id  = simple_backpack,
+                typ = backpack
+                contain = {
+                    {},
+                    {},
+                }
+            }
+        }
+        pockets   = {
+            {},
+            {}
+        }
+    }
+]]
+
+function GS_EntityControler.GiveItemFromArray(ply, array)
+    if !ply:IsValid() then
+        return
+    end
+
+    local function getContain(item_contain)
+        local itemData_contain = GS_EntityControler:MakeEntData(item_contain.typ, item_contain.id)
+
+        if item_contain.contain then
+            local contain_contain_item = {}
+
+            for k, v in pairs(item_contain.contain) do
+                table.insert(contain_contain_item, getContain(v))
+            end
+
+            for k, v in pairs(contain_contain_item) do
+                table.insert(itemData_contain.Private_Data.Items, v)
+            end
+        end
+
+        return itemData_contain
+    end
+
+    for key, item in pairs(array.equipment) do
+        local itemData = GS_EntityControler:MakeEntData(item.typ, item.id)
+        
+        if item.contain then
+            local contain_item = {}
+
+            for k, v in pairs(item.contain) do
+                table.insert(contain_item, getContain(v))
+            end
+
+            for k, v in pairs(contain_item) do
+                table.insert(itemData.Private_Data.Items, v)
+            end
+        end
+
+        player_manager.RunClass( ply, "EquipItem", itemData, key)
+    end
+
+    if array.pockets then
+        for pocket, item in pairs(array.pockets) do
+            -- don't use contain because box don't fit in pocket
+            local itemData = GS_EntityControler:MakeEntData(item.typ, item.id)
+
+            if !itemData then
+                continue
+            end
+
+            player_manager.RunClass( ply, "InsertItemInPocket", itemData, pocket)
+        end
+    end
 end

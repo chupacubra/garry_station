@@ -24,12 +24,15 @@ function ENT:SetupFlag()
 end
 
 function ENT:SetFlagState(key, flag)
-    if flag then
-        self.Key_State = bit.bor(self.Key_State, 2^key)
-    else
-        self.Key_State = bit.bxor(self.Key_State, 2^key)
-    end
+    local k = 2^key
 
+    if flag then
+        self.Key_State = bit.bor(self.Key_State, k)
+    else
+        if bit.band(self.Key_State, k) == k then
+            self.Key_State = bit.bxor(self.Key_State , k)
+        end
+    end
 end 
 
 function ENT:GetFlagState(key)
@@ -102,6 +105,36 @@ function ENT:Unbolt()
 end
 
 function ENT:Wrench(ply)
+
+    if self.CanBolted then
+        if self:GetFlagState(KS_BOLT) == false then
+            return GS_Task:CreateNew(ply,"screw_entity", 4, self,{
+                start  = function(ply,_)
+                    ply:ChatPrint("You began to fasten the object to the floor")
+                end,
+                succes = function(ply,_)
+                    return self:Bolt()
+                end,
+                unsucces = function(ply,_)
+                    ply:ChatPrint("You stop screwing machine case")
+                end
+            },{},"Fastenning some...")
+        else
+            return GS_Task:CreateNew(ply,"unscrew_entity", 4, self,{
+                start  = function(ply,_)
+                    ply:ChatPrint("You began to unfasten the object to the floor")
+                end,
+                succes = function(ply,_)
+                    return self:Unbolt()
+                end,
+                unsucces = function(ply,_)
+                    ply:ChatPrint("You stop screwing machine case")
+                end
+            },{},"Unfastenning some...")
+        end
+    end
+
+--[[
     if self.CanBolted then
         if self:GetFlagState(KS_BOLT) == false then
             return self:Bolt()
@@ -109,6 +142,7 @@ function ENT:Wrench(ply)
             return self:Unbolt()
         end
     end
+--]]
 end
 
 function ENT:Crowbar(ply)

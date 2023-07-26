@@ -61,6 +61,10 @@ function ItemSubType(item)
     return item.Entity_Data.ENUM_Subtype
 end
 
+function FQT(item)
+    return FAST_EQ_TYPE[item.Entity_Data.ENUM_Subtype]
+end
+
 function FitInContainer(maxsize, drp )
     if drp.ENUM_Type == GS_ITEM_CONTAINER  or (drp.ENUM_Type == GS_ITEM_EQUIP and drp.ENUM_Type == GS_EQUIP_BACKPACK) then
         return maxsize > drp.Size
@@ -160,3 +164,18 @@ function generateID(str)
     return rez
 end
 
+if CLIENT then
+    net.Receive("gs_cl_show_notify", function()
+        local title = net.ReadString()
+        local msg   = net.ReadString()
+
+        Derma_Message(title, msg, "OK")
+    end)
+else
+    function ShowNotify(ply, title, msg) -- title, message
+        net.Start("gs_cl_show_notify")
+        net.WriteString(title)
+        net.WriteString(msg)
+        net.Send(ply)
+    end
+end

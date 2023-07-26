@@ -36,3 +36,7 @@ SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
 SWEP.Entity_Data.ENUM_Subtype = T_SCREWDRIVER
 
 SWEP.Damage = {3,5}
+
+SWEP.PrimarySound = "Weapon_Crowbar"
+SWEP.MissSound = Sound(SWEP.PrimarySound..".Single" )
+SWEP.HitSound = Sound(SWEP.PrimarySound..".Melee_HitWorld")

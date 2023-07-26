@@ -1,3 +1,8 @@
+--[[
+    DELETE DrawWorldModel
+]]
+
+
 include("shared.lua")
 
 SWEP.OffsetVector = Vector(-1, -1, 0)
@@ -5,7 +10,6 @@ SWEP.OffsetVector = Vector(-1, -1, 0)
 function SWEP:Initialize()
     self.delay = CurTime()
     self.WorldModelDraw = ClientsideModel(self.WorldModel, RENDER_GROUP_VIEW_MODEL_OPAQUE)
-    self.WorldModelDraw:SetSkin(1)
     self.WorldModelDraw:SetNoDraw(true)
 
     self:SetHoldType(self.HoldType)
@@ -77,11 +81,7 @@ end
 
 
 function SWEP:Deploy() 
-    print(self.HoldType)
-    self:SetHoldType(self.HoldType)
 
-    self.WorldModelDraw:SetPos(self:GetOwner():GetPos())
-    self.WorldModelDraw:SetParent(self:GetOwner())
 end
 
 function SWEP:Holster()
@@ -109,7 +109,6 @@ end
 function SWEP:GS_Pickup()
     net.Start("gs_ply_pickup_weapon")
     net.WriteEntity(self)
-    --net.WriteEntity(LocalPlayer())
     net.SendToServer()
 end
 
@@ -131,37 +130,15 @@ end
 function SWEP:DrawWorldModel()
     local _Owner = self:GetOwner()
 
-    if (IsValid(self:GetParent())) then
-        local offsetVec = self.OffsetVector
-        local offsetAng = Angle(180, 180, 0)
-        
-        local boneid = _Owner:LookupBone("ValveBiped.Bip01_R_Hand")
-        if !boneid then return end
-
-        local matrix = _Owner:GetBoneMatrix(boneid)
-        if !matrix then return end
-
-        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
-
-
-        self.WorldModelDraw:SetRenderOrigin(newPos)
-        self.WorldModelDraw:SetRenderAngles(newAng)
- 
-        self.WorldModelDraw:SetupBones()
-    else
+    if !IsValid(self:GetParent()) then
         self.WorldModelDraw:SetRenderOrigin(self:GetPos())
         self.WorldModelDraw:SetRenderAngles(self:GetAngles())
         self.WorldModelDraw:SetupBones()
+        self.WorldModelDraw:DrawModel()
+    else
+        self:DrawModel()
     end
-
-    self.WorldModelDraw:DrawModel()
 end
---[[
-function SWEP:DrawWorldModel( flags )
-    --print(self:GetModel())
-	self:DrawModel( flags )
-end
---]]
 
 net.Receive("gs_weapon_base_effect", function()
     local ef = {}
@@ -203,6 +180,7 @@ net.Receive("gs_weapon_base_set_magazine_model", function()
     end)
 end)
 
+--[[
 net.Receive("gs_weapon_base_weapon_dropped", function()
     local ent = net.ReadEntity()
     
@@ -212,5 +190,5 @@ net.Receive("gs_weapon_base_weapon_dropped", function()
             ent.WorldModelDraw:SetParent(nil)
         end 
     end)
-    print("123234fdsf")
 end)
+--]]

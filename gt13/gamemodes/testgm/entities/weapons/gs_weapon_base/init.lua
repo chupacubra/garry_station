@@ -5,12 +5,12 @@ include("shared.lua")
 
 
 function SWEP:Initialize()
-    self:SetHoldType( self.HoldType )
+    --self:SetHoldType( self.HoldType )
     self.magazine = self.magazine or nil
     timer.Simple(0.1, function()
         if IsValid(self) then
             self:TriggerLoadWorldModel(self.magazine != nil)
-        end
+        end 
     end)
 end
 
@@ -21,11 +21,11 @@ function SWEP:OnDrop()
         end
     end)
 
-    self:SendClientDrop()
+    --self:SendClientDrop()
 end
 
 function SWEP:Deploy()
-    self:SetHoldType(self.HoldType)
+    --self:SetHoldType(self.HoldType)
 end
 
 function SWEP:DealDamage(trace, dmgbullet)
@@ -110,7 +110,7 @@ function SWEP:StripMagazine()
 
     self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name..".")
     self:ReloadGunEffect()
-    self:TriggerLoadWorldModel(self.magazine != nil)
+    --self:TriggerLoadWorldModel(self.magazine != nil)
 end
 
 function SWEP:StripMagazineHand()
@@ -129,7 +129,7 @@ function SWEP:StripMagazineHand()
         self.magazine = nil
         self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name.." and put in hand")
         self:ReloadGunEffect()
-        self:TriggerLoadWorldModel(self.magazine != nil)
+        --self:TriggerLoadWorldModel(self.magazine != nil)
     end
 end
 
@@ -150,7 +150,7 @@ function SWEP:InsertMagazine(ent)
     self.magazine = ent
 
     self:ReloadGunEffect()
-    self:TriggerLoadWorldModel(self.magazine != nil)
+    --self:TriggerLoadWorldModel(self.magazine != nil)
     return nil
 end
 
@@ -190,14 +190,10 @@ function SWEP:ReloadGunEffect()
 end
 
 function SWEP:TriggerLoadWorldModel(bool)
+    --self:SetModel(self.UnloadedWorldModel)
     net.Start("gs_weapon_base_set_magazine_model")
     net.WriteEntity(self)
     net.WriteBool(bool)
     net.Broadcast()
 end
 
-function SWEP:SendClientDrop()
-    net.Start("gs_weapon_base_weapon_dropped")
-    net.WriteEntity(self)
-    net.Broadcast()
-end

@@ -42,6 +42,8 @@ function GS_PLY_Char:AddPredstartCharacter(ply, c_data)
 		return
 	end
 
+	local token = gentocken()
+
 	local pred_char = {
 		character = {
 			name = c_data.name,
@@ -58,62 +60,61 @@ function GS_PLY_Char:AddPredstartCharacter(ply, c_data)
 		db_info = {
 			p_notes = c_data.person_notes,
 		},
+		token = token,
 		origin = "predstart",
 		owner = ply,
 	}
 
-	local tocken = gentocken()
-
-	self.Chars[tocken] = pred_char
+	self.Chars[token] = pred_char
 	
 	if self.Selected_Chars[ply] then
 		self:RemoveChar(self.Selected_Chars[ply])
 	end
 
-	self.Selected_Chars[ply] = tocken
+	self.Selected_Chars[ply] = token
 
 	self:SendToClientSucces(ply, true)
 end
 
-function GS_PLY_Char:RemoveChar(tocken)
-	self.Chars[tocken] = nil
+function GS_PLY_Char:RemoveChar(token)
+	self.Chars[token] = nil
 end
 
-function GS_PLY_Char:Name(tocken)
-	if !self.Chars[tocken] then
-		GS_MSG(tocken .." - the system don't have this character")
+function GS_PLY_Char:Name(token)
+	if !self.Chars[token] then
+		GS_MSG(token .." - the system don't have this character")
 		return ""
 	end
-	local char = self.Chars[tocken]
+	local char = self.Chars[token]
 
 	return char.character.name
 end
 
 function GS_PLY_Char:GetPlyChar(ply)
-	local tocken = self.Selected_Chars[ply]
+	local token = self.Selected_Chars[ply]
 
-	if !tocken then
+	if !token then
 		return false
 	end
 
-	if !self.Chars[tocken] then
+	if !self.Chars[token] then
 		GS_MSG(tostring(ply).." player loaded char but char is NOTHING!")
 		return false
 	end
 	
-	return tocken
+	return token
 end
 
 function GS_PLY_Char:HaveChar(ply)
-	local tocken = self.Selected_Chars[ply]
-	if !tocken then
+	local token = self.Selected_Chars[ply]
+	if !token then
 		return false
 	end
-	if !self.Chars[tocken] then
+	if !self.Chars[token] then
 		GS_MSG(tostring(ply).." player loaded char but char is NOTHING!")
 		return false
 	end
-	return tocken != false
+	return token != false
 end
 
 function GS_PLY_Char:ChangeCharacter(ply, id)
@@ -123,15 +124,40 @@ function GS_PLY_Char:ChangeCharacter(ply, id)
 	]]
 end
 
-function GS_PLY_Char:GetChar(tocken)
-	if !self.Chars[tocken] then
-		GS_MSG(tostring(tocken).." no loaded chars on this tocken")
+function GS_PLY_Char:GetChar(token)
+	if !self.Chars[token] then
+		GS_MSG(tostring(token).." no loaded chars on this token")
 		return {}
 	end
 
-	local char = self.Chars[tocken]
+	local char = self.Chars[token]
 
 	return char["character"]
+end
+
+function GS_PLY_Char:GetCharData(token)
+	if !self.Chars[token] then
+		GS_MSG(tostring(token).." no loaded chars on this token")
+		return {}
+	end
+
+	local char = self.Chars[token]
+
+	return char
+end
+
+function GS_PLY_Char:UpdateCharData(token, char)
+	-- ONLY FOR CHANGE DATA ABOUT JOB ATC
+	-- don't change name or smth
+
+	if !self.Chars[token] then
+		GS_MSG(tostring(token).." no loaded chars on this token")
+		return {}
+	end
+
+	self.Chars[token] = char
+	GS_MSG("UPDATED CHAR FOR "..token)
+	PrintTable(self.Chars)
 end
 
 

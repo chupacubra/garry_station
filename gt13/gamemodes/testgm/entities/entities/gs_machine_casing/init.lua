@@ -145,7 +145,6 @@ function ENT:MakeMachine(ply)
         end,
         succes = function(ply,_)
             ply:ChatPrint("You screwed machine case")
-            --rez_ent:SetPos(self:GetPos())
             rez_ent:Spawn()
 
             local pos = {rez_ent:OBBCenter(),  rez_ent:OBBMaxs(),  rez_ent:OBBMins()}
@@ -153,10 +152,6 @@ function ENT:MakeMachine(ply)
             local npos = (pos[1] - pos[3])
 
             rez_ent:SetPos(self:GetPos() + Vector(0,0,npos.z))
-
-            debugoverlay.Axis( pos[1], Angle(0,0,0), 1, 5, true)
-            debugoverlay.Axis( pos[2],Angle(0,0,0), 1, 5, true)
-            debugoverlay.Axis( pos[3], Angle(0,0,0),1, 5,true)
             self:Remove()
         end,
         unsucces = function(ply,_)

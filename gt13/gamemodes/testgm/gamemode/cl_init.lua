@@ -1,6 +1,7 @@
 include( "shared.lua" )
 include( "sh_enum.lua" )
 include( "sh_service.lua" )
+include( "jobs_system/init.lua" )
 include( "client/cl_round.lua" ) 
 include( "client/cl_hud_button.lua" )
 include( "client/cl_plyhud.lua" )
@@ -16,6 +17,7 @@ include("ent_controler/sh_item_list.lua")
 include("client/cl_equip_config.lua")
 include("client/computer_derma/cl_main.lua")
 include("client/win98skin.lua")
+include("client/cl_ply_models.lua")
 
 local hide = {
 	["CHudHealth"]  = true,

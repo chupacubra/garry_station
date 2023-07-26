@@ -1,3 +1,5 @@
+include("sv_infodb.lua")
+include("sv_job.lua")
 include("sv_round.lua")
 include("sv_corpse.lua")
 include("sv_grab.lua")
