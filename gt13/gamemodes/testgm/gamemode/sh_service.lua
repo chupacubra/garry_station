@@ -140,6 +140,10 @@ function flipcoin()
     return math.random(1, 2) == 1
 end
 
+function flipquart()
+    return math.random(1, 4) == 1
+end
+
 function PrintBones( entity )
     for i = 0, entity:GetBoneCount() - 1 do
         print( i, entity:GetBoneName( i ) )

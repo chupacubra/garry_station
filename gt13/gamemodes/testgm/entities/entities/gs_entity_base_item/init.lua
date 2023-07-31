@@ -8,10 +8,12 @@ function ENT:Initialize()
     else
         self:SetModel(self:GetModel())
     end
+
     self:PhysicsInit( SOLID_VPHYSICS )
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
     self:SetUseType(SIMPLE_USE)
+
     local phys = self:GetPhysicsObject()
     if (phys:IsValid()) then
         phys:Wake()
@@ -35,6 +37,7 @@ function ENT:Initialize()
         end)
     end
 
+    self:SetupFlag()
 end
 
 function ENT:SetItemModel(model)
@@ -121,6 +124,33 @@ function ENT:PrivateExamine(ply)
     end
 end
 
+function ENT:SetupFlag()
+    self.Key_State = 0
+end
+
+function ENT:SetFlagState(key, flag)
+    local k = 2^key
+
+    if flag then
+        self.Key_State = bit.bor(self.Key_State, k)
+    else
+        if bit.band(self.Key_State, k) == k then
+            self.Key_State = bit.bxor(self.Key_State , k)
+        end
+    end
+end 
+
+function ENT:GetFlagState(key)
+    local k = 2 ^ key
+
+    return bit.band(self.Key_State, k) == k
+end
+
+function ENT:GetFlag()
+    return self.Key_State
+end
+
+--[[
 function ENT:Think()
     if self.Grabed then
         if !IsValid(self.GrabPlayer) then
@@ -148,6 +178,7 @@ function ENT:Think()
         end
     end
 end
+--]]
 
 net.Receive("gs_ent_client_init_item", function()
     local ent = net.ReadEntity()

@@ -39,6 +39,7 @@ include( "client/cl_ply_models.lua" )
 hook.Add("GS_PlayerDead", "MakePersonDead", function(plyID)
     GS_Round_System:AddDeadPly(plyID)
 end)
+
 --[[
 local _print = print
 
@@ -48,3 +49,20 @@ function print(...)
 end
 --]]
 
+function GM:AllowPlayerPickup( ply, ent )
+    print(ply,ent)
+    return true
+end
+--[[
+function GM:EntityRemoved( ent )
+
+end
+]]
+
+numpad.Register( "Manipulate_Control", function(ply, a, b)
+    print(ply, a, b)
+
+    debug.Trace()
+    
+    return true
+end)

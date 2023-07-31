@@ -7,19 +7,25 @@ include("shared.lua")
 function SWEP:Initialize()
     --self:SetHoldType( self.HoldType )
     self.magazine = self.magazine or nil
-    timer.Simple(0.1, function()
+    --[[timer.Simple(0.1, function()
         if IsValid(self) then
             self:TriggerLoadWorldModel(self.magazine != nil)
         end 
     end)
+    --]]
+    --self.SetNWBool("magazine", self.magazine != nil)
+    self:TriggerLoadWorldModel()
 end
 
 function SWEP:OnDrop()
+    self:TriggerLoadWorldModel()
+    --[[
     timer.Simple(0.1, function()
         if IsValid(self) then
             self:TriggerLoadWorldModel(self.magazine != nil)
         end
     end)
+    --]]
 
     --self:SendClientDrop()
 end
@@ -189,11 +195,7 @@ function SWEP:ReloadGunEffect()
     end)
 end
 
-function SWEP:TriggerLoadWorldModel(bool)
-    --self:SetModel(self.UnloadedWorldModel)
-    net.Start("gs_weapon_base_set_magazine_model")
-    net.WriteEntity(self)
-    net.WriteBool(bool)
-    net.Broadcast()
+function SWEP:TriggerLoadWorldModel()
+    self:SetNWBool("magazine", self.magazine != nil)
 end
 

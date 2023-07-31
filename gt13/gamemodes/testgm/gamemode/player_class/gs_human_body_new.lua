@@ -75,7 +75,7 @@ function PLAYER_HP:SetupOrganismThink()
 
 
         local dmg = self:GetSumDMG()
-		print(dmg, "1231231")
+		--print(dmg, "1231231")
 
 
         if dmg < 100 then
@@ -114,7 +114,7 @@ function PLAYER_HP:AddOxygen(int)
 end
 
 function PLAYER_HP:SubOxygen(int)
-	print(self.Player.Organism_Value.oxygen , int, self.Player.Organism_Value.oxygen - int, math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1) )
+	--print(self.Player.Organism_Value.oxygen , int, self.Player.Organism_Value.oxygen - int, math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1) )
     self.Player.Organism_Value.oxygen = math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1)
 end
 
@@ -283,7 +283,7 @@ end
 
 function PLAYER_HP:HealthPartClientUpdate(part)
 	local parthp
-	print(part)
+	--print(part)
 	if !part then
 		part = 0
 		parthp = 0
@@ -301,7 +301,7 @@ function PLAYER_HP:HealthPartClientUpdate(part)
 	--[[
 		!
 	]]
-	print(dmg)
+	--print(dmg)
 	
 	if dmg != 0 then
 		if dmg < 30 then
@@ -351,9 +351,6 @@ function PLAYER_HP:DamageHealth(part, typeD, dmg)
 
 	self.Player.Body_Parts[part][typeD] = self.Player.Body_Parts[part][typeD] + dmg
 end
-
-
-
 
 
 function PLAYER_HP:Metabolize()
@@ -432,20 +429,6 @@ function PLAYER_HP:SaturationStatusTrigger()
 	print(self:GetSaturation())
 end
 
-
-
-
-
-
-
-
-
-
--- REWRITE ALL THIS
-
-
-
-
 function PLAYER_HP:HungerThink()
 	if !self.Player:IsValid() then
 		return
@@ -468,6 +451,9 @@ end
 function PLAYER_HP:StopSaturationTimer()
 	timer.Destroy(self.Player:UserID().."_hunger")
 end
+
+
+-- REWRITE ALL THIS
 
 function PLAYER_HP:Death()
 	--[[
@@ -493,6 +479,11 @@ function PLAYER_HP:Death()
 
 	print(self.Player.Organism_Value)
 end
+
+--[[
+	trash 
+]]
+
 
 function PLAYER_HP:OrganismStatus(newStatus, origin)
 	if organism_status_list[newStatus] == nil then

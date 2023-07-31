@@ -26,6 +26,8 @@ function PLAYER:SetModel(name)
 	
 	util.PrecacheModel( modelname )
 	self.Player:SetModel( modelname )
+
+	self.Player:SetupHands()
 end
 
 if SERVER then

@@ -101,3 +101,16 @@ function MakeDermaAction(name, func, arg)
     net.WriteTable(arg)
     net.SendToServer()
 end 
+
+function GM:PostDrawViewModel( vm, ply, weapon )
+	if ( weapon.UseHands || !weapon:IsScripted() ) then
+		local hands = LocalPlayer():GetHands()
+        if weapon == "gs_swep_hand" then
+            if weapon:GetNWBool("FightHand") then
+                hands:DrawModel()
+            end
+        else
+            hands:DrawModel()
+        end
+	end
+end

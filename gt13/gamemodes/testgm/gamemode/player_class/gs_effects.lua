@@ -64,7 +64,7 @@ end
 
 function PLAYER_EFFECT:EffectSpeedRemove(effect)
 	if self.EffectSpeed[effect] == nil then
-		GS_MSG("want to remove speed effect, but is nothing!!!1  "..tostring(self.Player))
+		--GS_MSG("want to remove speed effect, but is nothing!!!1  "..tostring(self.Player))
 		return
 	end 
 

@@ -77,9 +77,9 @@ function GS_Round_System:StartRoundSpawnPlayer()
             ply:UnSpectate()
             ply:Spawn()
 
-            local pos = gs_map.get_spawn_pos(wanted_job)
+            --local pos = gs_map.get_spawn_pos(wanted_job)
 
-            ply:SetPos(gs_map.get_spawn_pos(wanted_job))
+            --ply:SetPos(gs_map.get_spawn_pos(wanted_job))
             
             local char_token = GS_PLY_Char:GetPlyChar(ply)
 
@@ -143,9 +143,9 @@ function GS_Round_System:RoundSpawnPlayer(ply)
     ply:UnSpectate()    
     ply:Spawn()
 
-    local pos = gs_map.get_spawn_pos(wanted_job)
-    print(pos)
-    ply:SetPos(gs_map.get_spawn_pos(wanted_job)) 
+    --local pos = gs_map.get_spawn_pos(wanted_job)
+    --print(pos)
+    --ply:SetPos(gs_map.get_spawn_pos(wanted_job)) 
 
     local char = GS_PLY_Char:GetPlyChar(ply)
     ply:SetCharacter(char)

@@ -2,6 +2,9 @@
 -- The more I create enums, the more I think it's a sin
 --
 --
+
+E_NIL = Entity(-1)
+
 GS_HUD_100 = 1
 GS_HUD_75  = 2
 GS_HUD_50  = 3

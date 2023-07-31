@@ -118,7 +118,7 @@ concommand.Add( "gs_spawn", function( ply, cmd, args, str )
     PrintTable(args)
     print(cmd)
     --player_manager.RunClass( ply,"InjectChemical","water",10)
-    GS_EntityControler:MakeEntity2(args[1],args[2],ply:GetPos()+Vector(50,0,50),0)
+    GS_EntityControler:MakeEntity(args[1],args[2],ply:GetPos()+Vector(50,0,50),0)
 end )
 
 concommand.Add( "gs_task", function( ply, cmd, args, str )

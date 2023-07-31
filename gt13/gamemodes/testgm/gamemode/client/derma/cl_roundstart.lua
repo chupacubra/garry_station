@@ -182,7 +182,7 @@ function DrawCharacterEditor()
             local append_id = DCharList:AddChoice(v.char_data.name, v)
             if v.id == tocken then
                 DCharList:ChooseOptionID( append_id )
-                ChooseChar(data)
+                --ChooseChar(data)
             end
         end
     end

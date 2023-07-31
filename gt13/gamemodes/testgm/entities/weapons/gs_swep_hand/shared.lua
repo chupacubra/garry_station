@@ -9,10 +9,11 @@ SWEP.Category			    = "Other"
 
 SWEP.Spawnable              = true
 SWEP.AdminSpawnable         = true
+
 --[[
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
-SWEP.Primary.Automatic = false
+SWEP.Primary.Automatic = true
 SWEP.Primary.Ammo = "none"
 
 SWEP.Secondary.ClipSize = -1
@@ -22,7 +23,5 @@ SWEP.Secondary.Ammo = "none"
 --]]
 SWEP.ViewModel = "models/weapons/c_arms.mdl" 
 SWEP.WorldModel = ""
-SWEP.ViewModelFOV = 54
 SWEP.UseHands = true
-
 SWEP.DrawAmmo = false

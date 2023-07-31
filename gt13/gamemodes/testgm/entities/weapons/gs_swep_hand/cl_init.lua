@@ -3,14 +3,28 @@ include("shared.lua")
 SWEP.PrintName = "Hands" 
 SWEP.HoldType = "normal"
 
+local DIR_ROLLA   = KEY_PAD_8
+local DIR_ROLLB   = KEY_PAD_2
+local DIR_YAWA    = KEY_PAD_4
+local DIR_YAWB    = KEY_PAD_6
+local DIR_PITCHA  = KEY_PAD_7
+local DIR_PITCHB  = KEY_PAD_1
+
+local DIR_CMD = {
+    [DIR_ROLLA] = 1,
+    [DIR_ROLLB] = 2,
+    [DIR_YAWA] = 3,
+    [DIR_YAWB] = 4,
+    [DIR_PITCHA] = 5,
+    [DIR_PITCHB] = 6,
+}
 
 function SWEP:Initialize()
-    self.FightHand = false
     self.RCooldown = 0
 end
 
 function SWEP:PrimaryAttack()
-    if self.FightHand then
+    if self:GetNWBool("FightHand") then
         if self.RCooldown > CurTime() then
             return
         end
@@ -25,31 +39,36 @@ function SWEP:SecondaryAttack()
 
 end
 
-
 function SWEP:DrawHUD() 
     surface.SetFont( "TargetID" )
     surface.SetTextPos((ScrW() / 2)-50, (ScrH() / 2) + 100)
-    surface.SetTextColor( 255, 255, 255 )
-    surface.DrawText( "Click on item" )
 
-    local trace = {
-        start = LocalPlayer():EyePos(),
-        endpos = LocalPlayer():EyePos() + EyeAngles():Forward() * 150 ,
-        filter =  function( ent ) return ( ent != LocalPlayer() ) end
-    }
-    
-    trace = util.TraceLine(trace)
-    if !trace.Entity:IsValid() then 
+    if self:GetNWBool("FightHand") then
+        surface.SetTextColor( 255, 50, 50 )
+        surface.DrawText( "PUNCH HIM!" )
+    else
+        surface.SetTextColor( 255, 255, 255 )
+        surface.DrawText( "Click on item" )
+    end
+
+    if self:GetNWBool("ManipMode") then
+        surface.SetTextPos((ScrW() / 2)-50, (ScrH() / 2) + 120)
+        surface.SetTextColor( 50, 255, 50 )
+        surface.DrawText( "Manipulate" )
+    end
+
+    local trace = LocalPlayer():GetEyeTrace()
+
+    if !trace.Entity:IsValid() or (LocalPlayer():EyePos() - trace.HitPos):Length() > 70 then 
         return
     end
     
-    e_class = trace.Entity:GetClass()
+    local e_class = trace.Entity:GetClass()
     
     if string.Left(e_class, 3) == "gs_"  then
         surface.SetTextPos(ScrW() / 2,ScrH() / 2) 
         surface.DrawText( trace.Entity.Entity_Data.Name )
     end
-
 end 
 
 function SWEP:WorldModelTriger(bool)
@@ -80,7 +99,7 @@ function SWEP:Holster()
 end
 
 function SWEP:ShouldDrawViewModel()
-    if self.FightHand or self.itemModel then
+    if self:GetNWBool("FightHand") or self.itemModel then
         return true
     end
     return false
@@ -109,43 +128,7 @@ end
 function SWEP:HaveItem()
     return self.itemModel != nil --bruh
 end
---[[
-function SWEP:SecondaryAttack()
-    print("secondart")
-    if self:HaveItem() == false and !self.FightHand then
-        self:FightPlayerModel()
-    elseif self.FightHand then
-        self:FightPlayerModelStop()
-    end
-end
 
-function SWEP:FightPlayerModel()
-    if self.RCooldown > CurTime() then
-        return 
-    end
-    self.FightHand = true
-    self.RCooldown = CurTime() + 1
-    print("Change to FIGHT")
-end
-
-function SWEP:FightPlayerModelStop()
-    if self.RCooldown > CurTime() then
-        return 
-    end
-    self.FightHand = false
-    self.RCooldown = CurTime() + 1
-    print("Change to NOFIGHT")
-end
---]]
---[[
-function SWEP:PrimaryAttack()
-    if self.FightHand then
-        print("BEATING")
-        local VModel = self:GetOwner():GetViewModel()
-        VModel:SendViewModelMatchingSequence( 4 )
-    end
-end
---]]
 function SWEP:ContextSlot()
     local options = {}
     
@@ -205,35 +188,41 @@ function SWEP:DrawWorldModel()
         self.IWorldModel:SetAngles(newAng)
         self.IWorldModel:SetupBones()
         self.IWorldModel:DrawModel()
-
-    elseif IsValid(self.IWorldModel) then
-
-        self.IWorldModel:SetPos(self:GetPos())
-        self.IWorldModel:SetAngles(self:GetAngles())
-        self.IWorldModel:DrawModel()
-
     end
-    print(self.IWorldModel:GetModel())
-    --print(self.IWorldModel)
+
 end
 
 function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
-    if self.itemModel and self.FightHand == false then
+    if self.itemModel and self:GetNWBool("FightHand") == false then
         ViewModel:SetModel(self.itemModel or "")
-    --elseif self.FightHand then
-    --    ViewModel:SetModel(self.ViewModel)
     end
-
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
     if self.itemModel then
-	    pos,ang = LocalToWorld(Vector(30,-5,-10),Angle(0,180,0),pos,ang)
-	elseif self.FightHand then
-        pos,ang = LocalToWorld(Vector(0,0,0),Angle(0,0,0),pos,ang)
-    end
+	    pos,ang = LocalToWorld(Vector(30, -5, -10), Angle(0, 180, 0), pos, ang)
+	end
 	return pos, ang
 end
+--[[
+function SWEP:Think()
+    if !self:GetNWBool("ManipMode") then return end
+    if self:GetOwner() != LocalPlayer() then return end -- dont know
+    
+    --if input.IsKeyDown(DIR_ROLLA) then
+
+    -- check inputs
+    --input.StartKeyTrapping()
+    --print(input.CheckKeyTrapping())
+    for key, id in pairs(DIR_CMD) do
+        if input.IsKeyDown(key) then
+            print("gs_manipcontrol", id)
+            RunConsoleCommand("gs_manipcontrol", id)
+        end
+    end
+end
+--]]
+
 
 net.Receive("gs_hand_draw_model",function()
     local hands = net.ReadEntity()
@@ -256,13 +245,35 @@ net.Receive("gs_hand_draw_model",function()
     hands:WorldModelTriger(haveItem)
 end)
 
-net.Receive("gs_hand_vm", function()
-    local bool = net.ReadBool()
-    local hand = LocalPlayer():GetWeapon("gs_swep_hand")
 
-    if !hand then
-        return
+hook.Add( "PlayerButtonDown", "CheckManipControl", function(ply, key_down)
+    if ply:IsValid() and ply:Team() == TEAM_PLY then
+        if ply:GetActiveWeapon():GetClass() == "gs_swep_hand" then
+            local wep = ply:GetActiveWeapon()
+            if !wep:GetNWBool("ManipMode") then
+                return
+            end
+            for key, id in pairs(DIR_CMD) do
+                if key_down == key then
+                    RunConsoleCommand("gs_manipcontrol_down", id)
+                end
+            end
+        end
     end
+end )
 
-    hand.FightHand =  bool
-end)
+hook.Add( "PlayerButtonUp", "CheckManipControl", function(ply, key_down)
+    if ply:IsValid() and ply:Team() == TEAM_PLY then
+        if ply:GetActiveWeapon():GetClass() == "gs_swep_hand" then
+            local wep = ply:GetActiveWeapon()
+            if !wep:GetNWBool("ManipMode") then
+                return
+            end
+            for key, id in pairs(DIR_CMD) do
+                if key_down == key then
+                    RunConsoleCommand("gs_manipcontrol_up", id)
+                end
+            end
+        end
+    end
+end )

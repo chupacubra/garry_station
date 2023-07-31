@@ -11,7 +11,6 @@ function SWEP:Initialize()
     self.delay = CurTime()
     self.WorldModelDraw = ClientsideModel(self.WorldModel, RENDER_GROUP_VIEW_MODEL_OPAQUE)
     self.WorldModelDraw:SetNoDraw(true)
-
     self:SetHoldType(self.HoldType)
 end
 
@@ -130,6 +129,8 @@ end
 function SWEP:DrawWorldModel()
     local _Owner = self:GetOwner()
 
+    self.WorldModelDraw:SetModel( (self:GetNWBool("magazine")) and self.LoadedWorldModel or self.UnloadedWorldModel  )
+
     if !IsValid(self:GetParent()) then
         self.WorldModelDraw:SetRenderOrigin(self:GetPos())
         self.WorldModelDraw:SetRenderAngles(self:GetAngles())
@@ -165,30 +166,3 @@ net.Receive("gs_weapon_base_effect", function()
     traceEf:SetStart(ef.startpos)
     util.Effect( "Tracer", traceEf )
 end)
-
-
-net.Receive("gs_weapon_base_set_magazine_model", function()
-    local gun = net.ReadEntity()
-    local bool = net.ReadBool()
-    print(bool)
-    timer.Simple(0.1, function()
-        if bool then
-            gun.WorldModelDraw:SetModel(gun.LoadedWorldModel)
-        else
-            gun.WorldModelDraw:SetModel(gun.UnloadedWorldModel)
-        end
-    end)
-end)
-
---[[
-net.Receive("gs_weapon_base_weapon_dropped", function()
-    local ent = net.ReadEntity()
-    
-    timer.Simple(0.1, function()
-        print(ent.WorldModelDraw:GetParent())
-        if ent.WorldModelDraw then
-            ent.WorldModelDraw:SetParent(nil)
-        end 
-    end)
-end)
---]]

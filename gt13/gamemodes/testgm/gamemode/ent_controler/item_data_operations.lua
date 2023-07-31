@@ -128,21 +128,26 @@ function GS_EntityControler.GiveItemFromArray(ply, array)
     end
 
     for key, item in pairs(array.equipment) do
-        local itemData = GS_EntityControler:MakeEntData(item.typ, item.id)
-        
-        if item.contain then
-            local contain_item = {}
+        if item.typ == "suit" then
+            local suit = GS_EntityList[item.typ][item.id]["Private_Data"]["suit"]
 
-            for k, v in pairs(item.contain) do
-                table.insert(contain_item, getContain(v))
+            player_manager.RunClass( ply, "SetSuit", suit)
+        else
+            local itemData = GS_EntityControler:MakeEntData(item.typ, item.id)
+            if item.contain then
+                local contain_item = {}
+
+                for k, v in pairs(item.contain) do
+                    table.insert(contain_item, getContain(v))
+                end
+
+                for k, v in pairs(contain_item) do
+                    table.insert(itemData.Private_Data.Items, v)
+                end
             end
 
-            for k, v in pairs(contain_item) do
-                table.insert(itemData.Private_Data.Items, v)
-            end
+            player_manager.RunClass( ply, "EquipItem", itemData, key)
         end
-
-        player_manager.RunClass( ply, "EquipItem", itemData, key)
     end
 
     if array.pockets then
