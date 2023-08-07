@@ -1,5 +1,5 @@
 GS_HUD = {}
-
+GS_HUD.selected_wep = 1
 --[[
 hat/mask
 backpack/vest/
@@ -36,10 +36,8 @@ local hpicon = {
     Material( "health_8" ),
 }
 function GS_HUD.DrawHud() 
-
 	surface.SetFont( "TargetID" )
 	surface.SetTextColor( 255, 255, 255 )
-
 
     -- draw slots
     local H = ScrH()
@@ -69,12 +67,10 @@ function GS_HUD.DrawHud()
     end
 
     surface.SetDrawColor(255,255,255,240)
-    for i = 1,4 do
-        surface.DrawOutlinedRect( (W / 3.5 ) + (110 * i), H - (H / 8), 90, 90, 3 )
-    end
+    
+    local i = GS_ClPlyStat:GetCurrentWeaponsSlot()
+    surface.DrawOutlinedRect( (W / 3.5 ) + (110 * i), H - (H / 8), 90, 90, 3 )
 
-
- 
     --draw hp
     if GS_ClPlyStat then
         if GS_ClPlyStat.init then
@@ -105,3 +101,9 @@ function GS_HUD.DrawHud()
 
 end
 
+function GS_HUD.SpectatorHud()
+	surface.SetFont( "DermaLarge" )
+	surface.SetTextColor( 255, 255, 255 )
+    surface.SetTextPos((ScrW() / 2)-50, (ScrH() / 2) + 100)
+    surface.DrawText( "Spectating" )
+end

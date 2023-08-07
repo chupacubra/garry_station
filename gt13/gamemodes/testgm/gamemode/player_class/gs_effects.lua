@@ -42,6 +42,7 @@ function PLAYER_EFFECT:EffectSpeedSet()
 end
 
 function PLAYER_EFFECT:EffectSpeedAdd(effect, walk, run)
+	--debug.Trace()
 	--if self.EffectSpeed[effect] then
 		--return
 	--end
@@ -86,7 +87,7 @@ function PLAYER_EFFECT:EffectSpeedHave(effect)
 end
 
 function PLAYER_EFFECT:Ragdollize() -- from ragmod
-	debug.Trace()
+	--debug.Trace()
 	if self.Ragdolled then
 		return 
 	end
@@ -116,11 +117,17 @@ function PLAYER_EFFECT:Ragdollize() -- from ragmod
 	self.Player:SetNoTarget( true )
 	
 	self.Ragdolled = true
+
+	self.Player:SetNWBool("Ragdolled", true)
 end
 
 function PLAYER_EFFECT:Unragdollize()
+	--debug.Trace()
 	if !IsValid(self.Player.Ragdoll) then
-		GS_MSG(self.Player.." lose self corpse ragdoll, move to spectators")
+		--GS_MSG(self.Player," lose self corpse ragdoll, move to spectators")
+		if self.Ragdolled then
+			GS_MSG(self.Player," lose self corpse ragdoll, move to spectators")
+		end
 		return
 	end
 
@@ -187,6 +194,9 @@ function PLAYER_EFFECT:Unragdollize()
 	self.Player.Spec_Damage = spec_d
 
 	self:HealthPartClientUpdate(part)
+	self:SaturationStatusTrigger()
+
+	self.Player:SetNWBool("Ragdolled", false)
 end
 
 function PLAYER_EFFECT:IsRagdolled()

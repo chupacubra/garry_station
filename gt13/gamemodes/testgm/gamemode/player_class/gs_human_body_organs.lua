@@ -101,12 +101,12 @@ function PLAYER_ORGANS:SetupThinkOrgans()
         self:HeartThink()
         self:LungsThink()
         self:StomachThink()
+        --PrintTable(self.Player.Organs)
     end)
 end
 
 function PLAYER_ORGANS:SetupBones()
     self.Player.Bones = {
-        -- 💀 = false
         skull = false,
         spine = false,
         l_arm = false,
@@ -149,17 +149,18 @@ function PLAYER_ORGANS:BrainThink()
         -- show hypoxia icon
         -- damage organism hypoxia damage
         -- hypoxia dmg - result of lack of oxygen 
-        return
+        --return
     end
 
     if self.Player.Spec_Damage.hypoxia > 25 then
         if flipcoin() then
-            self:CritParalyze()
+            --self:CritParalyze()
             self:DamageOrgan("brain", 4)
         end
     end
 
     if self.Player.Organs.brain.hp == 0 then
+
         self:Death()
         return
     end
@@ -283,7 +284,7 @@ function PLAYER_ORGANS:BodyUseEnergy() -- in saturation timer
     for k,v in RandomPairs(self.Player.Organs) do
         if self.Player.Organism_Value.saturation == 0 then
             if flipcoin() then
-                self:DamageOrgan(k, 1)
+                self:DamageOrgan(k, 4)
             end
         else
             if v.hp != 0 then

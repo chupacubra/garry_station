@@ -105,6 +105,7 @@ function GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
 
     self.iconhp = hp
     self.icon_stat = iconstat
+    self.cur_weap = 1
 end
 
 function GS_ClPlyStat:GetWeaponsSlot(needEntity)
@@ -120,6 +121,22 @@ function GS_ClPlyStat:GetWeaponsSlot(needEntity)
     end
 
     return arr
+end
+
+function GS_ClPlyStat:SetCurrentWeaponsSlot()
+    local allWeapons = LocalPlayer():GetWeapons()
+    local cur = LocalPlayer():GetWeapons()
+
+    for i=1, #allWeapons do
+        if allWeapons[i] == cur then
+            return i
+        end
+    end
+
+end
+
+function GS_ClPlyStat:GetCurrentWeaponsSlot()
+    return self.cur_weap
 end
 
 function GS_ClPlyStat:HaveEquip(key)

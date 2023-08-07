@@ -61,7 +61,7 @@ function SWEP:GetContextMenu()
         }
         table.insert(contextButton, button)
     end
-
+	--[[
     if self.IsGS_Weapon then
         local button = {
             label = "Equip",
@@ -72,7 +72,7 @@ function SWEP:GetContextMenu()
         }
         table.insert(contextButton, button)
     end
-
+	--]]
     return contextButton
 end
 
@@ -83,7 +83,6 @@ end
 function SWEP:GS_Pickup()
     net.Start("gs_ply_pickup_weapon")
     net.WriteEntity(self)
-    --net.WriteEntity(LocalPlayer())
     net.SendToServer()
 end
 

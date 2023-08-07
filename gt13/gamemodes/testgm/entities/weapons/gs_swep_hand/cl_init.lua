@@ -56,19 +56,6 @@ function SWEP:DrawHUD()
         surface.SetTextColor( 50, 255, 50 )
         surface.DrawText( "Manipulate" )
     end
-
-    local trace = LocalPlayer():GetEyeTrace()
-
-    if !trace.Entity:IsValid() or (LocalPlayer():EyePos() - trace.HitPos):Length() > 70 then 
-        return
-    end
-    
-    local e_class = trace.Entity:GetClass()
-    
-    if string.Left(e_class, 3) == "gs_"  then
-        surface.SetTextPos(ScrW() / 2,ScrH() / 2) 
-        surface.DrawText( trace.Entity.Entity_Data.Name )
-    end
 end 
 
 function SWEP:WorldModelTriger(bool)
@@ -246,34 +233,33 @@ net.Receive("gs_hand_draw_model",function()
 end)
 
 
-hook.Add( "PlayerButtonDown", "CheckManipControl", function(ply, key_down)
+hook.Add( "PlayerButtonDown", "CheckManipControlDown", function(ply, key)
     if ply:IsValid() and ply:Team() == TEAM_PLY then
-        if ply:GetActiveWeapon():GetClass() == "gs_swep_hand" then
+        local wep = ply:GetActiveWeapon()
+        if !IsValid(wep) then return end
+        if wep:GetClass() == "gs_swep_hand" then
             local wep = ply:GetActiveWeapon()
             if !wep:GetNWBool("ManipMode") then
                 return
             end
-            for key, id in pairs(DIR_CMD) do
-                if key_down == key then
-                    RunConsoleCommand("gs_manipcontrol_down", id)
-                end
-            end
+
+            RunConsoleCommand("gs_manipcontrol_down", DIR_CMD[key])
         end
     end
 end )
 
-hook.Add( "PlayerButtonUp", "CheckManipControl", function(ply, key_down)
+hook.Add( "PlayerButtonUp", "CheckManipControlUp", function(ply, key)
     if ply:IsValid() and ply:Team() == TEAM_PLY then
-        if ply:GetActiveWeapon():GetClass() == "gs_swep_hand" then
+        print(ply, ply:Team(), TEAM_PLY, player_manager.GetPlayerClass(ply))
+        local wep = ply:GetActiveWeapon()
+        if !IsValid(wep) then return end
+        if wep:GetClass() == "gs_swep_hand" then
             local wep = ply:GetActiveWeapon()
             if !wep:GetNWBool("ManipMode") then
                 return
             end
-            for key, id in pairs(DIR_CMD) do
-                if key_down == key then
-                    RunConsoleCommand("gs_manipcontrol_up", id)
-                end
-            end
+
+            RunConsoleCommand("gs_manipcontrol_up", DIR_CMD[key])
         end
     end
 end )

@@ -12,13 +12,13 @@ SWEP.CanPickup = true
 SWEP.Primary.Sound	= Sound("weapons/mp5navy/mp5-1.wav")
 SWEP.ReloadSound	= "Weapon_SMG1.Reload"
 SWEP.Primary.Automatic = true
+SWEP.EmptySound    = "weapons/pistol/pistol_empty.wav"
 
 SWEP.ammo_type   = "hn40_magazine"
 SWEP.shoot_speed = 0.1
 SWEP.recoil = 1
 SWEP.spread = 0.02
-SWEP.delay = 0
---SWEP.reload_delay = 2 -- WTF!!?!
+
 SWEP.action_type = GS_AW_MAGAZINE
 
 

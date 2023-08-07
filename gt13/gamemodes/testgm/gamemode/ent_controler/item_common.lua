@@ -1,3 +1,7 @@
+GS_EntityList.NIL = {
+    NIL = false       -- the sweps and etc have these Data_Labels, because i think theese items don't have the RunFunctions
+}
+
 GS_EntityList.parts = {
     plug = { 
         Entity_Data = {
@@ -90,10 +94,6 @@ GS_EntityList.food = {
             ]]
         GetContextButtons = function(ent_data, context)
             local buttons = {}
-
-            if context == CB_HAND then
-
-            end
 
             if context == CB_FLOOR then
                 local button = {

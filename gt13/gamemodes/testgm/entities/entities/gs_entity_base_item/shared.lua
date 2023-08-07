@@ -23,19 +23,3 @@ ENT.Entity_Data.ENUM_Subtype = 0
 if SERVER then
     ENT.Private_Data = {}  -- example: the inventory of box item, the pistol magazine
 end
---[[
-    privatedata = { if itembox
-        Item_Box = {
-            ...
-        }
-
-        if magazine
-
-        Magazine = {
-            ...
-        }
-
-        if 
-    }
-
-]]

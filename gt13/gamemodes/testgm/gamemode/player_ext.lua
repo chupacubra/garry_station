@@ -22,10 +22,20 @@ function PLAYER:IsGhost()
     -- and some check
 end
 
+function PLAYER:IsAlive()
+    if ply:Team() == TEAM_PLY then
+        return true
+    end
+end
+
 function PLAYER:IsDead()
     -- check heavy is dead
     return GS_Round_System.DeadPlayers[self:SteamID()]
 end
+
+function PLAYER:CreateRagdoll()
+end -- because we already creating ragdoll with
+
 
 function PLAYER:SetDead()
 
@@ -62,6 +72,13 @@ function PLAYER:Examine(ply)
     for k,v in pairs(ex) do
         ply:ChatPrint(v)
     end
+end
+
+function PLAYER:Death()
+    --[[
+        move ply spectator
+    ]]
+    
 end
 
 -- tarakani begaut po hate

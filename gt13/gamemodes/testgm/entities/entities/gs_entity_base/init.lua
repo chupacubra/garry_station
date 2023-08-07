@@ -2,6 +2,26 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+
+function ENT:Initialize()
+	self:SetModel( self.Entity_Data.Model )
+	self:PhysicsInit( SOLID_VPHYSICS )
+	self:SetMoveType( MOVETYPE_VPHYSICS )
+	self:SetSolid( SOLID_VPHYSICS )
+    self:SetUseType(SIMPLE_USE)
+    local phys = self:GetPhysicsObject()
+    
+    if (phys:IsValid()) then
+        phys:Wake()
+    end
+
+    self:AfterInit()
+end
+
+function ENT:AfterInit() -- need for setup values after init
+
+end
+
 function ENT:SetExamine(data) -- name, description
     if data == false then
         return
@@ -9,7 +29,7 @@ function ENT:SetExamine(data) -- name, description
 
     self.Entity_Data.Name = data.name 
     self.Entity_Data.Desc = data.desc
-    self:LoadInfoAbout()
+    --self:LoadInfoAbout()
 end
 
 function ENT:SetData(data) 
@@ -46,9 +66,21 @@ function ENT:GetFlag()
 end
 
 function ENT:Examine()
-    if self.canExamine then
-        return self.Entity_Data.Name, self.Entity_Data.Desc
+    local exam = {self.Entity_Data.Name, self.Entity_Data.Desc}
+
+    if self:GetFlagState(KS_MAINTANCE) then
+        table.insert(exam, "The service hatch is open")
     end
+
+    if self:GetFlagState(KS_BOLT) then
+        table.insert(exam, "It's bolted to ground")
+    end
+
+    if self:GetFlagState(KS_BROKEN) then
+        table.insert(exam, "It's seems broken")
+    end
+
+    return exam
 end
 
 function ENT:Breakable(hp)
@@ -87,7 +119,6 @@ function ENT:OnReloaded()
     self:LoadInfoAbout()
 end
 
-
 function ENT:Bolt()
     if self:GetVelocity() != Vector(0,0,0) then
         return false
@@ -105,7 +136,6 @@ function ENT:Unbolt()
 end
 
 function ENT:Wrench(ply)
-
     if self.CanBolted then
         if self:GetFlagState(KS_BOLT) == false then
             return GS_Task:CreateNew(ply,"screw_entity", 4, self,{

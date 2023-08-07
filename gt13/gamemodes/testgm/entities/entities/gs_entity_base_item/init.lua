@@ -19,24 +19,6 @@ function ENT:Initialize()
         phys:Wake()
     end
 
-
-    if self.Entity_Data.ENUM_Type == GS_ITEM_MATERIAL then
-        timer.Create("gs_ent_find_material", 1, 1, function()
-            for k,v in pairs(ents.FindInSphere( self:GetPos(), 100 )) do
-                if !v.GS_Entity then
-                    return
-                end
-
-                if v.Entity_Data.ENUM_Type == self.Entity_Data.ENUM_Type and v.Entity_Data.ENUM_Subtype == self.Entity_Data.ENUM_Subtype and v != self then
-                    print("adding to stack")
-                    self:AddStack(v)
-                    return
-                end
-                
-            end
-        end)
-    end
-
     self:SetupFlag()
 end
 
@@ -68,21 +50,19 @@ function ENT:GetHandData()
     return self.Entity_Data
 end
 
-
-function ENT:LoadInfoAboutItem() -- !!!!!! 
+function ENT:LoadInfoAboutItem(ply)
     net.Start("gs_ent_update_info_item")
     net.WriteEntity(self)
     net.WriteTable(self.Entity_Data)
     net.WriteString(self.Data_Labels.id)
     net.WriteString(self.Data_Labels.type)
-    net.Broadcast()
+    net.Send(ply)
 end
 
 function ENT:OnReloaded() 
     self:SetData(self.Entity_Data)
     self:LoadInfoAboutItem()
 end
-
 
 function ENT:AddStack(pile)
     if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL and pile.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL then
@@ -107,8 +87,8 @@ function ENT:AddStack(pile)
     end
 end
 
-function ENT:PrivateExamine(ply)
-    local arr = {self.Entity_Data.Name, self.Entity_Data.Desk}
+function ENT:Examine(ply)
+    local arr = {"It's a "self.Entity_Data.Name, self.Entity_Data.Desk}
 --    local examine_f = self.Examine_Data.examine_string
     for k,v in pairs(self.Examine_Data) do
         local str = v.examine_string
@@ -150,43 +130,28 @@ function ENT:GetFlag()
     return self.Key_State
 end
 
---[[
-function ENT:Think()
-    if self.Grabed then
-        if !IsValid(self.GrabPlayer) then
-            self:UnGrabEntity()
-            return
-        end
-
-        local dist = self:GetPos():Distance( self.GrabPlayer:LocalToWorld(self.GrabPos))
-        if dist > 100 then
-            self:UnGrabEntity()
-            return
-        end
-
-        if dist > 10 then
-            local pos = self.GrabPlayer:LocalToWorld(self.GrabPos)
-            local phys = self:GetPhysicsObject()
-
-            local cpos = pos - self:GetPos()
-
-            cpos:Normalize()
-
-            local force = cpos * dist
-
-            phys:SetVelocity(force)            
-        end
-    end
-end
---]]
-
-net.Receive("gs_ent_client_init_item", function()
+net.Receive("gs_ent_client_init_item", function(ply)
     local ent = net.ReadEntity()
-    ent:LoadInfoAboutItem() 
+    ent:LoadInfoAboutItem(ply) 
 end)
 
 net.Receive("gs_ent_request_examine", function(_,ply)
     local ent = net.ReadEntity()
 
-    ent:PrivateExamine(ply) 
+    ent:Examine(ply) 
 end)
+
+function ENT:PhysicsCollide( data, phys )
+    if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL then return end
+    
+    local ent = data.HitEntity
+
+    if ent:GetClass() != "gs_entity_base_item" then
+        return
+    end
+
+    if ent.Entity_Data.ENUM_Type == self.Entity_Data.ENUM_Type and ent.Entity_Data.ENUM_Subtype == self.Entity_Data.ENUM_Subtype then
+        self:AddStack(v)
+        return
+    end
+end

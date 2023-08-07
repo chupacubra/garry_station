@@ -479,18 +479,15 @@ function GM:GUIMousePressed( mouse,vector )
         local entity = trace.Entity
         local cntx = {}
 
-        if entity.corpse then
-            print("trup")
-            cntx = CL_GS_Corpse.GetContextMenu(entity)
+        if entity.GetContextMenu then
+            cntx = entity:GetContextMenu()
         else
-            if entity.GetContextMenu then
-                cntx = entity:GetContextMenu()
-            else
-                -- if getcontexmenu == nil:
-                --     how about request for this entity context from server
-                MapEntityGetContext(entity)
-            end
-        end 
+            -- if getcontexmenu == nil:
+            --     how about request for this entity context from server
+            MapEntityGetContext(entity)
+            return
+        end
+
 
         if cntx != nil then
             for k,v in pairs(cntx) do

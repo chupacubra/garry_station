@@ -3,40 +3,44 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local function all_dmg(dmg)
+    local ad = 0
+    for k,v in pairs(dmg) do
+        PrintTable(v)
+        --ad = ad + v
+    end
+    return ad
+end
 
 function SWEP:Initialize()
-    --self:SetHoldType( self.HoldType )
+    self:SetHoldType( self.HoldType )
     self.magazine = self.magazine or nil
-    --[[timer.Simple(0.1, function()
-        if IsValid(self) then
-            self:TriggerLoadWorldModel(self.magazine != nil)
-        end 
-    end)
-    --]]
-    --self.SetNWBool("magazine", self.magazine != nil)
     self:TriggerLoadWorldModel()
 end
 
 function SWEP:OnDrop()
     self:TriggerLoadWorldModel()
-    --[[
-    timer.Simple(0.1, function()
-        if IsValid(self) then
-            self:TriggerLoadWorldModel(self.magazine != nil)
-        end
-    end)
-    --]]
-
-    --self:SendClientDrop()
 end
 
 function SWEP:Deploy()
-    --self:SetHoldType(self.HoldType)
+    self:SetHoldType(self.HoldType)
 end
 
 function SWEP:DealDamage(trace, dmgbullet)
+    local dmgbul = all_dmg(dmgbullet)
+
+    local force = trace.Normal * dmgbul * 10
+
     if trace.Entity:IsPlayer() then
         player_manager.RunClass( trace.Entity,"HurtPart", trace.PhysicsBone, dmgbullet.BulletDamage)
+    else
+        local dmg = DamageInfo()
+        dmg:SetAttacker(self:GetOwner())
+        dmg:SetDamage(dmgbul)
+        dmg:SetDamageType(DMG_BULLET)
+        dmg:SetDamageForce(force)
+
+        trace.Entity:TakePhysicsDamage(dmg)
     end
 end
 
@@ -54,11 +58,10 @@ function SWEP:MakeSingleShoot(dmgbullet)
         end
     }
 
-    local s = self.Owner:FireBullets( bullet , true)
+    local s = self.Owner:FireBullets(bullet , true)
     self:CallOnClient("ShootGunEffect")
     self:ShootEffects()
     self:MakeRecoil()
-
 end
 
 function SWEP:PrimaryAttack()
@@ -98,7 +101,7 @@ function SWEP:StripMagazine()
 
     if self.magazine == nil then
         self:GetOwner():ChatPrint("No magazine")
-        return
+        return false
     end
 
     local trace = {
@@ -114,9 +117,8 @@ function SWEP:StripMagazine()
     
     self.magazine = nil
 
-    self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name..".")
+    self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name)
     self:ReloadGunEffect()
-    --self:TriggerLoadWorldModel(self.magazine != nil)
 end
 
 function SWEP:StripMagazineHand()
@@ -126,7 +128,7 @@ function SWEP:StripMagazineHand()
     end
 
     if self.magazine == nil then
-        return
+        return false
     end
 
     local hand = self:GetOwner():GetWeapon( "gs_swep_hand" )
@@ -135,7 +137,6 @@ function SWEP:StripMagazineHand()
         self.magazine = nil
         self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name.." and put in hand")
         self:ReloadGunEffect()
-        --self:TriggerLoadWorldModel(self.magazine != nil)
     end
 end
 
@@ -156,7 +157,7 @@ function SWEP:InsertMagazine(ent)
     self.magazine = ent
 
     self:ReloadGunEffect()
-    --self:TriggerLoadWorldModel(self.magazine != nil)
+
     return nil
 end
 

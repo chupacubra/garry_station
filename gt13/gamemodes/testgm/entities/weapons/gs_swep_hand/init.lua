@@ -282,18 +282,19 @@ function SWEP:PrimaryItemAction()
         return
     end
 
-    local id,typ = self.hand_item.item.Data_Labels.id, self.hand_item.item.Data_Labels.type
+    if self.hand_item.item.Data_Labels then
+        local id,typ = self.hand_item.item.Data_Labels.id, self.hand_item.item.Data_Labels.type
 
-    local rez_func = GS_EntityControler.RunFunctionEntity("hand_primary", id ,typ, self.hand_item.item, self:GetOwner(), CB_HAND)
+        local rez_func = GS_EntityControler.RunFunctionEntity("hand_primary", id ,typ, self.hand_item.item, self:GetOwner(), CB_HAND)
 
-    if rez_func != false then
-        if rez_func == nil then
-            self:RemoveItem()
-        else
-            self:UpdateItem(rez_func)
+        if rez_func != false then
+            if rez_func == nil then
+                self:RemoveItem()
+            else
+                self:UpdateItem(rez_func)
+            end
         end
     end
-    
 end
 
 function SWEP:GetItemsContainer()
@@ -626,7 +627,6 @@ function SWEP:Think()
     self.CarryHack:SetPos(self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 70)
 
     if self.ManipRotate then
-        print(self.CarryHack:GetAngles() + DIR_ANG[self.ManipRotate])
         self.CarryHack:SetAngles(self.CarryHack:GetAngles() + DIR_ANG[self.ManipRotate])
     end
 
@@ -655,8 +655,6 @@ concommand.Add( "gs_manipcontrol_down", function(ply, str, arg)
             if !wep:GetNWBool("ManipMode") then
                 return
             end
-
-            print(arg[1], "IS DOWN")
             wep:ManipToggleRotate(tonumber(arg[1]), true)
         end
     end
@@ -669,8 +667,6 @@ concommand.Add( "gs_manipcontrol_up", function(ply, str, arg)
             if !wep:GetNWBool("ManipMode") then
                 return
             end
-
-            print(arg[1], "IS UP")
             wep:ManipToggleRotate(tonumber(arg[1]), false)
         end
     end

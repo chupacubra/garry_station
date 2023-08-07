@@ -34,8 +34,7 @@ SWEP.Entity_Data.Name = "Screwdriver"
 SWEP.Entity_Data.Desc  = "flathead"
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
 SWEP.Entity_Data.ENUM_Subtype = T_SCREWDRIVER
-
-SWEP.Damage = {3,5}
+SWEP.Entity_Data.Model = SWEP.WorldModel
 
 SWEP.PrimarySound = "Weapon_Crowbar"
 SWEP.MissSound = Sound(SWEP.PrimarySound..".Single" )

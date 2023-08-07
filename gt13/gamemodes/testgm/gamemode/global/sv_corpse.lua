@@ -4,12 +4,13 @@ GS_Corpse = {}
     THE CORPSE MUST BE APART HUMAN
     SAVE IN CORPSE ONLY ID PLY
 ]]
-
+--[[
 function GS_Corpse.SendCorpseClient(rag)
     net.Start("gs_sys_corpse_create")
     net.WriteEntity(rag)
     net.Broadcast()
 end
+--]]
 
 function GS_Corpse.Create(ply)
     local ragdoll = ents.Create("prop_ragdoll")
@@ -39,13 +40,13 @@ function GS_Corpse.Create(ply)
 
     ragdoll.ownerID = ply:SteamID()
     ragdoll.corpse  = true
-    GS_Corpse.SendCorpseClient(ragdoll)
+    --GS_Corpse.SendCorpseClient(ragdoll)
 
     return ragdoll
 end
 
 
-function GS_Corpse.SetRagdollDeath(ply,rag,leave) -- if ply death in crit paralyze -> set RAG to death
+function GS_Corpse.SetRagdollDeath(ply, rag, leave) -- if ply death in crit paralyze -> set RAG to death
     --[[
         set equipment, pockets
         set hp (for redeem?!)
@@ -102,9 +103,13 @@ function GS_Corpse.ExamineRag(viewer, rag)
         end
     end
 
-    net.Start("gs_cl_inventary_examine_return")
-	net.WriteTable(examine)
-	net.Send(viewer)
+    for k, v in pairs(examine) do
+        ply:ChatPrint(v)
+    end
+end
+
+function GS_Corpse.CallContextMenu(ply, trup)
+    --net.Start("gs_sys_corpse_action")
 
 end
 

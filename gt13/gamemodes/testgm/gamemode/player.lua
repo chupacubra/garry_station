@@ -44,9 +44,7 @@ function GM:PlayerSetHandsModel( ply, ent )
 end
 
 function GM:PlayerLoadout( ply )
-
 	player_manager.RunClass( ply, "Loadout" )
-
 end
 
 function GS_EquipWeapon(ply, weapon) -- for start loadout
@@ -72,12 +70,17 @@ function GM:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
 	end
 end
 
-function GM:PlayerCanPickupWeapon(ply,weapon)
+function GM:PlayerCanPickupWeapon()
 	return false
 end
 
 function GM:PlayerDeath( victim, inflictor, attacker )
-	player_manager.RunClass( victim, "StopThink" )
+	player_manager.RunClass( victim, "Death" )
+	hook.Run("GS_PlayerDead", victim:SteamID())
+	player_manager.ClearPlayerClass( victim )
+
+	self:PlayerSilentDeath(victim)
+	PlayerSpawnAsSpectator(victim)
 end
 
 function GM:PlayerSpawnAsSpectator( ply )
@@ -92,10 +95,8 @@ function GM:PlayerSpawnAsSpectator( ply )
 		return
 
 	end
-
 	ply:SetTeam( TEAM_SPECTATOR )
 	ply:Spectate( OBS_MODE_ROAMING )
-
 end
 
 function PlayerSpawnAsSpectator( ply )
@@ -113,7 +114,6 @@ function PlayerSpawnAsSpectator( ply )
 
 	ply:SetTeam( TEAM_SPECTATOR )
 	ply:Spectate( OBS_MODE_ROAMING )
-
 end
 
 function GM:CanPlayerSuicide()
@@ -181,6 +181,8 @@ function ClassRun(...)
 end
 --]]
 
+
+
 function GM:GetFallDamage( ply, speed )
 	-- TODO
 	-- if big speed:
@@ -206,6 +208,14 @@ end
 function GM:PlayerNoClip( ply, desiredState )
 	return GetConVar("sv_cheats"):GetBool()
 end
+--[[
+function GM:PlayerDeathThink( ply )
+	--if 
+end
+--]]
+
+function GM:PlayerDeathSound() return true end
+
 
 concommand.Add("gs_open", function(ply,cmd, arg)
 	local id = arg[1]

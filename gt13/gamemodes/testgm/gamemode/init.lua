@@ -48,7 +48,7 @@ function print(...)
     _print(...)
 end
 --]]
-
+ 
 function GM:AllowPlayerPickup( ply, ent )
     print(ply,ent)
     return true
@@ -58,11 +58,3 @@ function GM:EntityRemoved( ent )
 
 end
 ]]
-
-numpad.Register( "Manipulate_Control", function(ply, a, b)
-    print(ply, a, b)
-
-    debug.Trace()
-    
-    return true
-end)

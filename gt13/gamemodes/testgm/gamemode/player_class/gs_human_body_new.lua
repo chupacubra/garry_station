@@ -51,7 +51,11 @@ function PLAYER_HP:SetupOrganismValues()
         self.Ragdolled = false
         self.CritParalyzeDelay = 0
 		self.EffectSpeed  = {}
+		self.RagdollTime  = 0
     end
+
+	self.CritRagdoll = 0
+	self.HunegerRagdoll = 0
 
 end
 
@@ -82,15 +86,18 @@ function PLAYER_HP:SetupOrganismThink()
             self.Player.HealthStatus = GS_HS_OK
 			self:EffectSpeedRemove("status_crit")
         elseif dmg > 100 then
-			self:EffectSpeedAdd("status_crit", 150, 250)
+			self:EffectSpeedAdd("status_crit", -150, -250)
             -- crit status
             self.Player.HealthStatus = GS_HS_CRIT
+			if self.CritRagdoll == 0 and flipquart() then
+				self.CritRagdoll = 5
+			end
         end
 
 
 		self:HungerThink()
 		self:HealthPartClientUpdate(mainpart)
-
+		self:RagdollThink()
 		--PrintTable(self.Player.Organism_Value)
 		--PrintTable(self.Player.Spec_Damage)
 	end)
@@ -130,10 +137,8 @@ function PLAYER_HP:BloodLevel(int)
     return self.Player.Organism_Value.blood.level
 end
 
-
-
 function PLAYER_HP:Bleed()
-    if !self.Player.Organism_Value.blood.bleed then
+    if self.Player.Organism_Value.blood.bleed == false then
         self.Player.Organism_Value.blood.bleed = true
         self.Player.Organism_Value.blood.bleed_rate = 4
         timer.Create("gs_bleed"..self.Player:EntIndex(), 2, 0,self.BleedThink)
@@ -146,8 +151,7 @@ function PLAYER_HP:BleedThink()
     -- timer = 2 sec
     -- with bleed_rate 5 aproximately human will be empty in 40 seconds
     -- BUT the bleed in bleedThink decreasing in 1 unit
-
-    if !self.Player.Organism_Value.blood.bleed or self.Player.Organism_Value.blood.bleed_rate == 0 then
+    if self.Player.Organism_Value.blood.bleed == false or self.Player.Organism_Value.blood.bleed_rate == 0 then
         timer.Remove("gs_bleed"..self.Player:EntIndex())
         return
     end
@@ -155,6 +159,8 @@ function PLAYER_HP:BleedThink()
     self.Player.Organism_Value.blood.level = self.Player.Organism_Value.blood.level - self.Player.Organism_Value.blood.bleed_rate
     self.Player.Organism_Value.blood.bleed_rate = self.Player.Organism_Value.blood.bleed_rate - 1
 	self:IncreasePain(0.5 * self.Player.Organism_Value.blood.bleed_rate)
+
+	util.Decal( "Blood", self.Player:GetPos(), self.Player:GetPos() - Vector(0, 100, 0), {self.Player, self.Player.Ragdoll} )
 end
 
 function PLAYER_HP:SetHP(body)
@@ -179,10 +185,17 @@ function PLAYER_HP:HurtPart(bone, dmg)
 		bone = self.Player:GetBoneParent(bone)
 	end
 
+	local brutesum = self:GetSumDMGBrute()
 	for k,v in pairs(dmg) do
-		print(k,v)
 		if k == D_STAMINA or k == D_TOXIN then
 			continue
+		elseif k == D_BRUTE then
+			if brutesum >= 50 then
+				if flipcoin() then
+					self:Bleed()  
+					print(self.Player, "is bleeded")
+				end
+			end
 		end
 		self:DamageHealth(mainpart, k, v)
 	end
@@ -193,7 +206,6 @@ function PLAYER_HP:HurtPart(bone, dmg)
 
 	self:HealthPartClientUpdate(mainpart)
 end
-
 
 function PLAYER_HP:HealHealth(part, typeD, hp)
 	if self.Player.Body_Parts[part] == nil then
@@ -223,7 +235,6 @@ function PLAYER_HP:RemoveChemical(chem, unit)
 	self.Player.Chemicals:Component(chem,-unit)
 end
 
-
 function PLAYER_HP:SetHP(body)
 	self.Player.Body_Parts = body
 
@@ -249,7 +260,6 @@ function PLAYER_HP:GetHealthPercentPart(part)
 
 	return dmg
 end
-
 
 function PLAYER_HP:GetHealthPercent()
 	--[[
@@ -278,6 +288,14 @@ function PLAYER_HP:GetSumDMG()
 	end
 
 	dmg = dmg + self.Player.Spec_Damage.toxin + self.Player.Spec_Damage.hypoxia
+	return dmg
+end
+
+function PLAYER_HP:GetSumDMGBrute()
+	local dmg = 0
+	for k,v in pairs(self.Player.Body_Parts) do
+		dmg = dmg + v[1]
+	end
 	return dmg
 end
 
@@ -375,15 +393,13 @@ function PLAYER_HP:SubSaturation(unit)
 end
 
 function PLAYER_HP:StartSaturationTimer()
-	timer.Create( self.Player:EntIndex().."_hunger", 30, 0, function()
+	timer.Create( "gs_hunger_"..self.Player:EntIndex(), 30, 0, function()
 		if !self.Player:IsValid() then
 			self:StopSaturationTimer()
 			return
 		end
 
-		--self:SubSaturation(2)
         self:BodyUseEnergy()
-        --self:SaturationStatusTrigger()
 	end)
 end
 
@@ -391,22 +407,6 @@ end
 
 
 -- think func in end
-
--- rewrite this
---[[
-function PLAYER_HP:PainThink()
-    if CurTime() - 10 > self.Player.Organism_Value.last_dmg then
-        self:DecreasePain(0.05)
-    end
-
-    if self:GetPain() > 0.5 then
-        self.Player.Organism_Value.pain_shock = true
-        timer.Simple(10, function()
-            self.Player.Organism_Value.pain_shock = false
-        end)
-    end
-end
---]]
 
 function PLAYER_HP:PainThink()
     if CurTime() - 8 > self.Player.Organism_Value.last_dmg then
@@ -418,8 +418,13 @@ function PLAYER_HP:PainThink()
 	else
 		self.Player.Organism_Value.pain_shock = false
 	end
-end
 
+	if self:GetPain() >= 0.5 then
+		if flipcoin() then
+			GS_ChatPrint(ply, "You feel pain in body...", Color(10,200,10))
+		end
+	end
+end
 
 function PLAYER_HP:SaturationStatusTrigger()
 	net.Start("gs_ply_hunger")
@@ -438,6 +443,9 @@ function PLAYER_HP:HungerThink()
 	
 	if hunger < 10 then
 		--self:OrganismStatus("heart_failure", "hunger")
+		if self.HungerRagdoll == 0 and flipquart() then
+			self.HungerRagdoll = 5
+		end
 	elseif hunger < 25 then
 		self:EffectSpeedAdd("hunger", -100, -225)
 		--self:OrganismStatusRemove("heart_failure", "hunger")
@@ -446,10 +454,11 @@ function PLAYER_HP:HungerThink()
 		--self:OrganismStatusRemove("heart_failure", "hunger")
 	end
 
+	
 end
 
 function PLAYER_HP:StopSaturationTimer()
-	timer.Destroy(self.Player:UserID().."_hunger")
+	timer.Destroy("gs_hunger_"..self.Player:EntIndex())
 end
 
 
@@ -461,6 +470,8 @@ function PLAYER_HP:Death()
 		spawn a ragdoll, ragdoll of death person
 		set him equipments and other
 	]]
+	debug.Trace()
+
 	if self.Ragdolled then
 		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
 	else
@@ -471,71 +482,8 @@ function PLAYER_HP:Death()
 
 	self:StopThink()
 	self:CloseHudClient()
-
-	PlayerSpawnAsSpectator(self.Player)
-	
-	hook.Run("GS_PlayerDead", self.Player:SteamID())
-	player_manager.ClearPlayerClass( self.Player )
-
-	print(self.Player.Organism_Value)
+	self:Kill()
 end
-
---[[
-	trash 
-]]
-
-
-function PLAYER_HP:OrganismStatus(newStatus, origin)
-	if organism_status_list[newStatus] == nil then
-		return
-	end
-	
-	local start_status = false
-
-	if self.Player.Organism_Value.organism_status[newStatus] == nil then
-		self.Player.Organism_Value.organism_status[newStatus] = {}
-		start_function = true
-	end
-
-	if self.Player.Organism_Value.organism_status[newStatus][origin] then
-		return
-	end
-
-	self.Player.Organism_Value.organism_status[newStatus][origin] = true
-
-	if start_status then 
-		organism_status_list[newStatus]["start_function"](self)
-	end
-end
-
-function PLAYER_HP:OrganismStatusThink()
-	for k, _ in self.Player.Organism_Value.organism_status do
-		organism_status_list[k]["think_function"](self)
-	end
-end
-
-function PLAYER_HP:OrganismStatusRemove(status, origin)
-	if !self.Player.Organism_Value.organism_status[status] then
-		return
-	end
-
-	if !self.Player.Organism_Value.organism_status[status][origin] then
-		return
-	end
-
-	self.Player.Organism_Value.organism_status[status][origin] = nil
-
-	if table.Count(self.Player.Organism_Value.organism_status[status]) == 0 then
-		organism_status_list[status]["end_function"](self)
-		self.Player.Organism_Value.organism_status[status] = nil
-	end
-end
-
-function PLAYER_HP:OrganismStatusRemoveAll()
-	self.Player.Organism_Value.organism_status = {}
-end
-
-
 
 function PLAYER_HP:CritParalyze(delay,hard)
 	if self.Ragdolled or self.CritParalyzeDelay > CurTime() then
@@ -560,4 +508,70 @@ function PLAYER_HP:CritParalyze(delay,hard)
 	end
 
 	--GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
+end
+
+--[[
+function PLAYER_HP:Shock(delay,hard)
+	if self.Ragdolled then
+		return false
+	end
+
+	if !delay then
+		delay = math.random(3, 5)
+	end
+
+	self:Ragdollize()
+	if !hard then
+		self.CritParalyzeDelay = CurTime() + delay + 7
+		
+		timer.Simple(delay, function()
+			if !IsValid(self.Player) then
+				return
+			end
+
+			self:Unragdollize()
+		end)
+	end
+
+	--GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
+end
+--]]
+--[[
+function PLAYER_HP:FallInShock()
+	if self.Ragdolled then
+		self.RagdollTime = self.RagdollTime + 
+	end
+end
+--]]
+function PLAYER_HP:RagdollThink()
+	-- check pain
+	-- check hypoxia
+	-- check crit status
+	
+	self.CritRagdoll = math.Clamp(self.CritRagdoll - 1, 0, 15)
+	self.HungerRagdoll = math.Clamp(self.HungerRagdoll - 1, 0, 15)
+	
+	if self.Player.Organism_Value.pain_shock then
+		self:Ragdollize()
+		return
+	end
+
+	if self.Player.Spec_Damage.hypoxia > 50 then
+		self:Ragdollize()
+		return
+	end
+
+	if self.Player.HealthStatus == GS_HS_CRIT and self.CritRagdoll != 0 then
+		self:Ragdollize()
+		return
+	end
+
+	if self.HungerRagdoll != 0 then
+		self:Ragdollize()
+		return
+	end
+
+
+
+	self:Unragdollize()
 end

@@ -8,14 +8,11 @@ function SWEP:CompareWithEnt(ent)
         return self:InsertMagazine(ent)
     end
     --return nil -- update magazin in inventory to NIL -> remove
+    return false
 end 
 
 function SWEP:PrimaryAttack()
     if self.magazine == nil then
-        return
-    end
-
-    if self.delay > CurTime() then
         return
     end
 
@@ -24,7 +21,6 @@ function SWEP:PrimaryAttack()
         return
     end
     self:MakeSingleShoot(bullet)
-    --self.delay = CurTime() + self.shoot_speed
 
     self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets] = nil
     self.magazine.Private_Data.Bullets = self.magazine.Private_Data.Bullets - 1

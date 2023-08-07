@@ -15,6 +15,7 @@ SWEP.ShowViewModel = true
 SWEP.ShowWorldModel = true
 SWEP.ViewModelBoneMods = {}
 
+SWEP.Damage = {4,7}
 
 SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "Crowbar"

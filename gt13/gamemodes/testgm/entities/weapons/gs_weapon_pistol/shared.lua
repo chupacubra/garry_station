@@ -13,19 +13,20 @@ SWEP.CanPickup = true
 SWEP.Primary.Sound	= Sound("weapons/p228/p228-1.wav")
 SWEP.ReloadSound	= "Weapon_SMG1.Reload"
 SWEP.Primary.Automatic = false
+SWEP.EmptySound    = "weapons/pistol/pistol_empty.wav"
 
 SWEP.ammo_type   = "tekov_magazine"
 SWEP.shoot_speed = 0.5
 SWEP.recoil = 1
 SWEP.spread = 0.02
-SWEP.delay = 0
+
 SWEP.action_type = GS_AW_MAGAZINE
 
 SWEP.m_WeaponDeploySpeed = 1
 
 SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "Tekov P9"
-SWEP.Entity_Data.Desc  = "The most popular pistol for hijacking a space shuttle."
+SWEP.Entity_Data.Desc  = "The most popular pistol for hijacking a id card."
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_WEAPON
 SWEP.Entity_Data.ENUM_Subtype = GS_W_PISTOL
 SWEP.Entity_Data.Size = ITEM_SMALL

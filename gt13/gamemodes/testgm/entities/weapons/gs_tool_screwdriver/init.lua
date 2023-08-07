@@ -10,8 +10,6 @@ function SWEP:Swing(trace)
 		return
 	end
 
-    debugoverlay.Axis( trace.HitPos, Angle(0,0,0), 10, 5,true)
-    debugoverlay.Cross( trace.HitPos, 10, 5,true)
     if !entity:IsValid() then
         return
     end

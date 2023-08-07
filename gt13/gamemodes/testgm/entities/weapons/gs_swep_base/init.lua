@@ -17,19 +17,15 @@ local anim_list = {
 }
 
 function SWEP:SoundHit(hit)
-	-- cant change the volume of hit
+	-- cant change the volume of hit, it's sad
     if hit then
         self:GetOwner():EmitSound(self.HitSound,SNDLVL_20dB,255,0.5)
-
-		--EmitSound(self.HitSound, self:GetPos(), self:EntIndex(), CHAN_AUTO, 0.5, 75,  0,  100,  0 )
     else
         self:GetOwner():EmitSound(self.MissSound,SNDLVL_20dB,100,0.5)
-		--EmitSound(self.MissSound, self:GetPos(), self:EntIndex(), CHAN_AUTO, 0.5, 75,  0,  100,  0 )
     end
 end
 
 function SWEP:HitPlayer(ply, bone)
-	print("hit padlu")
 	player_manager.RunClass(ply, "HurtPart", bone, {[D_BRUTE] = math.random(self.Damage[1], self.Damage[2])})
 end
 
@@ -57,13 +53,16 @@ end
 
 function SWEP:SwingAnim(hit)
 	local VModel = self:GetOwner():GetViewModel()
-	local anim
 
+	--[[
 	if hit then
 		anim = "hit".. math.random(1, 4)
 	else
 		anim =  "swing".. math.random(1, 2)
 	end
+	--]]
+
+	local anim = (hit and "hit".. math.random(1, 4)) or "swing".. math.random(1, 2) -- i like this metod
 
 	VModel:SendViewModelMatchingSequence(anim_list[anim])
 end
@@ -78,16 +77,11 @@ function SWEP:PrimaryAttack()
 	self:Swing(trace)
 end
 
-
 function SWEP:SecondaryAttack()
 end
 
 function SWEP:Deploy()
 	self:SetHoldType(self.HoldType)
-end
-
-function SWEP:Holster()
-	return true
 end
 
 function SWEP:OnRemove()

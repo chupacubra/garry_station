@@ -1,6 +1,7 @@
 gs_map = {}
 
 include("gm_ijm_boreas/init.lua")
+include("zone.lua")
 DIRECTORY = "addons/gt13/gamemodes/testgm/gamemode/map_controller"
 
 function gs_map.load()
@@ -20,7 +21,7 @@ function gs_map.load()
         else
             GS_MSG("The config of this map have the error! => "..err)
             return false
-        end--]]
+        end--]] 
     --else
     --    GS_MSG("THE SERVER DO NOT HAVE THE CONFIG OF THIS MAP! FATAL!")
     --    return false
@@ -120,6 +121,12 @@ end)
 
 net.Receive("gs_map_entity_get_type", function(_, ply)
     local entity = net.ReadEntity()
+
+    if entity:GetClass() == "prop_ragdoll" then
+        print("ply use a ragdoll")
+
+        return
+    end
 
     if !entity:CreatedByMap() then
         return

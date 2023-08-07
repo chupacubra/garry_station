@@ -98,6 +98,17 @@ concommand.Add( "gs_dmgself", function( ply, cmd, args, str )
     player_manager.RunClass( ply,"HurtPart", 7, {[D_BRUTE] = 10,[D_STAMINA] = 10,})
 end )
 
+concommand.Add( "gs_respawn", function( ply, cmd, args, str )
+    -- kill ply
+    -- remove ply from dead table
+    -- respawn with equip
+
+    --player_manager.RunClass( ply,"HurtPart", 7, {[D_BRUTE] = 10,[D_STAMINA] = 10,})
+    if ply:Alive() then
+
+    end
+end )
+
 concommand.Add( "gs_rag", function( ply, cmd, args, str )
     player_manager.RunClass( ply,"Ragdollize")
 end )

@@ -9,8 +9,6 @@ include( "client/cl_context_menu.lua" )
 include( "client/cl_stat.lua" )
 include( "client/cl_systems.lua" )
 include( "client/derma/cl_craft_menu.lua" )
---include("global/sh_craftlist.lua")
---include( "client/cl_corpse.lua" )
 include( "client/derma/cl_roundstart.lua" )
 include("client/derma/cl_wires.lua")
 include("ent_controler/sh_item_list.lua")
@@ -39,6 +37,8 @@ end )
 function GM:HUDPaint()
     if GS_ClPlyStat.init then
         GS_HUD:DrawHud()
+    else
+        GS_HUD.SpectatorHud()
     end
 end
 
@@ -62,12 +62,18 @@ hook.Add("PlayerBindPress", "ActionButton", function(ply, bind, pressed)
 end)
 
 function GM:OnContextMenuOpen()
+    if LocalPlayer():Team() == TEAM_SPECTATOR or LocalPlayer():GetNWBool("Ragdolled") then
+        return
+    end
     ContextMenu:ContextMenuOpen()
     gui.EnableScreenClicker(true)
 end
 
 
 function GM:OnContextMenuClose()
+    if LocalPlayer():Team() == TEAM_SPECTATOR then
+        return
+    end
     ContextMenu:ContextMenuClose()
     gui.EnableScreenClicker(false)
 end
@@ -91,6 +97,11 @@ net.Receive("gs_cl_f_button", function()
 end)
 --]]
 
+function GM:PlayerSwitchWeapon()
+    GS_ClPlyStat:SetCurrentWeaponsSlot()
+end
+
+
 
 GS_RoundStatus:Init()
 
@@ -102,15 +113,10 @@ function MakeDermaAction(name, func, arg)
     net.SendToServer()
 end 
 
-function GM:PostDrawViewModel( vm, ply, weapon )
-	if ( weapon.UseHands || !weapon:IsScripted() ) then
-		local hands = LocalPlayer():GetHands()
-        if weapon == "gs_swep_hand" then
-            if weapon:GetNWBool("FightHand") then
-                hands:DrawModel()
-            end
-        else
-            hands:DrawModel()
+function GM:PreDrawPlayerHands( hands, vm, ply, weapon )
+    if weapon:GetClass() == "gs_swep_hand" then
+        if weapon:GetNWBool("FightHand") then
+            return true
         end
-	end
+    end
 end

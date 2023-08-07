@@ -70,7 +70,11 @@ function PLAYER:GetHandsModel()
 end
 
 function PLAYER:StopThink()
-	timer.Destroy("gs_player_think_"..self.Player:EntIndex())
+	local i = self.Player:EntIndex()
+	timer.Destroy("gs_player_think_"..i)
+	timer.Destroy("gs_bleed"..i)
+	timer.Destroy("gs_hunger_"..i)
+	timer.Destroy("gs_organs_think_"..i)
 end
 
 function PLAYER:InitHudClient()
@@ -100,9 +104,7 @@ end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
-	--timer.Simple(1, function()
 	self:SetupEquipDraw()
-	--end)
 end
 
 function PLAYER:Loadout()

@@ -7,10 +7,9 @@ function ENT:Initialize()
 end
 
 function ENT:Examine()
-    local name, desc = self.Entity_Data.Name, self.Entity_Data.Desc
-    local exTable = {name, desc}
-
-    return exTable
+    net.Start("gs_ent_request_examine")
+    net.WriteEntity(self)
+    net.SendToServer()
 end
 
 function ENT:Draw()
@@ -35,13 +34,7 @@ function ENT:GetContextMenu()
             label = "Examine",
             icon  = "icon16/eye.png",
             click = function()
-                local examine = self:Examine()
-                for k,v in pairs(examine) do
-                    if k == 1 then
-                        v = "It is ".. v
-                    end
-                    LocalPlayer():ChatPrint(v)
-                end
+                self:Examine()
             end
         }
         table.insert(contextButton, button)
@@ -78,9 +71,10 @@ function ENT:GetContextMenu()
     return contextButton
 end
 
-
+--[[
 net.Receive("gs_ent_update_info", function()
     local ent = net.ReadEntity()
     local tab = net.ReadTable()
     ent.Entity_Data = tab
 end)
+--]]

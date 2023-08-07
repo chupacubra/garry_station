@@ -183,3 +183,16 @@ else
         net.Send(ply)
     end
 end
+
+function Entity_SetNWData(ent, tab)
+    for k, v in pairs(tab) do
+        local typ = type(v)
+        if typ == "number" then
+            ent:SetNWInt(k, v, 10)
+        elseif typ == "string" then
+            ent:SetNWString(k, v)
+        else
+            print("watafak mazafak", typ)
+        end
+    end
+end

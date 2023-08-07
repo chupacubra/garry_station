@@ -33,6 +33,9 @@ SWEP.Entity_Data.Name = "Wrench"
 SWEP.Entity_Data.Desc  = "iron wrench"
 SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
 SWEP.Entity_Data.ENUM_Subtype = T_WRENCH
+SWEP.Entity_Data.Model = SWEP.WorldModel
+
+SWEP.Damage = {4,7}
 
 SWEP.PrimarySound = "Weapon_Crowbar"
 SWEP.MissSound = Sound(SWEP.PrimarySound..".Single" )

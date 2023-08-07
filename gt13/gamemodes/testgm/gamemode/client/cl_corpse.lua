@@ -8,10 +8,11 @@ CL_GS_Corpse = {}
         2 - examine body (hp)
         3 - drop equip corpse
 ]]
-
+--[[
 function CL_GS_Corpse.MakeClientCoprse(rag)
     rag.corpse  = true
 end
+--]]
 
 function CL_GS_Corpse.GetContextMenu(rag)
     local contextButton = {}
@@ -28,6 +29,18 @@ function CL_GS_Corpse.GetContextMenu(rag)
     return contextButton
 end
 
+function CL_GS_Corpse.DrawMenu(pos, buttons)
+    local Menu = DermaMenu()
+            
+    Menu:SetPos(pos.x, pos.y)
+
+    for k,v in pairs(buttons) do
+        local button = Menu:AddOption(v.label)
+        button:SetIcon(v.icon)
+        button.DoClick = v.click
+    end
+end
+
 function CL_GS_Corpse.ExamineCoprse(rag)
     net.Start("gs_sys_corpse_action")
     net.WriteEntity(rag)
@@ -40,5 +53,12 @@ net.Receive("gs_sys_corpse_create",function()
     local rag   = net.ReadEntity()
 
     CL_GS_Corpse.MakeClientCoprse(rag)
+end)
+
+net.Receive("gs_sys_corpse_action", function()
+    local rag = net.ReadEntity()
+
+    local cntx = CL_GS_Corpse.GetContextMenu(rag)
+    CL_GS_Corpse.DrawMenu(rag:GetPos():ToScreen(), cntx)
 end)
 

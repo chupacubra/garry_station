@@ -1,12 +1,5 @@
 PLAYER_CL_EQ = {}
-print("asdasdas")
 
---[[
-    BACKPACK = {
-        model = "backpack.mdl"
-    }
-
-]]
 function PLAYER_CL_EQ:SetupEquip()
     if self.Player.Loaded then
         return

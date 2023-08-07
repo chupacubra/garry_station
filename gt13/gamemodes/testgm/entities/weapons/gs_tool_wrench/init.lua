@@ -14,15 +14,13 @@ function SWEP:PrimaryAttack()
     local entity = trace.Entity
     
     if !entity:IsValid() then
-
         return
     end
 
     if entity:IsPlayer() then
-        -- punch human
+        self:HitPlayer(entity, trace.PhysicsBone)
         return
     end
-
 
     if entity.Wrench then
         local succes, text =  entity:Wrench(self:GetOwner())
@@ -31,8 +29,4 @@ function SWEP:PrimaryAttack()
         end
     end
 end
-
-function SWEP:SecondaryAttack()
-end
-
 

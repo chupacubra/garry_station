@@ -13,7 +13,7 @@ function GS_Round_System:InitGame()
     self.ReadyPly     = {}
     self.ObservePly   = {}
     self.DeadPlayers  = {}
-
+ 
     timer.Create( "RoundStatusTimer", 2, 0, function()
         self:UpdateClientStatus()
     end)
@@ -167,8 +167,8 @@ function GS_Round_System:StartPreparationPhase()
     self.Round_Status = GS_ROUND_PREPARE
     
     timer.Simple(PREP_TIME, function()
-        self:StartRound()
-    end)
+        self:StartRound() 
+    end) 
 end
 
 function GS_Round_System:StartRound()
@@ -206,7 +206,7 @@ function GS_Round_System:AddDeadPly(plyID)
         GS_MSG(plyID.." is already dead!")
         return
     end
-
+ 
     self.DeadPlayers[plyID] = true
 end
 

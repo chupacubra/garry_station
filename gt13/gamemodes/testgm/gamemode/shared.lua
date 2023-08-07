@@ -10,7 +10,10 @@ function GM:Initialize()
     --PrintTable(GS_Round_System)
 end
 
-team.SetUp( 1, "Player", Color(255,255,255))
-team.SetUp( 2, "Ghost", Color(80,80,80))
-
 TEAM_PLY = 1
+TEAM_SPEC = TEAM_SPECTATOR
+
+function GM:CreateTeams()
+    team.SetUp( TEAM_PLY, "Player", Color(255,255,255))
+    team.SetUp( TEAM_SPEC, "Ghost", Color(80,80,80))
+end

@@ -85,6 +85,8 @@ util.AddNetworkString("gs_cl_craft_request")
 --map
 util.AddNetworkString("gs_map_entity_get_type")
 util.AddNetworkString("gs_map_ent_action")
+util.AddNetworkString("gs_zones_draw")
+
 --[[
     vse chto nuzhno dlya taza
     sab chetire kolpaka
