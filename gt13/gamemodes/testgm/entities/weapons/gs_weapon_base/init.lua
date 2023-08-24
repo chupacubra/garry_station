@@ -5,9 +5,10 @@ include("shared.lua")
 
 local function all_dmg(dmg)
     local ad = 0
-    for k,v in pairs(dmg) do
-        PrintTable(v)
-        --ad = ad + v
+    for _,v in pairs(dmg) do
+        for _,vv in pairs(v) do
+            ad = ad + vv
+        end
     end
     return ad
 end
@@ -32,7 +33,9 @@ function SWEP:DealDamage(trace, dmgbullet)
     local force = trace.Normal * dmgbul * 10
 
     if trace.Entity:IsPlayer() then
-        player_manager.RunClass( trace.Entity,"HurtPart", trace.PhysicsBone, dmgbullet.BulletDamage)
+        --player_manager.RunClass( trace.Entity,"HurtPart", trace.PhysicsBone, dmgbullet.BulletDamage)
+        local target = FromHitGroupToPart(trace.HitGroup)
+        hook.Run("GS_PlyTakeDamage",self:GetOwner(), trace.Entity, dmgbullet, target)
     else
         local dmg = DamageInfo()
         dmg:SetAttacker(self:GetOwner())
@@ -46,19 +49,18 @@ end
 
 function SWEP:MakeSingleShoot(dmgbullet)
     local bullet = {
-        Damage = 0,
-        Force = 5,
+        Damage = all_dmg(dmgbullet),
+        Force = all_dmg(dmgbullet) * 2,
         TracerName = "Tracer",
         Src = self.Owner:GetShootPos(),
         Dir = self.Owner:GetAimVector(),
         Spread = Vector(self.spread, self.spread,0),
         Callback = function(ent, trace)
-            self:BroadcastShootEffect(trace)
             self:DealDamage(trace, dmgbullet)
         end
     }
 
-    local s = self.Owner:FireBullets(bullet , true)
+    self:FireBullets(bullet, false)
     self:CallOnClient("ShootGunEffect")
     self:ShootEffects()
     self:MakeRecoil()
@@ -71,7 +73,7 @@ end
 function SWEP:SecondaryAttack()
 
 end
-
+--[[
 function SWEP:BroadcastShootEffect(trace)
     net.Start("gs_weapon_base_effect")
     net.WriteEntity(trace.Entity)
@@ -81,6 +83,7 @@ function SWEP:BroadcastShootEffect(trace)
     net.WriteInt(trace.HitBox, 8)
     net.Broadcast()
 end
+--]]
 
 function SWEP:MakeRecoil()
     self:GetOwner():ViewPunch( Angle( -self.recoil, math.random(-1,1) * self.recoil, 0 ) )

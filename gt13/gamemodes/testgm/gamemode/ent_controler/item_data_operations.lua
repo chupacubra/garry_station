@@ -73,13 +73,21 @@ function GS_EntityControler.InsertInENTItem(ent, typ, name)
 
 end
 
+function GS_EntityControler:GetEntData(class)
+    local ent = ents.Create(class)
+    local ent_data = duplicator.CopyEntTable(ent)
+    ent:Remove()
+    
+    return ent_data
+end
+
 function GS_EntityControler:MakeEntData(typ, id)
     -- make entity, after copy entity, then delete
     -- cringe
+    -- пока я не сделаю замену duplicator.CreateEntityFromTable() будем делать так
+
     local ent = GS_EntityControler:MakeEntity(id, typ, Vector(0,0,0))
-
     local ent_data = duplicator.CopyEntTable(ent)
-
     ent:Remove()
 
     return ent_data

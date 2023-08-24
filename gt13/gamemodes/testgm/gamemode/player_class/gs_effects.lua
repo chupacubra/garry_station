@@ -146,9 +146,9 @@ function PLAYER_EFFECT:Unragdollize()
 	--[[this shit don't save after respawn]]
 
 	self.Player:UnSpectate()
-	self.Player:SetModel(self.Player.Ragdoll:GetModel())	--?
+	--self.Player:SetModel(self.Player.Ragdoll:GetModel())	--?
 
-	self.Player:Spawn()
+	--self.Player:Spawn()
 
 	self.Player.SWEP = nil
 
@@ -197,6 +197,7 @@ function PLAYER_EFFECT:Unragdollize()
 	self:SaturationStatusTrigger()
 
 	self.Player:SetNWBool("Ragdolled", false)
+
 end
 
 function PLAYER_EFFECT:IsRagdolled()

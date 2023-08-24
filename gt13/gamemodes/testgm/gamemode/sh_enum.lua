@@ -1,6 +1,6 @@
 -- ENUM
 -- The more I create enums, the more I think it's a sin
---
+-- 
 --
 
 E_NIL = Entity(-1)
@@ -77,7 +77,7 @@ FAST_EQ_TYPE = {
     "VEST",
     "HEAD",
     "MASK",
-    "EAR",--]]
+    "EAR",
     "SUIT"
 }
 
@@ -91,17 +91,6 @@ FAST_HUD_TYPE = {
     HEAD     = 7,
     MASK     = 8,
     EAR      = 9,
-}
-
-D_BRUTE = 1
-D_BURN  = 2
-D_TOXIN = 3
-D_STAMINA = 4
-REVERSE_DMG = {
-    D_BRUTE = 1,
-    D_BURN  = 2,
-    D_TOXIN = 3,
-    D_STAMINA = 4,
 }
 
 -- ammo for guns, 
@@ -165,25 +154,6 @@ ITEM_MEDIUM = 2
 ITEM_V_MEDIUM = 3
 ITEM_BIG    = 4
 ITEM_V_BIG  = 5
-
-
---[[
-ENUM_D = {}
-ENUM_D.enum = {}
-
-function ENUM_D:ENUM(enm)
-    return self.enum[enm] 
-end
-
-function ENUM_D:ENUM_Create(enm)
-    if self.enum[enm] then
-        return self.enum[enm]
-    else
-        self.enum[enm] = table.Count(enm)
-        return self.enum[enm]
-    end
-end
---]]
 
 GS_ROUND_WAIT_PLY = -1
 GS_ROUND_PREPARE = 0
@@ -295,4 +265,58 @@ JOB_LIST_DERMA = {
     ["Control Department"] = {
         station_master = "Station Master"
     }
+}
+
+
+S_EXAMINE    = 1 -- exam ply
+s_EXAMINE_EQ = 2 -- exam eq
+S_EXAMINE_BD = 3 -- exam body
+S_ACT_EQ     = 4 -- action with eq
+
+D_BRUTE = 1
+D_BURN  = 2
+D_TOXIN = 3
+D_STAMINA = 4
+
+REVERSE_DMG = {
+    D_BRUTE = 1,
+    D_BURN  = 2,
+    D_TOXIN = 3,
+    D_STAMINA = 4,
+}
+
+GS_DMG_LIST = {
+    [DMG_GENERIC]        = D_BRUTE,
+    [DMG_CRUSH]	         = D_BRUTE,
+    [DMG_BULLET]	     = D_BRUTE,	
+    [DMG_SLASH]	         = D_BRUTE,
+    [DMG_BURN]	         = D_BURN,
+    [DMG_VEHICLE]	     = D_BRUTE,
+    [DMG_FALL]	         = D_BRUTE,	
+    [DMG_BLAST]	         = D_BRUTE,
+    [DMG_CLUB]	         = D_BRUTE,
+    [DMG_SHOCK]	         = D_BURN,
+    [DMG_SONIC]	         = D_BRUTE,
+    [DMG_ENERGYBEAM]     = D_BURN,	
+    --[DMG_PREVENT_PHYSICS_FORCE	2048	
+    [DMG_NEVERGIB]       = D_BRUTE,	
+    [DMG_ALWAYSGIB]      = D_BRUTE,
+    --DMG_DROWN =
+    [DMG_PARALYZE]       = D_TOXIN,
+    [DMG_NERVEGAS]       = D_TOXIN,	
+    [DMG_POISON]	     = D_TOXIN,
+    [DMG_RADIATION]      = D_TOXIN,
+    --DMG_DROWNRECOVER = 	
+    [DMG_ACID]           = D_TOXIN,
+    [DMG_SLOWBURN]       = D_BURN,
+    --DMG_REMOVENORAGDOLL	4194304	
+    [DMG_PHYSGUN]        = D_BRUTE,
+    [DMG_PLASMA]         = D_BURN,
+    [DMG_AIRBOAT]        = D_BRUTE,	
+    --DMG_DISSOLVE	67108864	
+    --DMG_BLAST_SURFACE	134217728	
+    --DMG_DIRECT	268435456	
+    [DMG_BUCKSHOT]       = D_BRUTE,
+    [DMG_SNIPER]         = D_BRUTE,
+    [DMG_MISSILEDEFENSE] = D_BRUTE,	
 }

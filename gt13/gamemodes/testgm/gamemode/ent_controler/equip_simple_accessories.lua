@@ -1,6 +1,6 @@
 GS_EntityList.accessory = {
     test_hat = { 
-        entity_base = "gs_base_equip_accessory",
+        --entity_base = "gs_base_equip_accessory",
         Entity_Data = {
             Name = "Hat",
             Desc = "With dumb pompon",
@@ -15,7 +15,7 @@ GS_EntityList.accessory = {
 
 GS_EntityList.backpacks = {
     simple_back = { 
-        entity_base = "gs_base_equip_accessory",
+        --entity_base = "gs_base_equip_accessory",
         Entity_Data = {
             Name = "Backpack",
             Desc = "Simple backpack",
@@ -35,7 +35,7 @@ GS_EntityList.backpacks = {
 
 GS_EntityList.suit = {
     suit_casual = { 
-        entity_base = "gs_base_equip_accessory",
+        --entity_base = "gs_base_equip_accessory",
         Entity_Data = {
             Name = "Casual suit",
             Desc = "Wear for lunch",

@@ -12,6 +12,10 @@ function GS_Corpse.SendCorpseClient(rag)
 end
 --]]
 
+function GS_Corpse.SetDrawEq(corpse, tbl)
+    -- setNWString()
+end
+
 function GS_Corpse.Create(ply)
     local ragdoll = ents.Create("prop_ragdoll")
 
@@ -27,7 +31,6 @@ function GS_Corpse.Create(ply)
     for i=1,bones-1 do
         local bone = ragdoll:GetPhysicsObjectNum( i )  
         if bone:IsValid() then  
-
             local bonepos = ply:GetBonePosition( ragdoll:TranslatePhysBoneToBone( i ) ) 
             local bonematrix = ply:GetBoneMatrix(ragdoll:TranslatePhysBoneToBone( i ))
             local boneang = bonematrix:GetAngles()

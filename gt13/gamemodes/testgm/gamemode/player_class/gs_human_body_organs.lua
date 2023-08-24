@@ -91,8 +91,6 @@ function PLAYER_ORGANS:SetupOrgans()
             hp = 100
         },
     }
-
-
 end
 
 function PLAYER_ORGANS:SetupThinkOrgans()
@@ -298,7 +296,7 @@ end
 
 function PLAYER_ORGANS:HeartMoveBlood()
     local blood = self:BloodLevel()
-    local oxygen = math.Round( 0.13 * (blood/100) * (self.Player.Organs.heart.hp / 100), 2)
+    local oxygen = math.Round( 0.15 * (blood/100) * (self.Player.Organs.heart.hp / 100), 2)
     self:SubOxygenInBlood(0.13)
     self:AddOxygen(oxygen)
 end

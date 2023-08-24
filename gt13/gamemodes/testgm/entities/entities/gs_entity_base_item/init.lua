@@ -13,13 +13,19 @@ function ENT:Initialize()
 	self:SetMoveType( MOVETYPE_VPHYSICS )
 	self:SetSolid( SOLID_VPHYSICS )
     self:SetUseType(SIMPLE_USE)
-
+    
     local phys = self:GetPhysicsObject()
     if (phys:IsValid()) then
         phys:Wake()
     end
 
+    self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- for no collide with ply
+
     self:SetupFlag()
+
+    if self.Private_Data.ENT_Color then
+        self:SetColor(hexTorgb(self.Private_Data.ENT_Color))
+    end
 end
 
 function ENT:SetItemModel(model)
@@ -50,19 +56,6 @@ function ENT:GetHandData()
     return self.Entity_Data
 end
 
-function ENT:LoadInfoAboutItem(ply)
-    net.Start("gs_ent_update_info_item")
-    net.WriteEntity(self)
-    net.WriteTable(self.Entity_Data)
-    net.WriteString(self.Data_Labels.id)
-    net.WriteString(self.Data_Labels.type)
-    net.Send(ply)
-end
-
-function ENT:OnReloaded() 
-    self:SetData(self.Entity_Data)
-    self:LoadInfoAboutItem()
-end
 
 function ENT:AddStack(pile)
     if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL and pile.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL then
@@ -75,28 +68,27 @@ function ENT:AddStack(pile)
 
     if pile.Private_Data.Stack + self.Private_Data.Stack <= pile.Private_Data.Max_Stack then
         pile.Private_Data.Stack = pile.Private_Data.Stack + self.Private_Data.Stack
-        pile:LoadInfoAboutItem()
         self:Remove()
         return
     else
         pile.Private_Data.Stack = pile.Private_Data.Max_Stack
         self.Private_Data.Stack = pile.Private_Data.Max_Stack - (pile.Private_Data.Stack + self.Private_Data.Stack)
-        pile:LoadInfoAboutItem()
-        self:LoadInfoAboutItem()
         return
     end
 end
 
 function ENT:Examine(ply)
-    local arr = {"It's a "self.Entity_Data.Name, self.Entity_Data.Desk}
---    local examine_f = self.Examine_Data.examine_string
-    for k,v in pairs(self.Examine_Data) do
-        local str = v.examine_string
-        local arg = {}
-        for k,v in pairs(v.arguments) do
-            arg[k] = self[v[1]][v[2]]
-        end
-        arr[k] = string.format(str, unpack(arg))
+    local arr = {"It's a "..self.Entity_Data.Name, self.Entity_Data.Desc}
+
+    if self.Examine_Data != nil then
+            for k,v in pairs(self.Examine_Data) do
+                local str = v.examine_string
+                local arg = {}
+                for k,v in pairs(v.arguments) do
+                    arg[k] = self[v[1]][v[2]]
+                end
+                arr[k] = string.format(str, unpack(arg))
+            end
     end
 
     for k, v in pairs(arr) do
@@ -130,17 +122,6 @@ function ENT:GetFlag()
     return self.Key_State
 end
 
-net.Receive("gs_ent_client_init_item", function(ply)
-    local ent = net.ReadEntity()
-    ent:LoadInfoAboutItem(ply) 
-end)
-
-net.Receive("gs_ent_request_examine", function(_,ply)
-    local ent = net.ReadEntity()
-
-    ent:Examine(ply) 
-end)
-
 function ENT:PhysicsCollide( data, phys )
     if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL then return end
     
@@ -155,3 +136,14 @@ function ENT:PhysicsCollide( data, phys )
         return
     end
 end
+
+
+net.Receive("gs_ent_client_init_item", function(_,ply)
+    local ent = net.ReadEntity()
+end)
+
+net.Receive("gs_ent_request_examine", function(_,ply)
+    local ent = net.ReadEntity()
+
+    ent:Examine(ply) 
+end)

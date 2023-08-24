@@ -35,6 +35,45 @@ local hpicon = {
     Material( "health_7" ),
     Material( "health_8" ),
 }
+
+
+function SelectWep(id)
+    local list = ClGetWeaponsSlot(true, LocalPlayer())
+    input.SelectWeapon( list[id] )
+    GS_HUD.selected_wep = id
+end
+
+function SelectNextWep()
+    local list = ClGetWeaponsSlot(true, LocalPlayer())
+    local curid = table.KeyFromValue( list, LocalPlayer():GetActiveWeapon() )
+    if curid < #list then
+        --input.SelectWeapon( list[curid+1] )
+        --GS_HUD.selected_wep = curid+1
+        SelectWep(curid+1)
+    end
+end
+
+function SelectPrevWep()
+    local list = ClGetWeaponsSlot(true, LocalPlayer())
+    local curid = table.KeyFromValue( list, LocalPlayer():GetActiveWeapon() )
+    if curid != 1 then
+        --input.SelectWeapon( list[curid-1] )
+        --GS_HUD.selected_wep = curid - 1
+        SelectWep(curid - 1)
+    end
+end
+
+function UpdateSelectedWep(id) -- if weapon selected another action (drop wep), called 
+    SelectWep(id)
+end
+
+function GetSelectedWeapon()
+    if LocalPlayer():Alive() then
+        local list = LocalPlayer():GetWeapons()
+        GS_HUD.selected_wep = table.KeyFromValue( list, LocalPlayer():GetActiveWeapon() )
+    end
+end
+
 function GS_HUD.DrawHud() 
 	surface.SetFont( "TargetID" )
 	surface.SetTextColor( 255, 255, 255 )
@@ -43,7 +82,7 @@ function GS_HUD.DrawHud()
     local H = ScrH()
     local W = ScrW()
     surface.SetDrawColor(25,25,175,200)
-    local weaplist = GS_ClPlyStat:GetWeaponsSlot()
+    local weaplist = ClGetWeaponsSlot(false, LocalPlayer())
 
     for i = 1, 4 do
         surface.DrawRect((W / 3.5 ) + (110 * i), H - (H / 8), 90, 90)
@@ -67,11 +106,12 @@ function GS_HUD.DrawHud()
     end
 
     surface.SetDrawColor(255,255,255,240)
-    
-    local i = GS_ClPlyStat:GetCurrentWeaponsSlot()
-    surface.DrawOutlinedRect( (W / 3.5 ) + (110 * i), H - (H / 8), 90, 90, 3 )
 
-    --draw hp
+    GetSelectedWeapon()
+    if GS_HUD.selected_wep != 0 then
+        surface.DrawOutlinedRect( (W / 3.5 ) + (110 * GS_HUD.selected_wep), H - (H / 8), 90, 90, 3 )
+    end
+
     if GS_ClPlyStat then
         if GS_ClPlyStat.init then
             local i = 1
@@ -107,3 +147,17 @@ function GS_HUD.SpectatorHud()
     surface.SetTextPos((ScrW() / 2)-50, (ScrH() / 2) + 100)
     surface.DrawText( "Spectating" )
 end
+
+hook.Add("PlayerBindPress", "ActionButtonsdsd", function(ply, bind, pressed)
+    if !ply:Alive() or ply:Team() != TEAM_PLY or ply:GetNWBool("Ragdolled") then 
+        return
+    end
+
+    if bind == "invnext" then
+        SelectNextWep()
+    end
+
+    if bind == "invprev" then
+        SelectPrevWep()
+    end
+end)

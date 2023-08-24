@@ -22,7 +22,7 @@ local hide = {
 	["CHudBattery"] = true,
     ["CHudAmmo"]    = true,
     ["CHudCrosshair"] = true,
-    --["CHudWeaponSelection"] = true,
+    ["CHudWeaponSelection"] = true,
     --[[
         need weapon selection
     ]]
@@ -47,13 +47,9 @@ function GM:PostDrawHUD()
         --GS_ContextMenu:OpenAndDraw()
     --end
 end
---[[
-function GM:PlayerBindPress(ply, bind, pressed)
-    print(ply,bind,pressed)
-end
--]]
+
+
 hook.Add("PlayerBindPress", "ActionButton", function(ply, bind, pressed)
-    print(ply,bind,pressed)
     if bind == "gm_showhelp" or bind == "gm_showhelp1" then
         if GS_RoundStatus:GetRoundStatus() == GS_ROUND_PREPARE and LocalPlayer():Team() == TEAM_SPECTATOR then
             DrawStartroundMenu()
@@ -98,10 +94,9 @@ end)
 --]]
 
 function GM:PlayerSwitchWeapon()
-    GS_ClPlyStat:SetCurrentWeaponsSlot()
+    print("PLY SCHANGED WEP")
+    --GS_ClPlyStat:SetCurrentWeaponsSlot()
 end
-
-
 
 GS_RoundStatus:Init()
 
@@ -116,7 +111,9 @@ end
 function GM:PreDrawPlayerHands( hands, vm, ply, weapon )
     if weapon:GetClass() == "gs_swep_hand" then
         if weapon:GetNWBool("FightHand") then
-            return true
+            return false
+        else
+            return true 
         end
     end
 end

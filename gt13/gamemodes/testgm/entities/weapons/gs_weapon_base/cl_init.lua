@@ -116,6 +116,20 @@ function SWEP:ShootGunEffect()
     self:EmitSound(self.Primary.Sound)
     self.Owner:MuzzleFlash()
     self:ShootEffects()
+
+    local bullet = {
+        Damage = 0,
+        Force = 0,
+        TracerName = "Tracer",
+        Src = self.Owner:GetShootPos(),
+        Dir = self.Owner:GetAimVector(),
+        Spread = Vector(self.spread, self.spread,0),
+        --Callback = function(ent, trace)
+        --    self:BroadcastShootEffect(trace)
+        --    self:DealDamage(trace, dmgbullet)
+        --end
+    }
+    self:FireBullets(bullet, false)
 end
 
 function SWEP:ReloadGunEffect()
@@ -142,6 +156,7 @@ function SWEP:DrawWorldModel()
 end
 
 net.Receive("gs_weapon_base_effect", function()
+    --[[
     local ef = {}
     ef.entity = net.ReadEntity()
     ef.origin = net.ReadVector()
@@ -150,7 +165,6 @@ net.Receive("gs_weapon_base_effect", function()
     ef.hitbox = net.ReadInt(8)
 
     local effect = EffectData()
-
     effect:SetEntity(ef.entity)
     effect:SetOrigin(ef.origin )
     effect:SetStart(ef.startpos)
@@ -165,4 +179,9 @@ net.Receive("gs_weapon_base_effect", function()
     traceEf:SetFlags(4)
     traceEf:SetStart(ef.startpos)
     util.Effect( "Tracer", traceEf )
+
+    local impactEf = EffectData()
+
+    --Entity, Origin, Start, SurfaceProp, DamageType, HitBox
+    --]]
 end)

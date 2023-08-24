@@ -68,12 +68,16 @@ function GS_Job:GetDeptData(job)
     return self.Dept[self.Job[job]["dept"]]
 end
 
+function GS_Job:GetDeptDataD(dept)
+    return self.Dept[dept]
+end
+
 function GS_Job:GetChoosenJob(name)
     return self.Job[name]
 end
 
 function GS_Job:GetDeptName(dept)
-    return self.Dept[job]["name"]
+    return self.Dept[dept]["name"]
 end
 
 function GS_Job:GetAccess(job_name)
@@ -89,15 +93,21 @@ function GS_Job:GetJobName(job)
     print(job)
     return self.Job[job]["name"]
 end
+--[[
+function GS_Job:GetJobData(job)
+    return self.Job[job]
+end
+--]]
 
 function GS_Job:GiveJobItem(ply, job)
-    timer.Simple(1.1, function()
+    --timer.Simple(1.1, function()
         local deptData = self:GetDeptData(job)
-
         local jobItems = deptData.b_items
 
         GS_EntityControler.GiveItemFromArray(ply, jobItems)
-    end)
+
+        GS_ID:PrestartID(ply, job)
+    --end)
 end
 
 function GS_Job:GivePlyJob(ply, job)

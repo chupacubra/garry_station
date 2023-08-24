@@ -1,33 +1,33 @@
 include("player_ext.lua")
 
-function GM:PlayerInitialSpawn(ply)
-end
+--function GM:PlayerInitialSpawn(ply)
+--end
 
 function GM:PlayerSpawn( ply )
-	print(ply:Team(),TEAM_CONNECTING, TEAM_UNASSIGNED)
-	if ply:Team() == TEAM_CONNECTING then -- joined/conected, set team to specc
+	--print(ply:Team(),TEAM_CONNECTING, TEAM_UNASSIGNED)
+	if ply:Team() == TEAM_UNASSIGNED then -- joined/conected, set team to specc
 		self:PlayerSpawnAsSpectator(ply)
 		return
-	end--]]
+	end
+
     player_manager.SetPlayerClass( ply, "gs_human" )
 
     ply:SetupHands()
+
     player_manager.OnPlayerSpawn( ply )
 	player_manager.RunClass( ply, "Spawn" )
 
     hook.Call( "PlayerSetModel", GAMEMODE, ply )
 
+	ply:SetNoCollideWithTeammates( false )
     self:PlayerLoadout( ply )
 end
 
 function GM:PlayerSetModel( ply )
-
 	player_manager.RunClass( ply, "SetModel" )
-
 end
 
 function GM:PlayerSetHandsModel( ply, ent )
-
 	local info = player_manager.RunClass( ply, "GetHandsModel" )
 
 	if ( !info ) then
@@ -58,6 +58,7 @@ function GS_EquipWeapon(ply, weapon) -- for start loadout
 end
 
 function GM:PlayerSwitchFlashlight()
+	-- make item flashlight
 	return false
 end
 
@@ -74,8 +75,12 @@ function GM:PlayerCanPickupWeapon()
 	return false
 end
 
+function GM:PlayerDeathSound() return true end
+
 function GM:PlayerDeath( victim, inflictor, attacker )
-	player_manager.RunClass( victim, "Death" )
+	if !victim.ClassDead then
+		player_manager.RunClass( victim, "Death" )
+	end
 	hook.Run("GS_PlayerDead", victim:SteamID())
 	player_manager.ClearPlayerClass( victim )
 
@@ -91,7 +96,6 @@ function GM:PlayerSpawnAsSpectator( ply )
 	if (GS_Round_System:Status() == GS_ROUND_PREPARE) then
 		ply:SetTeam( TEAM_SPECTATOR )
 		ply:Spectate( OBS_MODE_FIXED )
-		--net.Start("")
 		return
 
 	end
@@ -107,7 +111,6 @@ function PlayerSpawnAsSpectator( ply )
 	if (GS_Round_System:Status() == GS_ROUND_PREPARE) then
 		ply:SetTeam( TEAM_SPECTATOR )
 		ply:Spectate( OBS_MODE_FIXED )
-		--net.Start("")
 		return
 
 	end
@@ -184,12 +187,28 @@ end
 
 
 function GM:GetFallDamage( ply, speed )
-	-- TODO
-	-- if big speed:
-	--		death
-    -- elseif medium:
-	--      hurt legs
-	--      break l\r leg bone
+	local aproximatelyDamage = speed / 8
+
+	if aproximatelyDamage  > 130 then
+		-- facking dead
+		-- with breaking legs, spine and apply mega damage to legs and chest 
+		return 0
+	end
+
+	if aproximatelyDamage > 70 then
+		-- break 1/2 leg
+		-- apply 55 +/- 10 damage to breaken leg(s)
+		return 0
+	end
+
+	if aproximatelyDamage < 30 then
+		return 0
+	end
+	-- aproximatelyDamage 30-70
+	-- damage to leg(s)
+	
+	local r = math.random(0, n)
+
 	return 0
 end
 
@@ -208,14 +227,27 @@ end
 function GM:PlayerNoClip( ply, desiredState )
 	return GetConVar("sv_cheats"):GetBool()
 end
+
+function GM:PlayerDeathSound() 
+	return true
+end
 --[[
-function GM:PlayerDeathThink( ply )
-	--if 
+function GM:EntityTakeDamage( target, dmg )
+	if target:IsPlayer() then
+		if dmg:GetAttacker():IsPlayer() then
+			if GS_DMG_LIST[]
+		else
+			
+		end
+
+		return true
+	end
 end
 --]]
 
-function GM:PlayerDeathSound() return true end
-
+hook.Add("GS_PlyTakeDamage", "Main", function(victim, attacker, part, dmg)
+	player_manager.RunClass( victim, "HurtPart", part, dmg)
+end)
 
 concommand.Add("gs_open", function(ply,cmd, arg)
 	local id = arg[1]

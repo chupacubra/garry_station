@@ -6,40 +6,21 @@ include("sh_item_list.lua")
 AddCSLuaFile("sh_item_list.lua")
 
 
---[[
-for k,v in pairs(files) do
-    include(v)
-    AddCSLuaFile(v)
-end
---]]
---[[
-    WE NEED TO MAKE GS_EntityList SHARED
-    
-    and custom/base entity
-
-    BASE entity:
-        когда проп спавниться, на клиент отправляется пометка, что этот проп базовый,
-        И все действия, связанные с получением каких либо Entity_Data данных ссылаются на GS_Entity_List
-
-    CUSTOM entity:
-        когда проп спавниться, на клиент отправляются полные данные о пропе
-
-    Это больше относится к item
-]]
-
-
 function GS_EntityControler:MakeEntity(name, typ, pos)
     print(typ,name)
     PrintTable(GS_EntityList[typ])
+
     if !GS_EntityList[typ] then
         return
     elseif !GS_EntityList[typ][name] then
         return
     end
+
     print("spawning")
-    local edata = table.Copy(GS_EntityList[typ][name])
-    local entity = ents.Create(edata.entity_base or "gs_entity_base_item")
-    
+    --local edata = table.Copy(GS_EntityList[typ][name])
+    local entity = ents.Create("gs_item_"..typ.."_"..name)
+
+    --[[
     entity:SetData(edata.Entity_Data)
 
     entity.Private_Data = edata.Private_Data
@@ -51,7 +32,7 @@ function GS_EntityControler:MakeEntity(name, typ, pos)
     } 
 
     PrintTable(entity.Data_Labels)
-
+--]]
     entity:SetPos(pos)
     entity:Spawn()
     
@@ -59,13 +40,6 @@ function GS_EntityControler:MakeEntity(name, typ, pos)
 
     return entity
 end
---[[
-function GS_EntityControler:MakeEntity(etype,name,pos,ang)
-    local entity = ents.Create( "gs_entity_vendomat" )
-    entity:SetPos(pos)
-    entity:Spawn()
-end
---]]
 
 function GS_EntityControler:MakeFromPattern(name,pos,ang)
 

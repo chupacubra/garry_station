@@ -14,3 +14,11 @@ SWEP.ViewModel = "models/weapons/c_arms.mdl"
 SWEP.WorldModel = ""
 SWEP.UseHands = true
 SWEP.DrawAmmo = false
+
+function FormatDataForCLHands(tbl)
+    return table.concat( tbl, "," )
+end
+
+function DeformatDataForCLHands(str)
+    return string.Explode(",", str)
+end

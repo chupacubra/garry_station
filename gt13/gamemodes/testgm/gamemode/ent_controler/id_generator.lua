@@ -44,48 +44,78 @@ GS_ID = {}
 
 ID_base = {
     Entity_Data = {
-        Name = "card",  -- Cargo ID
-        Desc = "desc",  -- It is a Ivan Ivanich ID
+        Name = "Card",  -- Cargo ID
+        Desc = "The clean ID",  -- It is a Ivan Ivanich ID
         Model = "models/weapons/helios/id_cards/w_idcard.mdl",
         ENUM_Type = GS_ITEM_EQUIP,
         ENUM_Subtype = GS_EQUIP_ID,
-        Simple_Examine = true,
         Size = ITEM_VERY_SMALL,
     },
     Private_Data = {
         tocken   = "",
-        access   =  0,
+        access   =  1,
         job_name = "",
         job_dept = "",
         name     = "",
-        color    = "",
+        ENT_Color    = "",
     }
 }
+
+
+local ENT = {}
+
+ENT.Base ="gs_entity_base_item"
+ENT.Private_Data = ID_base.Private_Data
+ENT.Entity_Data  = ID_base.Entity_Data
+--ENT.Data_Labels  = {type = k, id = kk}
+scripted_ents.Register( ENT, "gs_item_keycard" )
+
+
+function GS_ID:IsID(data)
+    return data.Entity_Data.ENUM_Type == GS_ITEM_EQUIP and data.Entity_Data.ENUM_Subtype == GS_EQUIP_ID
+end
 
 function GS_ID:GenerateIDData(tocken, job)
     local id = ID_base
 
-    local jn = GS_Job:GetChoosenJob(job)
     local ac = GS_Job:GetAccess(job)
     local name = GS_PLY_Char:Name(tocken)
 
+    local jobdata = GS_Job:GetChoosenJob(job)
+    local deptdata = GS_Job:GetDeptDataD(jobdata.dept)
+
     id.Private_Data.tocken   = tocken
     id.Private_Data.name     = name
-    id.Private_Data.job_name = jn.name
-    id.Private_Data.job_dept = GS_Job:GetDeptName(job)
+    id.Private_Data.job_name = jobdata.name
+    id.Private_Data.job_dept = deptdata.name
     id.Private_Data.access   = ac
-    id.Private_Data.color    = GS_Job:GetColor(job)
+    id.Private_Data.ENT_Color = rgbToHex(jobdata.color or deptdata.color)
 
-    id.Entity_Data.Name = GS_Job:GetJobName(job).." ID card"
-    id.Entity_Data.Desc = "It is a "..name.." card"
+    id.Entity_Data.Name = name.." ID card"
+    id.Entity_Data.Desc = "It is a "..jobdata.name.." card"
 
     return id
 end
 
-function CheckAccess(have, need)
+function HaveAccess(have, need)
     return bit.band(have, need) == need
 end
 
-function GS_ID:SpawnID(ply, job)
+function GS_ID:CreateID()
+    -- generate new ID and return entity
+    return ents.Create("gs_item_keycard")
+end
 
+function GS_ID:PrestartID(ply, job)
+    -- create and equip ply ID
+    local tocken = GS_PLY_Char:GetPlyChar(ply)
+    local id = self:GenerateIDData(tocken, job)
+
+    local iddata = GS_EntityControler:GetEntData("gs_item_keycard")
+    iddata.Private_Data = id.Private_Data
+    iddata.Entity_Data  = id.Entity_Data
+
+    PrintTable(iddata)
+
+    player_manager.RunClass( ply, "EquipItem", iddata, "KEYCARD")
 end

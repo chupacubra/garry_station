@@ -84,12 +84,7 @@ function PLAYER_INVENTARY:HaveEquipment(key)
 	return false
 end
 
-function PLAYER_INVENTARY:EquipItem(itemData,key)
-	
-	debug.Trace()
-	PrintTable(itemData)
-	print(key)
-
+function PLAYER_INVENTARY:EquipItem(itemData, key)
 	if key == "SUIT" then
 		return self:ChangeSuit(itemData)
 	end
@@ -99,6 +94,7 @@ function PLAYER_INVENTARY:EquipItem(itemData,key)
 	end
 	
 	self.Player.Equipment[key] = itemData
+	PrintTable(itemData)
 	self:EquipmentEquipClient(itemData, key)
 	
 	return true
@@ -113,6 +109,10 @@ function PLAYER_INVENTARY:GetEquipItem(key)
 end
 
 function PLAYER_INVENTARY:RemoveEquip(key)
+	if type(key) == "number" then
+		key = FAST_EQ_TYPE[key]
+	end
+
 	if !self:HaveEquipment(key) then
 		return false
 	end
@@ -245,8 +245,6 @@ function PLAYER_INVENTARY:GetItemFromContext(context, key)
 	elseif context == CONTEXT_POCKET then
 		return self:GetItemFromPocket(key)
 	elseif context == CONTEXT_ITEM_IN_CONT then
-		print("get item from container",key)
-		print(self.OpenContainer:GetItemFromContainer(key))
 		return self.OpenContainer:GetItemFromContainer(key)
 	elseif context == CONTEXT_EQUIPMENT then
 		return self:GetEquipItem(key)
@@ -274,8 +272,11 @@ function PLAYER_INVENTARY:RemoveItemFromContext(context, key)
 		return self:RemoveItemFromPocket(key)
 	elseif context == CONTEXT_ITEM_IN_CONT then
 		return self.OpenContainer:RemoveItemFromContainer(key)
+	elseif context == CONTEXT_EQUIPMENT then
+		return self:RemoveEquip(key)
 	elseif context == CONTEXT_HAND then
 		return self.Player.Hands:RemoveItem()
+		
 	end
 end
 
@@ -322,10 +323,12 @@ function PLAYER_INVENTARY:DropEntFromInventary(key, from)
 end
 
 function PLAYER_INVENTARY:DropSWEP(weapon)
+	-- remake this with concmd 
 	if weapon.GS_Hand then
 		return
 	end
 
+	self.Player:SelectWeapon("gs_weapon_hands")
 	self.Player:DropWeapon(weapon)
 end
 
@@ -342,7 +345,7 @@ function PLAYER_INVENTARY:EquipmentEquipClient(itemData, key)
 	net.Start("gs_equipment_update")
 	net.WriteUInt(FAST_HUD_TYPE[key], 5)
 	net.WriteBool(true)
-	net.WriteTable(itemData.Entity_Data)
+	net.WriteString(itemData.Class)
 	net.Send(self.Player)
 
 	self:DrawEquipSync()
@@ -358,20 +361,14 @@ function PLAYER_INVENTARY:DeEquipItemClient(key)
 end
 
 function PLAYER_INVENTARY:DrawEquipSync()
-	local eq_sync = {}
-
 	for k, v in pairs(self.Player.Equipment) do
 		if v != 0 then
-			eq_sync[k] = v.Entity_Data.Model
+			self.Player:SetNWString("EQ_"..k, v.Entity_Data.Model)
+		else
+			self.Player:SetNWString("EQ_"..k, "")
 		end
 	end
-
-	net.Start("gs_ply_equip_draw_sync")
-	net.WriteEntity(self.Player)
-	net.WriteTable(eq_sync)
-	net.Broadcast()
 end
-
 
 function PLAYER_INVENTARY:ExamineItemFromInventory(keyitem, from)
 	local item = self:GetItemFromContext(from, keyitem)
@@ -380,14 +377,14 @@ function PLAYER_INVENTARY:ExamineItemFromInventory(keyitem, from)
 		return
 	end
 
-	local examine = {item.Entity_Data.Name, item.Entity_Data.Desc}
+	local examine = {"It's a "..item.Entity_Data.Name, item.Entity_Data.Desc}
 	local priv = GS_EntityControler:ExamineData(item)
 
 	table.Add(examine, priv)
 
-	net.Start("gs_cl_inventary_examine_return")
-	net.WriteTable(examine)
-	net.Send(self.Player)
+	for k, v in pairs(examine) do
+		self.Player:ChatPrint(v)
+	end
 end
 
 function PLAYER_INVENTARY:CompareEntAndEnt(receiver, drop)
@@ -422,9 +419,11 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 	elseif receiver.from == CONTEXT_EQUIPMENT then
 		local drop_item = self:GetItemFromContext(drop.from,drop.key)
 
+		PrintTable(drop_item)
+
 		local key = FAST_EQ_TYPE[ItemSubType(drop_item)]
 		if !self:HaveEquipment(key) then
-			local success = self.Player:EquipItem(drop_item, key)
+			local success = self:EquipItem(drop_item, key)
 
 			if success then
 				self:RemoveItemFromContext(drop.from, drop.key)
@@ -460,6 +459,8 @@ function PLAYER_INVENTARY:MakeNormalContext(receiver, drop)
 			else
 				local drop_item = self:GetItemFromContext(drop.from, drop.key)
 
+				print(drop.from, drop.key)
+
 				if drop_item then
 					local succes = self:InsertItemInContext(receiver.from, drop_item, receiver.key)
 					if succes then
@@ -486,11 +487,10 @@ function PLAYER_INVENTARY:SetSuit(suit)
 	
 	if model then
 		self:SetModel(model)
+		self.Player.Suit = suit
 	end
 
-	self.Player.Suit = suit
 end
-
 
 function PLAYER_INVENTARY:ChangeSuit(itemData)
 	local ch_suit = itemData.Private_Data.suit

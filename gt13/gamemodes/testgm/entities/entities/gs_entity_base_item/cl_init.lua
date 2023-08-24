@@ -1,26 +1,20 @@
 include("shared.lua")
 
 function ENT:Initialize()
-    net.Start("gs_ent_client_init_item")
-    net.WriteEntity(self)
-    net.SendToServer()
 end
 
 function ENT:OnReloaded() 
-    net.Start("gs_ent_client_init_item")
-    net.WriteEntity(self)
-    net.SendToServer()
-end
-
-function ENT:GetRequest(dat)
-    self.req_data.received = true
-    self.req_data.data = dat
 end
 
 function ENT:Examine(request, data) -- if bool then
-    net.Start("gs_ent_request_examine")
-    net.WriteEntity(self)
-    net.SendToServer()
+    if self.Entity_Data.Simple_Examine then
+        LocalPlayer():ChatPrint("It's "..self.Entity_Data.Name )
+        LocalPlayer():ChatPrint( self.Entity_Data.Desc )
+    else
+        net.Start("gs_ent_request_examine")
+        net.WriteEntity(self)
+        net.SendToServer()
+    end
 end
 
 function ENT:Draw()
@@ -78,7 +72,7 @@ function ENT:GetContextMenu()
         table.insert(contextButton, button)
     end
 
-    if self.IsGS_Equip then
+    if self.Entity_Data.ENUM_Type == GS_ITEM_EQUIP then
         local button = {
             label = "Equip",
             icon  = "icon16/tag_orange.png",
@@ -109,40 +103,5 @@ function ENT:GetContextMenu()
 
     return contextButton
 end
-
-net.Receive("gs_ent_update_info_item", function()
-    local ent  = net.ReadEntity()
-    local data = net.ReadTable()
-    local id   = net.ReadString()
-    local typ = net.ReadString()
-
-    print(ent)
-    print(data)
-
-    debug.Trace()
-    ent.Entity_Data = data
-
-    if id == "" or typ == "" then
-        return
-    end
-
-    ent.Data_Labels = {id = id, type = typ}
-    --[[
-        check for having context buttons in files
-    ]]
-    print(typ, id)
-    local tbl = GS_EntityList[typ][id]
-
-    if tbl.GetContextButtons then
-        ent.GetContextButtons = tbl.GetContextButtons
-    end
-end)
-
-net.Receive("gs_ent_get_private_info",function()
-    local ent = net.ReadEntity()
-    local ex_d = net.ReadTable()
-
-    ent:Examine(true, ex_d)
-end)
 
 -- kopec

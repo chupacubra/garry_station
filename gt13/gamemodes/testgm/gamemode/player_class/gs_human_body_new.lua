@@ -18,7 +18,6 @@ function PLAYER_HP:SetupParts()
 		leg_l  = {0,0},
 		leg_r  = {0,0},
 	}
-
 end
 
 function PLAYER_HP:SetupOrganismValues()
@@ -37,7 +36,7 @@ function PLAYER_HP:SetupOrganismValues()
             bleed_rate = 0,
             oxygen = 1
         },
-        organism_status = {}
+        --organism_status = {}
     }
 
 	self.Player.Spec_Damage =  {
@@ -55,7 +54,7 @@ function PLAYER_HP:SetupOrganismValues()
     end
 
 	self.CritRagdoll = 0
-	self.HunegerRagdoll = 0
+	self.HungerRagdoll = 0
 
 end
 
@@ -79,8 +78,6 @@ function PLAYER_HP:SetupOrganismThink()
 
 
         local dmg = self:GetSumDMG()
-		--print(dmg, "1231231")
-
 
         if dmg < 100 then
             self.Player.HealthStatus = GS_HS_OK
@@ -100,6 +97,7 @@ function PLAYER_HP:SetupOrganismThink()
 		self:RagdollThink()
 		--PrintTable(self.Player.Organism_Value)
 		--PrintTable(self.Player.Spec_Damage)
+		self:BodyDebugPrint()
 	end)
 end
 
@@ -121,7 +119,6 @@ function PLAYER_HP:AddOxygen(int)
 end
 
 function PLAYER_HP:SubOxygen(int)
-	--print(self.Player.Organism_Value.oxygen , int, self.Player.Organism_Value.oxygen - int, math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1) )
     self.Player.Organism_Value.oxygen = math.Clamp(self.Player.Organism_Value.oxygen - int, 0, 1)
 end
 
@@ -147,11 +144,17 @@ function PLAYER_HP:Bleed()
     end
 end
 
+function PLAYER_HP:BleedReset()
+	self.Player.Organism_Value.blood.bleed = false
+	self.Player.Organism_Value.blood.bleed_rate = 0
+end
+
 function PLAYER_HP:BleedThink()
     -- timer = 2 sec
     -- with bleed_rate 5 aproximately human will be empty in 40 seconds
     -- BUT the bleed in bleedThink decreasing in 1 unit
     if self.Player.Organism_Value.blood.bleed == false or self.Player.Organism_Value.blood.bleed_rate == 0 then
+		self:BleedReset()
         timer.Remove("gs_bleed"..self.Player:EntIndex())
         return
     end
@@ -171,7 +174,9 @@ function PLAYER_HP:SetHP(body)
 	end
 end
 
-function PLAYER_HP:HurtPart(bone, dmg)
+function PLAYER_HP:HurtPart(mainpart, dmg)
+	-- need to remake with HITGROUP
+	--[[
 	local bone = self.Player:TranslatePhysBoneToBone(bone)
 	local mainpart
 
@@ -184,6 +189,7 @@ function PLAYER_HP:HurtPart(bone, dmg)
 		
 		bone = self.Player:GetBoneParent(bone)
 	end
+	--]]
 
 	local brutesum = self:GetSumDMGBrute()
 	for k,v in pairs(dmg) do
@@ -192,8 +198,7 @@ function PLAYER_HP:HurtPart(bone, dmg)
 		elseif k == D_BRUTE then
 			if brutesum >= 50 then
 				if flipcoin() then
-					self:Bleed()  
-					print(self.Player, "is bleeded")
+					self:Bleed()
 				end
 			end
 		end
@@ -202,7 +207,7 @@ function PLAYER_HP:HurtPart(bone, dmg)
 
 	--print(mainpart.. " = " ..self:GetHealthPercentPart(mainpart).. "%")
 	--print("HP: "..self:GetHealthPercent())
-	print(self:GetSumDMG())
+	--print(self:GetSumDMG())
 
 	self:HealthPartClientUpdate(mainpart)
 end
@@ -261,25 +266,6 @@ function PLAYER_HP:GetHealthPercentPart(part)
 	return dmg
 end
 
-function PLAYER_HP:GetHealthPercent()
-	--[[
-	local dmg = 0 
-
-	for k,v in pairs(self.Player.Body_Parts) do
-		dmg = dmg + self:GetHealthPercentPart(k)
-	end
-
-	for k,v in pairs(self.Player.Spec_Damage) do
-
-		dmg = dmg + v
-	end
-
-	dmg = (dmg / 8)
-	print(dmg, "123")
-	return dmg
-	--]]
-end
-
 function PLAYER_HP:GetSumDMG()
 	local dmg = 0
 	
@@ -301,7 +287,7 @@ end
 
 function PLAYER_HP:HealthPartClientUpdate(part)
 	local parthp
-	--print(part)
+
 	if !part then
 		part = 0
 		parthp = 0
@@ -315,11 +301,6 @@ function PLAYER_HP:HealthPartClientUpdate(part)
 
 	local icon = 1 -- the base 100% icon
 	local dmg = math.floor(self:GetSumDMG())
-
-	--[[
-		!
-	]]
-	--print(dmg)
 	
 	if dmg != 0 then
 		if dmg < 30 then
@@ -368,14 +349,6 @@ function PLAYER_HP:DamageHealth(part, typeD, dmg)
 	end
 
 	self.Player.Body_Parts[part][typeD] = self.Player.Body_Parts[part][typeD] + dmg
-end
-
-
-function PLAYER_HP:Metabolize()
-	-- activate 1 unit of chemicals on timer
-	for k,v in pairs(self.Player.Chemicals.content) do
-		v:OnPlyClbck(self.Player, 1)
-	end
 end
 
 function PLAYER_HP:GetSaturation()
@@ -434,6 +407,13 @@ function PLAYER_HP:SaturationStatusTrigger()
 	print(self:GetSaturation())
 end
 
+function PLAYER_HP:Metabolize()
+	-- activate 1 unit of chemicals on timer
+	for k,v in pairs(self.Player.Chemicals.content) do
+		v:OnPlyClbck(self.Player, 1)
+	end
+end
+
 function PLAYER_HP:HungerThink()
 	if !self.Player:IsValid() then
 		return
@@ -442,19 +422,14 @@ function PLAYER_HP:HungerThink()
 	local hunger = self:GetSaturation()
 	
 	if hunger < 10 then
-		--self:OrganismStatus("heart_failure", "hunger")
 		if self.HungerRagdoll == 0 and flipquart() then
 			self.HungerRagdoll = 5
 		end
 	elseif hunger < 25 then
 		self:EffectSpeedAdd("hunger", -100, -225)
-		--self:OrganismStatusRemove("heart_failure", "hunger")
 	else
 		self:EffectSpeedRemove("hunger")
-		--self:OrganismStatusRemove("heart_failure", "hunger")
 	end
-
-	
 end
 
 function PLAYER_HP:StopSaturationTimer()
@@ -482,7 +457,8 @@ function PLAYER_HP:Death()
 
 	self:StopThink()
 	self:CloseHudClient()
-	self:Kill()
+	self.Player.ClassDead = true
+	self.Player:Kill()
 end
 
 function PLAYER_HP:CritParalyze(delay,hard)
@@ -510,39 +486,7 @@ function PLAYER_HP:CritParalyze(delay,hard)
 	--GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
 end
 
---[[
-function PLAYER_HP:Shock(delay,hard)
-	if self.Ragdolled then
-		return false
-	end
 
-	if !delay then
-		delay = math.random(3, 5)
-	end
-
-	self:Ragdollize()
-	if !hard then
-		self.CritParalyzeDelay = CurTime() + delay + 7
-		
-		timer.Simple(delay, function()
-			if !IsValid(self.Player) then
-				return
-			end
-
-			self:Unragdollize()
-		end)
-	end
-
-	--GS_ChatPrint(self.Player, "You paralized!", CHAT_COLOR.RED)
-end
---]]
---[[
-function PLAYER_HP:FallInShock()
-	if self.Ragdolled then
-		self.RagdollTime = self.RagdollTime + 
-	end
-end
---]]
 function PLAYER_HP:RagdollThink()
 	-- check pain
 	-- check hypoxia
@@ -570,8 +514,6 @@ function PLAYER_HP:RagdollThink()
 		self:Ragdollize()
 		return
 	end
-
-
 
 	self:Unragdollize()
 end

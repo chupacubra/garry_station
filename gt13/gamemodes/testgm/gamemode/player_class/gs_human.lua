@@ -89,22 +89,14 @@ function PLAYER:CloseHudClient()
 	net.Send(self.Player)
 end
 
-function PLAYER:SetupEquipDraw()
-	net.Start("gs_ply_equip_setup")
-	net.WriteEntity(self.Player)
-	net.Broadcast()
-end
-
 function PLAYER:SetupSystems()
 	self:SetupInventary()
-	self:SetupHPSystem() -- !!!
+	self:SetupHPSystem()
 	self:InitHudClient()
-	--self:SetupThink()
 end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
-	self:SetupEquipDraw()
 end
 
 function PLAYER:Loadout()
@@ -114,10 +106,90 @@ function PLAYER:Loadout()
 	self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
 end
 
+function PLAYER:BodyDebugPrint()
+	-- show debug with body status
+	-- need show:
+	-- Organism_Value
+	-- organs hp
+	-- body parts hp
+
+	local debug_print = {"--------------DEBUG----------------"}
+
+	for i=2, 20 do
+		debug_print[i] = "|"
+	end
+
+	table.insert(debug_print,"--------------DEBUG----------------")
+
+	local i = 2
+
+	for k, v in pairs(self.Player.Organism_Value) do
+		if type(v) == "table" then
+			debug_print[i] = debug_print[i]..stringspacer("", 20)
+			i = i + 1
+			for kk, vv in pairs(v) do
+				local vv = tostring(vv)
+				debug_print[i] = debug_print[i]..stringspacer(" "..k.."."..kk..": "..vv, 20)
+				i = i + 1
+			end
+			debug_print[i] = debug_print[i]..stringspacer("", 20)
+			i = i + 1
+			continue
+		end
+		local v = tostring(v)
+		debug_print[i] = debug_print[i]..stringspacer(" "..k..": "..v, 20)
+
+		i = i + 1
+	end
+	
+	i = 2
+
+	for k, v in pairs(self.Player.Organs) do
+		if type(v) == "table" then
+			--i = i + 1
+			for kk, vv in pairs(v) do
+				local vv = tostring(vv)
+				debug_print[i] = debug_print[i]..stringspacer("| "..k.."."..kk..": "..vv, 20)
+				i = i + 1
+			end
+			--debug_print[i] = debug_print[i]..stringspacer("|", 20)
+			--i = i + 1
+			continue
+		end
+		local v = tostring(v)
+		debug_print[i] =  debug_print[i]..stringspacer("| "..k..": "..v, 20)
+
+		i = i + 1
+	end
+	debug_print[i] = debug_print[i]..stringspacer("|", 20)
+	i = i + 1
+
+	for k, v in pairs(self.Player.Bones) do
+		if type(v) == "table" then
+			--i = i + 1
+			for kk, vv in pairs(v) do
+				local vv = tostring(vv)
+				debug_print[i] = debug_print[i]..stringspacer("| "..k.."."..kk..": "..vv, 20)
+				i = i + 1
+			end
+			--debug_print[i] = debug_print[i]..stringspacer("|", 20)
+			--i = i + 1
+			continue
+		end
+		local v = tostring(v)
+		debug_print[i] =  debug_print[i]..stringspacer("| "..k..": "..v, 20)
+
+		i = i + 1
+	end
+
+	for k,v in pairs(debug_print) do
+		--print(v)
+	end
+	
+end
 
 
 player_manager.RegisterClass( "gs_human", PLAYER, "player_default" )
-
 
 net.Receive("gs_cl_inventary_request_backpack",function(_, ply) 
 	player_manager.RunClass( ply, "SendToClientItemsFromBackpack" )
@@ -181,4 +253,13 @@ net.Receive("gs_equipment_update", function(_, ply)
 	local key = net.ReadUInt(5)
 
 	player_manager.RunClass(ply, "RemoveEquip", FAST_EQ_TYPE[key] )
+end)
+
+concommand.Add( "gs_dropswep", function(ply, str, arg)
+	if ply:Team() == TEAM_PLY then
+		local id = tonumber(arg[1])
+		local wep = GetSWEPFromID(id, ply)
+
+		player_manager.RunClass(ply, "DropSWEP", wep)
+	end
 end)

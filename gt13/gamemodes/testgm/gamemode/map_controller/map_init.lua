@@ -1,7 +1,6 @@
 gs_map = {}
-
-include("gm_ijm_boreas/init.lua")
 include("zone.lua")
+include("gm_ijm_boreas/init.lua")
 DIRECTORY = "addons/gt13/gamemodes/testgm/gamemode/map_controller"
 
 function gs_map.load()

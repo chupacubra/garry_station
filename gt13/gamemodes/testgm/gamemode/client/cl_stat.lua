@@ -10,12 +10,12 @@ GS_ClPlyStat.init = false
     initialize
 ]]
   
+
 function GS_ClPlyStat:Initialize()
     self:InitHP()
     self:InitInventory()
     self.init = true
 end
-
 
 function GS_ClPlyStat:InitHP()
     self.hp = {
@@ -108,21 +108,6 @@ function GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
     self.cur_weap = 1
 end
 
-function GS_ClPlyStat:GetWeaponsSlot(needEntity)
-    local arr = {}
-    local allWeapons = LocalPlayer():GetWeapons()
-
-    if !needEntity then
-        for i=1, #allWeapons do
-            arr[i] = allWeapons[i]:GetPrintName()
-        end
-    else
-        arr = LocalPlayer():GetWeapons()
-    end
-
-    return arr
-end
-
 function GS_ClPlyStat:SetCurrentWeaponsSlot()
     local allWeapons = LocalPlayer():GetWeapons()
     local cur = LocalPlayer():GetWeapons()
@@ -143,6 +128,9 @@ function GS_ClPlyStat:HaveEquip(key)
     return self.equipment[key] != 0
 end
 
+-- need remake this shiit in ConCMDs
+-- gs_drop_ent_inventary FROM key
+
 function GS_ClPlyStat:UseWeaponFromInventary(key, from)
     net.Start("gs_cl_inventary_use_weapon")
     net.WriteUInt(from, 5)
@@ -158,9 +146,10 @@ function GS_ClPlyStat:DropEntFromInventary(key, from)
 end
 
 function GS_ClPlyStat:DropSWEP(entity)
-    net.Start("gs_cl_weapon_drop")
-    net.WriteEntity(entity)
-    net.SendToServer()
+    -- need get id
+    local id = PlyGetIDSWEP(entity, LocalPlayer())
+    LocalPlayer():ConCommand("gs_dropswep "..tostring(id))
+    SelectWep(1)
 end
 
 function GS_ClPlyStat:ExamineData(examinedata)
@@ -196,6 +185,7 @@ function GS_ClPlyStat:UpdateInventoryItems(items, from)
         ContextMenu:UpdateInventoryItems(items)
     end
 end
+
 --[[
 function GS_ClPlyStat:CloseContainer()
     net.Start()
@@ -206,7 +196,6 @@ function GS_ClPlyStat:OpenContainer(items)
 
 end
 --]]
-
 
 function GS_ClPlyStat:ClientCloseContainer()
     net.Start("gs_ent_container_close")
@@ -283,9 +272,7 @@ net.Receive("gs_equipment_update",function()
     local key = net.ReadUInt(5)
     local bool = net.ReadBool()
     if bool then
-        local item = net.ReadTable()
-
-        PrintTable(item)
+        local item = scripted_ents.Get(net.ReadString()).Entity_Data
         GS_ClPlyStat:EquipItem(item, key)
     else
         GS_ClPlyStat:RemoveEquip(key)

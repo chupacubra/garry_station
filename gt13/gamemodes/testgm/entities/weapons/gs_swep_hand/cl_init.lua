@@ -21,6 +21,37 @@ local DIR_CMD = {
 
 function SWEP:Initialize()
     self.RCooldown = 0
+
+    self:SetNWVarProxy("hands_model", function(_,_, old, new)
+        if new == "" then
+            if IsValid(self.IWorldModel) then
+                self.IWorldModel:Remove()
+                self.IWorldModel = nil
+            end
+        else
+            local data = DeformatDataForCLHands(new)
+            
+            local model = data[1]
+            local enum  = data[2]
+            local color = data[3]
+
+            if !model then return end
+
+            if !IsValid(self.IWorldModel) then
+                self.IWorldModel = ClientsideModel(model)
+            end
+
+            self.IWorldModel:SetModel(model)
+            
+            if color != "" and color != nil then
+                self.IWorldModel:SetColor(hexTorgb(color))
+            end
+
+            self.Item_ENUM = enum
+            self.WorldModel = model
+        end
+    end)
+    
 end
 
 function SWEP:PrimaryAttack()
@@ -58,35 +89,20 @@ function SWEP:DrawHUD()
     end
 end 
 
-function SWEP:WorldModelTriger(bool)
-    print(bool)
-    if bool then
-        if self.itemModel and !IsValid(self.IWorldModel) then
-            self.IWorldModel = ClientsideModel(self.itemModel)
-            self.IWorldModel:SetNoDraw( true )
-            print(self.IWorldModel:GetPos())
-        end
-    else
-        if IsValid(self.IWorldModel) then
-            self.IWorldModel:Remove()
-        end
-    end
-end
-
 function SWEP:Deploy()
     self:SetHoldType("normal")
-    self:WorldModelTriger(true)
+    --self:WorldModelTriger(true)
 
     return true
 end
 
 function SWEP:Holster()
-   self:WorldModelTriger(false)
+   --self:WorldModelTriger(false)
    return true
 end
 
 function SWEP:ShouldDrawViewModel()
-    if self:GetNWBool("FightHand") or self.itemModel then
+    if self:GetNWBool("FightHand") or self.IWorldModel then
         return true
     end
     return false
@@ -119,7 +135,7 @@ end
 function SWEP:ContextSlot()
     local options = {}
     
-    if !self.itemModel then
+    if !self.IWorldModel then
         return
     end
 
@@ -141,97 +157,41 @@ function SWEP:ContextSlot()
     }
     table.insert(options, button) 
 
-    local button = {
-        label = "Open container",
-        icon  = "icon16/box.png",
-        click = function()
-            net.Start("gs_ent_container_open")
-            net.WriteEntity(self)
-            net.SendToServer()
-        end,
-    }
-    table.insert(options, button) 
-
+    if self.Item_ENUM == GS_ITEM_CONTAINER then
+        local button = {
+            label = "Open container",
+            icon  = "icon16/box.png",
+            click = function()
+                net.Start("gs_ent_container_open")
+                net.WriteEntity(self)
+                net.SendToServer()
+            end,
+        }
+        table.insert(options, button) 
+    end
     PrintTable(options)
     return options
 end
 
 function SWEP:DrawWorldModel()
-    local _Owner = self:GetOwner()
-
-    if (IsValid(_Owner) and IsValid(self.IWorldModel)) then
-        local offsetVec = Vector(3, -3, -1)
-        local offsetAng = Angle(0, 0, 180)
-        
-        local boneid = _Owner:LookupBone("ValveBiped.Bip01_R_Hand")
-        if !boneid then return end
-
-        local matrix = _Owner:GetBoneMatrix(boneid)
-        if !matrix then return end
-
-        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
-
-        self.IWorldModel:SetPos(newPos)
-        self.IWorldModel:SetAngles(newAng)
-        self.IWorldModel:SetupBones()
-        self.IWorldModel:DrawModel()
-    end
 
 end
 
 function SWEP:CalcViewModelView(ViewModel, OldEyePos, OldEyeAng, EyePos, EyeAng)
-    if self.itemModel and self:GetNWBool("FightHand") == false then
-        ViewModel:SetModel(self.itemModel or "")
+    if self.IWorldModel and self:GetNWBool("FightHand") == false then
+        ViewModel:SetModel(self.IWorldModel:GetModel() or "")
+        ViewModel:SetColor(self.IWorldModel:GetColor())
+    else
+        ViewModel:SetColor(Color(255,255,255))
     end
 end
 
 function SWEP:GetViewModelPosition(pos, ang)
-    if self.itemModel then
+    if self.IWorldModel then
 	    pos,ang = LocalToWorld(Vector(30, -5, -10), Angle(0, 180, 0), pos, ang)
 	end
 	return pos, ang
 end
---[[
-function SWEP:Think()
-    if !self:GetNWBool("ManipMode") then return end
-    if self:GetOwner() != LocalPlayer() then return end -- dont know
-    
-    --if input.IsKeyDown(DIR_ROLLA) then
-
-    -- check inputs
-    --input.StartKeyTrapping()
-    --print(input.CheckKeyTrapping())
-    for key, id in pairs(DIR_CMD) do
-        if input.IsKeyDown(key) then
-            print("gs_manipcontrol", id)
-            RunConsoleCommand("gs_manipcontrol", id)
-        end
-    end
-end
---]]
-
-
-net.Receive("gs_hand_draw_model",function()
-    local hands = net.ReadEntity()
-    local haveItem = net.ReadBool()
-    local model = net.ReadString()
-    local e_type = net.ReadUInt(5)
-
-    if haveItem then
-        hands.itemModel = model
-        hands.Item_ENUM = e_type
-        hands.WorldModel = model
-    else
-        hands.itemModel = nil
-        hands.Item_ENUM = 0
-        hands.WorldModel = ""
-    end
-
-    print(model)
-
-    hands:WorldModelTriger(haveItem)
-end)
-
 
 hook.Add( "PlayerButtonDown", "CheckManipControlDown", function(ply, key)
     if ply:IsValid() and ply:Team() == TEAM_PLY then
@@ -263,3 +223,32 @@ hook.Add( "PlayerButtonUp", "CheckManipControlUp", function(ply, key)
         end
     end
 end )
+
+
+hook.Add("PostPlayerDraw", "GS_HandsDrawItem" , function(ply, flags)
+    if ply:Team() == TEAM_SPEC or ply:GetNWBool("Ragdolled") then return end
+    if ply:GetActiveWeapon():GetClass() != "gs_swep_hand" then return end
+    local hands = ply:GetActiveWeapon()
+
+    if IsValid(hands.IWorldModel) then
+        local owner = hands:GetOwner()
+        if !owner:IsValid() then return end
+        local offsetVec = Vector(3, -3, -1)
+        local offsetAng = Angle(0, 0, 180)
+        
+        local boneid = owner:LookupBone("ValveBiped.Bip01_R_Hand")
+        if !boneid then return end
+
+        local matrix = owner:GetBoneMatrix(boneid)
+        if !matrix then return end
+
+        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
+
+        hands.IWorldModel:SetPos(newPos)
+        hands.IWorldModel:SetAngles(newAng)
+        hands.IWorldModel:SetupBones()
+        hands.IWorldModel:DrawModel()
+    end
+        
+
+end)

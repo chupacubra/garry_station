@@ -22,6 +22,7 @@ AddCSLuaFile( "client/win98skin.lua" )
 AddCSLuaFile( "client/cl_ply_models.lua" )
 
 include( "shared.lua" )
+include( "sv_service.lua")
 include( "player.lua" )
 include( "sh_enum.lua" )
 include( "sh_service.lua" )
@@ -39,22 +40,7 @@ include( "client/cl_ply_models.lua" )
 hook.Add("GS_PlayerDead", "MakePersonDead", function(plyID)
     GS_Round_System:AddDeadPly(plyID)
 end)
-
---[[
-local _print = print
-
-function print(...)
-    debug.Trace()
-    _print(...)
-end
---]]
  
 function GM:AllowPlayerPickup( ply, ent )
-    print(ply,ent)
     return true
 end
---[[
-function GM:EntityRemoved( ent )
-
-end
-]]

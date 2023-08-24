@@ -116,6 +116,7 @@ end
 
 function ContextMenu:MakeContextItem(key, itemData,from, x, y)
     print(key,itemData,x,y,from)
+    PrintTable(itemData)
     --1 make all actions in array
     --2 generate all "buttons"
 
@@ -125,15 +126,13 @@ function ContextMenu:MakeContextItem(key, itemData,from, x, y)
     
     local option = {}
 
-    if itemData.Name and itemData.Desc then  -- examine
+    if itemData.Simple_Examine then  -- examine
         local button = {
             label = "Examine",
             icon  = "icon16/eye.png",
             click = function()
-                net.Start("gs_cl_inventary_examine_item")
-                net.WriteUInt(from, 5)
-                net.WriteUInt(key, 6)
-                net.SendToServer()
+                LocalPlayer():ChatPrint("It's a "..itemData.Name)
+                LocalPlayer():ChatPrint(itemData.Desc)
             end
         }
         table.insert(option, button)
@@ -349,7 +348,7 @@ function ContextMenu:ContextMenuOpen()
     
     -- weapon slot button
 
-    for k, v in pairs(GS_ClPlyStat:GetWeaponsSlot(true)) do
+    for k, v in pairs(ClGetWeaponsSlot(true, LocalPlayer())) do
         local weapb = vgui.Create("gt_button")
         weapb:SetColorB(Color(0,0,0,0))
         weapb:SetSize( 100, 100 )

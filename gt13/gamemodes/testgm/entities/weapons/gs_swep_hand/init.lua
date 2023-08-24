@@ -586,19 +586,23 @@ function SWEP:MakeAction(id)
 end
 
 function SWEP:SendToClientDrawModel(haveItem)
-    local model, enum = "", 0
-    
     if haveItem then
-        model = self.hand_item.item.Model
-        enum = self.hand_item.item.Entity_Data.ENUM_Type
-    end
+        local model, enum, color = "", self.hand_item.item.Entity_Data.ENUM_Type, ""
 
-    net.Start("gs_hand_draw_model")
-    net.WriteEntity(self)
-    net.WriteBool(haveItem)
-    net.WriteString(model)
-    net.WriteUInt(enum, 5)
-    net.Broadcast()
+        if self.hand_item.item.IsGS_Weapon then
+            model = self.hand_item.item.WorldModel
+        else
+            model = self.hand_item.item.Entity_Data.Model
+        end
+
+        if self.hand_item.item.Private_Data then
+            color = self.hand_item.item.Private_Data.ENT_Color or ""
+        end
+
+        self:SetNWString("hands_model", FormatDataForCLHands({model,enum,color}))
+    else
+        self:SetNWString("hands_model", "")
+    end
 end
 
 local ent_diff = vector_origin

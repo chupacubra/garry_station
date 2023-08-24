@@ -196,3 +196,92 @@ function Entity_SetNWData(ent, tab)
         end
     end
 end
+
+function ClGetWeaponsSlot(needEntity, ply)
+    local arr = {}
+    local allWeapons = ply:GetWeapons()
+
+    if !needEntity then
+        for i=1, #allWeapons do
+            arr[i] = allWeapons[i]:GetPrintName()
+        end
+    else
+        arr = ply:GetWeapons()
+    end
+
+    return arr
+end
+
+function PlyGetIDSWEP(wep, ply)
+    local allwep = ClGetWeaponsSlot(true, ply)
+    --local curwep = LocalPlayer():GetActiveWeapon()
+    for k, v in pairs(allwep) do
+        if v == wep then
+            return k 
+        end
+    end
+end
+
+function GetSWEPFromID(id, ply)
+    local allwep = ClGetWeaponsSlot(true, ply)
+    --local curwep = LocalPlayer():GetActiveWeapon()
+    return allwep[id]
+end
+
+function rgbToHex(rgb)
+	local hexadecimal = '#'
+
+    local rgb = {rgb.r,rgb.g,rgb.b}
+	for key, value in pairs(rgb) do
+		local hex = ''
+
+		while(value > 0)do
+			local index = math.fmod(value, 16) + 1
+			value = math.floor(value / 16)
+			hex = string.sub('0123456789ABCDEF', index, index) .. hex			
+		end
+
+		if(string.len(hex) == 0)then
+			hex = '00'
+
+		elseif(string.len(hex) == 1)then
+			hex = '0' .. hex
+		end
+
+		hexadecimal = hexadecimal .. hex
+	end
+
+	return hexadecimal
+end
+
+function hexTorgb(hex)
+    hex = hex:gsub("#","")
+    return Color(tonumber("0x"..hex:sub(1,2)), tonumber("0x"..hex:sub(3,4)), tonumber("0x"..hex:sub(5,6)))
+end
+
+function FromPhysicsBoneToPart(bone)
+    local bone = self.Player:TranslatePhysBoneToBone(bone)
+	while true do
+		local isPart, part = getMainBodyPart(bone)
+		if isPart then
+			return part
+		end
+		bone = self.Player:GetBoneParent(bone)
+	end
+end
+
+HitGroupPart = {
+    [HITGROUP_GENERIC]    = "body",
+    [HITGROUP_HEAD]       = "head",
+    [HITGROUP_CHEST]      = "body",
+    [HITGROUP_STOMACH]	  = "body",
+    [HITGROUP_LEFTARM]	  = "hand_l",
+    [HITGROUP_RIGHTARM]	  = "hand_r",
+    [HITGROUP_LEFTLEG]	  = "leg_l",
+    [HITGROUP_RIGHTLEG]   = "leg_r",
+    [HITGROUP_GEAR]       = "body"
+}
+
+function FromHitGroupToPart(hg)
+    return HitGroupPart[hg]
+end
