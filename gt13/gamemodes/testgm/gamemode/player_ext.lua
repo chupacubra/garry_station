@@ -80,6 +80,3 @@ function PLAYER:Death()
     ]]
     
 end
-
--- tarakani begaut po hate
--- kupite dihlofoz

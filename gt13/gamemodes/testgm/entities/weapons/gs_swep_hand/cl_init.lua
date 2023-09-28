@@ -59,7 +59,8 @@ function SWEP:PrimaryAttack()
         if self.RCooldown > CurTime() then
             return
         end
-
+        
+        -- check this: if LocalPlayer() != self:GetOwner() because i think it
         self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 
         self.RCooldown = CurTime() + 0.8

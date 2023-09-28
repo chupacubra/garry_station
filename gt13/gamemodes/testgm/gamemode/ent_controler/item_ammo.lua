@@ -127,6 +127,48 @@ BULLETS = {
     
 }
 
+Bullets_Type = {
+    p_9mm = {
+        BulletDamage = {
+            [D_BRUTE] = 20,
+        }
+    },
+    p_9mm_r = {
+        BulletDamage = {
+            [D_BRUTE] = 5,
+            [D_STAMINA] = 30,
+        },
+    },
+    sh_shot = { -- 1 дробь дробаша 
+        BulletDamage = {
+            [D_BRUTE] = 15,
+            [D_STAMINA] = 5,
+        },
+        Mod = {
+            Amount = 8,
+        }
+    },
+    sh_shot_r = { 
+        BulletDamage = {
+            [D_BRUTE]   = 1,
+            [D_STAMINA] = 15,
+        },
+        Mod = {
+            Amount = 8,
+        }
+    },
+    sh_shot_slug = {
+        BulletDamage = {
+            [D_BRUTE]   = 50,
+        },
+        Mod = {
+            Recoil = 5,
+            Spread = 0.01
+        }
+    }
+}
+
+
 function fastMagazine(name, bullet, numbullets)
     if ammo_name[name] == nil then
         return false

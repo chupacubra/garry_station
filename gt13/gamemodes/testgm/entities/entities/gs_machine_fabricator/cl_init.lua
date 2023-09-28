@@ -17,6 +17,12 @@ function ENT:AddContextMenu()
     return opt
 end
 
+function ENT:OpenGUI()
+
+end
+
 function ENT:Use()
-    -- GUI for autolats
+    self:ConnectPly()
+
+    self:OpenGUI()
 end

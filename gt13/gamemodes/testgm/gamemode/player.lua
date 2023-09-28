@@ -75,7 +75,9 @@ function GM:PlayerCanPickupWeapon()
 	return false
 end
 
-function GM:PlayerDeathSound() return true end
+function GM:PlayerDeathSound() 
+	return true 
+end
 
 function GM:PlayerDeath( victim, inflictor, attacker )
 	if !victim.ClassDead then
@@ -88,6 +90,10 @@ function GM:PlayerDeath( victim, inflictor, attacker )
 	PlayerSpawnAsSpectator(victim)
 end
 
+function GM:PlayerDeathThink( ply )
+    return true -- can't respawn
+end 
+
 function GM:PlayerSpawnAsSpectator( ply )
 	debug.Trace()
 	print(ply)
@@ -97,8 +103,8 @@ function GM:PlayerSpawnAsSpectator( ply )
 		ply:SetTeam( TEAM_SPECTATOR )
 		ply:Spectate( OBS_MODE_FIXED )
 		return
-
 	end
+
 	ply:SetTeam( TEAM_SPECTATOR )
 	ply:Spectate( OBS_MODE_ROAMING )
 end
@@ -132,16 +138,16 @@ function GM:PlayerDisconnected( ply )
 	]]
 	if ply:IsDead() and ply:Team() == TEAM_SPECTATOR then
 		--spectators....
+
 	else
 		if !player_manager.RunClass( ply, "IsRagdolled") then
 			player_manager.RunClass( ply, "Ragdollize", true)
 			GS_Corpse.SetRagdollDeath(ply, ply.Ragdoll, true)
-
-			hook.Run("GS_PlayerDead", ply:SteamID())
 		else
 			GS_Corpse.SetRagdollDeath(ply, ply.Ragdoll, true)
-			hook.Run("GS_PlayerDead", ply:SteamID())
 		end
+
+		hook.Run("GS_PlayerDead", ply:SteamID())
 	end
 end
 
@@ -184,12 +190,10 @@ function ClassRun(...)
 end
 --]]
 
-
-
 function GM:GetFallDamage( ply, speed )
 	local aproximatelyDamage = speed / 8
 
-	if aproximatelyDamage  > 130 then
+	if aproximatelyDamage > 130 then
 		-- facking dead
 		-- with breaking legs, spine and apply mega damage to legs and chest 
 		return 0
@@ -231,19 +235,19 @@ end
 function GM:PlayerDeathSound() 
 	return true
 end
---[[
-function GM:EntityTakeDamage( target, dmg )
-	if target:IsPlayer() then
-		if dmg:GetAttacker():IsPlayer() then
-			if GS_DMG_LIST[]
-		else
-			
-		end
 
+function GM:EntityTakeDamage( target, dmg )
+	if target.corpse then -- ItS a CORPSE!!1
+		GS_Corpse.DamageHandler(target, dmg)
+		return
+	end
+	
+	if target:IsPlayer() and dmg:GetAttacker() == Entity(0) then
 		return true
 	end
+	return true
 end
---]]
+
 
 hook.Add("GS_PlyTakeDamage", "Main", function(victim, attacker, part, dmg)
 	player_manager.RunClass( victim, "HurtPart", part, dmg)

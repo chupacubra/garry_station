@@ -320,3 +320,16 @@ GS_DMG_LIST = {
     [DMG_SNIPER]         = D_BRUTE,
     [DMG_MISSILEDEFENSE] = D_BRUTE,	
 }
+
+MAP_DMG = {
+    [DMG_SHOCK]	         = D_BURN,
+    [DMG_BURN]	         = D_BURN,
+    [DMG_SONIC]	         = D_BRUTE,
+    [DMG_ENERGYBEAM]     = D_BURN,
+    [DMG_ACID]           = D_TOXIN,
+    [DMG_SLOWBURN]       = D_BURN,
+    [DMG_PARALYZE]       = D_TOXIN,
+    [DMG_NERVEGAS]       = D_TOXIN,	
+    [DMG_POISON]	     = D_TOXIN,
+    [DMG_RADIATION]      = D_TOXIN,
+}

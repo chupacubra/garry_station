@@ -21,6 +21,13 @@ BaseExamine.ammobox = {
     }
 }
 
+BaseExamine.ammo_pile = {
+    {
+        examine_string = "in box %s ",
+        arguments = {{"Private_Data", "Stack"}}
+    }
+}
+
 BaseExamine.pile_stack = {
     {
         examine_string = "it's %s %s",

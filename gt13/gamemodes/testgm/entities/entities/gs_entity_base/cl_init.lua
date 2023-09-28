@@ -1,9 +1,13 @@
 include("shared.lua")
 
 function ENT:Initialize()
-    net.Start("gs_ent_client_init")
-    net.WriteEntity(self)
-    net.SendToServer()
+    self.ConnectedToEnt = false
+
+    self:CallOnRemove( "DisconnectPly", function()
+        if self.ConnectedToEnt then
+            self:DisconnectPly(true)
+        end
+    end)
 end
 
 function ENT:Examine()
@@ -14,12 +18,6 @@ end
 
 function ENT:Draw()
     self:DrawModel()
-end
-
-function ENT:OnReloaded() 
-    net.Start("gs_ent_client_init")
-    net.WriteEntity(self)
-    net.SendToServer()
 end
 
 function ENT:AddContextMenu() -- need for adding new buttons
@@ -71,10 +69,37 @@ function ENT:GetContextMenu()
     return contextButton
 end
 
---[[
-net.Receive("gs_ent_update_info", function()
+function ENT:ConnectPly()
+    timer.Create("gs_cl_ent_connect_"..tostring(self:EntIndex()), function()
+        if !self:IsVaild() then
+            timer.Remove("gs_cl_ent_connect_"..tostring(self:EntIndex()))
+        end
+        
+        net.Start("gs_ent_connect_ply")
+        net.WriteEnt(self)
+        net.WriteBool(true)
+        net.SendToServer()
+    end)
+
+    self.ConnectedToEnt = true
+end
+
+function ENT:DisconnectPly(fromServer)
+    timer.Remove("gs_cl_ent_connect_"..tostring(self:EntIndex()))
+
+    if !fromServer then
+        net.Start("gs_ent_connect_ply")
+        net.WriteEnt(self)
+        net.WriteBool(false)
+        net.SendToServer()
+    end
+
+    self.ConnectedToEnt = false
+
+end
+
+net.Receive("gs_ent_connect_ply", function()
     local ent = net.ReadEntity()
-    local tab = net.ReadTable()
-    ent.Entity_Data = tab
+
+    ent:DisconnectPly(true)
 end)
---]]

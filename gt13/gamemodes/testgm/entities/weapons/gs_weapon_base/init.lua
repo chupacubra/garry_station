@@ -15,7 +15,7 @@ end
 
 function SWEP:Initialize()
     self:SetHoldType( self.HoldType )
-    self.magazine = self.magazine or nil
+    self.magazine = self.magazine 
     self:TriggerLoadWorldModel()
 end
 
@@ -27,13 +27,41 @@ function SWEP:Deploy()
     self:SetHoldType(self.HoldType)
 end
 
+function SWEP:PumpSlide()
+    table.remove(self.magazine.ammo, 1)
+    -- start animation slide
+    -- ACT_VM_PULLBACK
+    -- ACT_SHOTGUN_PUMP
+    self:PumpSlideAnim()
+end
+
+function SWEP:PumpSlideAnim()
+    -- get anim of pump slide
+    local VModel = self:GetOwner():GetViewModel()   
+    VModel:SendViewModelMatchingSequence( 0 )
+    --self:GetOwner():SetAnimation( PLAYER_RELOAD )
+    self:SendWeaponAnim( ACT_SHOTGUN_PUMP )
+end
+
+function SWEP:Reload()
+    -- base action (+alt key): reload ammo with ammobelt
+    -- if gun = shotgun then make pump slide action
+    if self:GetOwner():KeyPressed(IN_WALK) then
+        -- reload with ammobelt
+        return
+    end
+    
+    if self.action_type == GS_AW_PUMP then
+        self:PumpSlide()
+    end
+end
+
 function SWEP:DealDamage(trace, dmgbullet)
     local dmgbul = all_dmg(dmgbullet)
 
     local force = trace.Normal * dmgbul * 10
 
     if trace.Entity:IsPlayer() then
-        --player_manager.RunClass( trace.Entity,"HurtPart", trace.PhysicsBone, dmgbullet.BulletDamage)
         local target = FromHitGroupToPart(trace.HitGroup)
         hook.Run("GS_PlyTakeDamage",self:GetOwner(), trace.Entity, dmgbullet, target)
     else
@@ -47,14 +75,28 @@ function SWEP:DealDamage(trace, dmgbullet)
     end
 end
 
-function SWEP:MakeSingleShoot(dmgbullet)
+function SWEP:MakeSingleShoot(dmgbullet, modif)
+    local spr = self.spread
+    local num = 1
+    local recoil = self.recoil
+
+    if modif then
+        local spr =  modif.Spread or spr 
+        local num = modif.Amount or num
+        local recoil = modif.recoil or recoil
+    end
+
+    self:SetNWInt("Num", num)
+    self:SetNWInt("Spr", spr)
+
     local bullet = {
         Damage = all_dmg(dmgbullet),
         Force = all_dmg(dmgbullet) * 2,
         TracerName = "Tracer",
         Src = self.Owner:GetShootPos(),
         Dir = self.Owner:GetAimVector(),
-        Spread = Vector(self.spread, self.spread,0),
+        Spread = Vector(spr, spr),
+        Num = num,
         Callback = function(ent, trace)
             self:DealDamage(trace, dmgbullet)
         end
@@ -63,7 +105,7 @@ function SWEP:MakeSingleShoot(dmgbullet)
     self:FireBullets(bullet, false)
     self:CallOnClient("ShootGunEffect")
     self:ShootEffects()
-    self:MakeRecoil()
+    self:MakeRecoil(recoil)
 end
 
 function SWEP:PrimaryAttack()
@@ -73,20 +115,9 @@ end
 function SWEP:SecondaryAttack()
 
 end
---[[
-function SWEP:BroadcastShootEffect(trace)
-    net.Start("gs_weapon_base_effect")
-    net.WriteEntity(trace.Entity)
-    net.WriteVector(trace.HitPos)
-    net.WriteVector(trace.StartPos)
-    net.WriteInt(trace.SurfaceProps, 8)
-    net.WriteInt(trace.HitBox, 8)
-    net.Broadcast()
-end
---]]
 
-function SWEP:MakeRecoil()
-    self:GetOwner():ViewPunch( Angle( -self.recoil, math.random(-1,1) * self.recoil, 0 ) )
+function SWEP:MakeRecoil(r)
+    self:GetOwner():ViewPunch( Angle( -r, math.random(-1, 1) * r, 0 ) )
 end
 
 function SWEP:GS_PickupWeapon(ply)
@@ -97,6 +128,11 @@ function SWEP:GS_PickupWeapon(ply)
 end
 
 function SWEP:StripMagazine()
+    if self.action_type == GS_AW_PUMP or self.action_type == GS_AW_BOLT then
+        -- cant strip magazine from shotgun and bolt rifles
+        return
+    end
+
     if self:GetOwner():GetActiveWeapon() != self then
         self:GetOwner():ChatPrint("You need to hold a gun in your hands")
         return false
@@ -125,6 +161,10 @@ function SWEP:StripMagazine()
 end
 
 function SWEP:StripMagazineHand()
+    if self.action_type == GS_AW_PUMP or self.action_type == GS_AW_BOLT then
+        return
+    end
+
     if self:GetOwner():GetActiveWeapon() != self then
         self:GetOwner():ChatPrint("You need to hold a gun in your hands")
         return false
@@ -136,6 +176,7 @@ function SWEP:StripMagazineHand()
 
     local hand = self:GetOwner():GetWeapon( "gs_swep_hand" )
     local succes = hand:PutItemInHand(self.magazine)
+
     if succes then
         self.magazine = nil
         self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name.." and put in hand")
@@ -164,42 +205,63 @@ function SWEP:InsertMagazine(ent)
     return nil
 end
 
+function SWEP:InsertBullet(ammo_pile)
+    if self.magazine.limit <= #self.magazine.ammo then
+        self:GetOwner():ChatPrint("The weapon is full!")
+        return false
+    end
+
+    -- if shotgun then shell going first to shot
+    table.insert(self.magazine.ammo, self.action_type == GS_AW_PUMP and 1 or nil , ammo_pile.Private_Data.Bullet)
+
+    ammo_pile.Private_Data.Stack = ammo_pile.Private_Data.Stack - 1
+
+    if ammo_pile.Private_Data.Stack < 1 then
+        return nil
+    end
+
+    return ammo_pile
+end
+
 net.Receive("gs_ply_pickup_weapon",function(_, ply)
     local weap = net.ReadEntity()
 
     weap:GS_PickupWeapon(ply)
 end)
 
-net.Receive("gs_weapon_base_strip_magazine",function()
-    local weap = net.ReadEntity()
-    local hand = net.ReadBool()
-
-    if hand then
-        weap:StripMagazineHand()
-    else
-        weap:StripMagazine()
-    end
-end)
-
-
 function SWEP:ReloadGunEffect()
     if self:GetOwner():GetActiveWeapon() != self then
         return
         --self:GetOwner():ChatPrint("You need to hold a gun in your hands")
     end
+        
     self:SendWeaponAnim(ACT_VM_RELOAD)
     self:EmitSound(self.ReloadSound)
     self:GetOwner():SetAnimation(PLAYER_RELOAD)
 
     local reloadtime = self.Owner:GetViewModel():SequenceDuration() + 0.1
 
-    self:SetNextPrimaryFire(CurTime() + reloadtime)
     timer.Simple(reloadtime, function()
         self:SetActivity(ACT_VM_IDLE)
     end)
+
+    self:SetNextPrimaryFire(CurTime() + reloadtime)
 end
 
 function SWEP:TriggerLoadWorldModel()
     self:SetNWBool("magazine", self.magazine != nil)
 end
 
+concommand.Add("gs_weapon_strip_magazine", function(ply, str, arg)
+    local weap = ply:GetActiveWeapon()
+    
+    if weap:IsValid() and weap.IsGS_Weapon then
+        local bool = tobool(arg[1])
+
+        if bool then
+            weap:StripMagazineHand()
+        else
+            weap:StripMagazine()
+        end
+    end
+end)

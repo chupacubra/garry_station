@@ -58,9 +58,9 @@ end
 
 
 function ENT:AddStack(pile)
-    if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL and pile.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL then
-        return
-    end
+    --if (self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL and pile.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL) then
+    --      return nil
+    --end
 
     if pile.Private_Data.Stack == pile.Private_Data.Max_Stack then
         return
@@ -123,7 +123,7 @@ function ENT:GetFlag()
 end
 
 function ENT:PhysicsCollide( data, phys )
-    if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL then return end
+    if self.Entity_Data.ENUM_Type != GS_ITEM_MATERIAL or self.Entity_Data.ENUM_Type != GS_ITEM_AMMO_PILE then return end
     
     local ent = data.HitEntity
 

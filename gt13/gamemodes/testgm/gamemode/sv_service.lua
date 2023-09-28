@@ -10,3 +10,11 @@ function stringspacer(st, sz) -- fill string with spacers
 
     return st 
 end
+
+function RagdollGetBone(rag, hitpos)
+    -- get bone from pos
+    -- bone is close to pos
+    if !rag then
+        return
+    end
+end

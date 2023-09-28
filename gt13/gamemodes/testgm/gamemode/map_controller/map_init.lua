@@ -140,3 +140,9 @@ net.Receive("gs_map_entity_get_type", function(_, ply)
         net.Send(ply)
     end
 end)
+
+--[[
+    about spawn items in map gm_boreas...
+        IM cant to remake this map with hammer
+        need to remove all dump props and respawn it with our items, entittys
+]]

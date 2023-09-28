@@ -4,15 +4,20 @@ include("shared.lua")
 
 function ENT:AfterInit()
     self.Materials = {}
+    self.OrderList = {}
 end
 
 function ENT:Screwdriver(ply)
     -- open hatch
+    self:FlipFlag(KS_MAINTANCE)
 end
 
 function ENT:Crowbar(ply)
     -- if hatch opened:
     --     demontazh
+    if self:GetFlagState(KS_MAINTANCE) then
+        self:Disassemble()
+    end
 end
 
 function ENT:EjectItem()
@@ -50,12 +55,11 @@ function ENT:CraftItem(category, name)
     -- get
 end
 
-net.Receive("gs_ent_mc_exam_parts",function(_,ply)
-    local ent = net.ReadEntity()
-    local examine = ent:ExamineParts(ply)
-
-    --GS_ReturnExamineTable(ply, examine)
-    for k, v in pairs(examine) do
-        ply:ChatPrint(v)
+function ENT:Think()
+    for ply, _ in pairs(self.ConnectedPly) do
+        if self:GetPos():Distance(ply:GetPos()) > 100 then
+            self:DisconnectPly(ply)
+        end
     end
-end)
+end
+

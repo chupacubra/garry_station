@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\gamemodes",
+    "\\gamemodes\\testgm",
+    "\\gamemodes\\testgm\\entities",
+    "\\gamemodes\\testgm\\entities\\weapons",
+    "\\gamemodes\\testgm\\entities\\weapons\\gs_weapon_base",
+    "\\gamemodes\\testgm\\entities\\weapons\\gs_weapon_pistol",
+    "\\gamemodes\\testgm\\gamemode"
+  ],
+  "SelectedNode": "\\gamemodes\\testgm\\entities\\weapons\\gs_weapon_base\\init.lua",
+  "PreviewInSolutionExplorer": false
+}

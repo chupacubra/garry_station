@@ -23,9 +23,6 @@ local hide = {
     ["CHudAmmo"]    = true,
     ["CHudCrosshair"] = true,
     ["CHudWeaponSelection"] = true,
-    --[[
-        need weapon selection
-    ]]
 }
 
 hook.Add( "HUDShouldDraw", "HideHUD", function( name )
@@ -40,12 +37,6 @@ function GM:HUDPaint()
     else
         GS_HUD.SpectatorHud()
     end
-end
-
-function GM:PostDrawHUD()
-    --if HUD.ContextMenuOpen then
-        --GS_ContextMenu:OpenAndDraw()
-    --end
 end
 
 
@@ -80,23 +71,6 @@ net.Receive("gs_cl_chatprint", function()
 
     chat.AddText(color, text)
 end)
---[[
-net.Receive("gs_cl_f_button", function()
-    local button = net.ReadUInt(3)
-    if button == 1 then
-        if GS_RoundStatus:GetRoundStatus() == GS_ROUND_PREPARE and LocalPlayer():Team() == TEAM_SPECTATOR then
-            DrawStartroundMenu()
-        end
-    else
-
-    end
-end)
---]]
-
-function GM:PlayerSwitchWeapon()
-    print("PLY SCHANGED WEP")
-    --GS_ClPlyStat:SetCurrentWeaponsSlot()
-end
 
 GS_RoundStatus:Init()
 

@@ -88,17 +88,15 @@ function SWEP:Holster()
 end
 
 function SWEP:StripMagazine()
-    net.Start("gs_weapon_base_strip_magazine")
-    net.WriteEntity(self)
-    net.WriteBool(false)
-    net.SendToServer()
+    self:GetOwner():ConCommand("gs_weapon_strip_magazine 0")
 end
 
 function SWEP:StripMagazineHand()
-    net.Start("gs_weapon_base_strip_magazine")
-    net.WriteEntity(self)
-    net.WriteBool(true)
-    net.SendToServer()
+    self:GetOwner():ConCommand("gs_weapon_strip_magazine 1")
+end
+
+function SWEP:EjectCasing()
+
 end
 
 function SWEP:Examine()
@@ -117,18 +115,21 @@ function SWEP:ShootGunEffect()
     self.Owner:MuzzleFlash()
     self:ShootEffects()
 
+    local spr = self:GetNWInt("Spr")
+    local num = self:GetNWInt("Num")
+
+    num = num != 0 and num or 1
+
     local bullet = {
         Damage = 0,
         Force = 0,
         TracerName = "Tracer",
         Src = self.Owner:GetShootPos(),
         Dir = self.Owner:GetAimVector(),
-        Spread = Vector(self.spread, self.spread,0),
-        --Callback = function(ent, trace)
-        --    self:BroadcastShootEffect(trace)
-        --    self:DealDamage(trace, dmgbullet)
-        --end
+        Spread = Vector(spr, spr,0),
+        Num = num,
     }
+
     self:FireBullets(bullet, false)
 end
 

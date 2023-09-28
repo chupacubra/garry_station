@@ -2,6 +2,9 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+ENT.DisassembleData = {
+    board = ""
+}
 
 function ENT:Initialize()
 	self:SetModel( self.Entity_Data.Model )
@@ -16,6 +19,24 @@ function ENT:Initialize()
     end
 
     self:AfterInit()
+
+    self.ConnectedPly = {}
+
+    timer.Create("gs_ent_connected_ply_timer", 1, 0, function()
+        if table.IsEmpty(self.ConnectedPly) then return end
+
+        for ply, time in pairs(self.ConnectedPly) do
+            if CurTime() - time > 2 then
+                self:DisconnectPly(ply)
+            end
+        end
+    end)
+
+    self:CallOnRemove("DisconnectAllPly", function()
+        timer.Remove("gs_ent_connected_ply_timer")
+        
+        self:DisconnectPlyAll(true)
+    end)
 end
 
 function ENT:AfterInit() -- need for setup values after init
@@ -29,7 +50,6 @@ function ENT:SetExamine(data) -- name, description
 
     self.Entity_Data.Name = data.name 
     self.Entity_Data.Desc = data.desc
-    --self:LoadInfoAbout()
 end
 
 function ENT:SetData(data) 
@@ -54,6 +74,21 @@ function ENT:SetFlagState(key, flag)
         end
     end
 end 
+
+function ENT:FlipFlag(key)
+    local k = 2^key
+    local bool = bit.band(self.Key_State, k) == k
+
+    if bool then
+        if bit.band(self.Key_State, k) == k then
+            self.Key_State = bit.bxor(self.Key_State , k)
+        end
+    else
+        self.Key_State = bit.bor(self.Key_State, k)
+    end
+
+    return !bool
+end
 
 function ENT:GetFlagState(key)
     local k = 2 ^ key
@@ -108,17 +143,6 @@ function ENT:AfterBreak()
     self:Remove()
 end
 
-function ENT:LoadInfoAbout() -- !!!!!! 
-    net.Start("gs_ent_update_info")
-    net.WriteEntity(self)
-    net.WriteTable(self.Entity_Data)
-    net.Broadcast()
-end
-
-function ENT:OnReloaded()
-    self:LoadInfoAbout()
-end
-
 function ENT:Bolt()
     if self:GetVelocity() != Vector(0,0,0) then
         return false
@@ -163,16 +187,6 @@ function ENT:Wrench(ply)
             },{},"Unfastenning some...")
         end
     end
-
---[[
-    if self.CanBolted then
-        if self:GetFlagState(KS_BOLT) == false then
-            return self:Bolt()
-        else
-            return self:Unbolt()
-        end
-    end
---]]
 end
 
 function ENT:Crowbar(ply)
@@ -192,7 +206,64 @@ function ENT:Multitool(ply)
 
 end
 
-net.Receive("gs_ent_client_init", function()
+function ENT:Disassemble()
+    local machine_parts = {}
+
+    table.insert(machine_parts, "gs_item_tech_plate_"..self.DisassembleData.board)
+
+    for part, amnt in pairs(GS_EntityList["tech_plate"][self.DisassembleData.board]["Private_Data"]["Parts"]) do
+        local id = GS_EntityList.Board_Parts_Fast[part]
+
+        for i = 0, amnt do
+            table.insert(machine_parts, "gs_item_parts_"..id)
+        end
+    end
+
+    local pos, ang = self:GetPos(), self:GetAngles()
+    self:Remove()
+
+    local mc = ents.Create("gs_machine_casing")
+    mc:SetPos(pos)
+    mc:SetAngles(ang)
+    mc:Spawn()
+
+    for i = 1, #machine_parts do 
+        local part = ents.Create(machine_parts[i])
+        part:SetPos(pos)
+        part:Spawn()
+    end
+
+end
+
+function ENT:ConnectPly(ply)
+    self.ConnectedPly[ply] = CurTime()
+end
+
+function ENT:DisconnectPly(ply, fromClient)
+    self.ConnectedPly[ply] = nil
+
+    if !fromClient then
+        net.Start("gs_ent_connect_ply")
+        net.WriteEnt(self)
+        net.Send(ply)
+    end
+end
+
+function ENT:DisconnectPlyAll(onRemove)
+    for ply, _ in pairs(self.ConnectedPly) do
+        self:DisconnectPly(ply, onRemove)
+    end
+end
+
+net.Receive("gs_ent_connect_ply", function(_, ply)
     local ent = net.ReadEntity()
-    ent:LoadInfoAbout()
+    local connect = net.ReadBool()
+
+    if !ent:IsValid() then return end
+
+    if connect then
+        ent:ConnectPly(ply)
+    else
+        ent:DisconnectPly(ply, true)        
+    end
 end)

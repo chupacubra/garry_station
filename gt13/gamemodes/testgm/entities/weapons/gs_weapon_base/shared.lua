@@ -29,6 +29,7 @@ SWEP.recoil = 1
 SWEP.spread = 0.3
 SWEP.damage = 10
 SWEP.damage_type = D_BRUTE
+SWEP.action_type = ""
 
 SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "weapon"

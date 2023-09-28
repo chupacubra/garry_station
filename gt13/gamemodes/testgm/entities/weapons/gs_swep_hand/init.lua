@@ -114,6 +114,7 @@ function SWEP:BeatEntity()
     local VModel = self:GetOwner():GetViewModel()
     
     VModel:SendViewModelMatchingSequence( math.random(3, 5) )
+    
     self:EmitSound(SwingSound)
 
     self:SetNextPrimaryFire(CurTime() + 0.8)

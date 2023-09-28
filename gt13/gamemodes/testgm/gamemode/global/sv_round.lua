@@ -6,17 +6,13 @@ local ROUND_TIME = 500
 GS_Round_System.Round_Status = GS_ROUND_WAIT_PLY
 
 function GS_Round_System:InitGame()
-    -- when server (re)start
+    -- when server start
     GS_MSG("Start preparation round")
     
     self.Time         = CurTime()
     self.ReadyPly     = {}
     self.ObservePly   = {}
     self.DeadPlayers  = {}
- 
-    timer.Create( "RoundStatusTimer", 2, 0, function()
-        self:UpdateClientStatus()
-    end)
 
     local succes = gs_map.load()
     
@@ -26,10 +22,7 @@ function GS_Round_System:InitGame()
 end
 
 function GS_Round_System:UpdateClientStatus()
-    net.Start("gs_round_status")
-    net.WriteUInt(self.Round_Status, 3)
-    net.WriteUInt(CurTime() - self.Time,16)
-    net.Broadcast()
+    SetGlobalInt("RoundStatus", self.Round_Status)
 end
 
 function GS_Round_System:GetRoundTime(nice)
@@ -84,22 +77,17 @@ function GS_Round_System:StartRoundSpawnPlayer()
             local char_token = GS_PLY_Char:GetPlyChar(ply)
 
             ply:SetCharacter(char_token)
-            
             local char_data = GS_PLY_Char:GetCharData(char_token)
-
             GS_Job:GiveJobItem(ply, char_data.job_setting.current)
 
             print("spawn", ply)
-            --player_manager.RunClass(ply, "SetCharacterData", char)
-            --[[
-                set plydata
-                set job
-                set antag
-            ]]
         end
     end
 end
 
+function GS_Round_System:PlySpawn(ply, char)
+
+end
 
 function GS_Round_System:RoundSpawnPlayer(ply)
     if ply:Team() != TEAM_SPECTATOR then
@@ -127,7 +115,7 @@ function GS_Round_System:RoundSpawnPlayer(ply)
 
     local wanted_job = char_data.job_setting.wanted[1]
 
-    print("14134erewr",wanted_job)
+    --print("14134erewr",wanted_job)
 
     if wanted_job == "" then
         wanted_job = "cargo_technician"

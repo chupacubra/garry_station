@@ -111,9 +111,22 @@ function GS_Corpse.ExamineRag(viewer, rag)
     end
 end
 
-function GS_Corpse.CallContextMenu(ply, trup)
-    --net.Start("gs_sys_corpse_action")
+function GS_Corpse.DamageHandler(trup, dmg)
+    -- get part of body
 
+    local typ = GS_DMG_LIST[dmg:GetDamageType()]
+    if !typ then
+        GS_MSG("want to apply damage to corpse, but type unknw: "..tostring(dmg:GetDamageType()))
+        
+        return
+    end
+
+    if trup.ply_dead then
+        -- ply dead, simple add damage/break bone
+    else
+        -- ply is alive, give HIM damage
+
+    end
 end
 
 net.Receive("gs_sys_corpse_action", function(_,ply)

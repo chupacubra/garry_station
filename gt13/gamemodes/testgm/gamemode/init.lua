@@ -37,6 +37,19 @@ include( "resource.lua" )
 include( "jobs_system/init.lua" )
 include( "client/cl_ply_models.lua" )
 
+--[[
+    we need this global value
+    
+    GameTime - start game, server start
+    RoundStatus - wait ply or already round end
+    EvacTimer
+    BombTimer
+]]--
+
+function GM:Initialize()
+    SetGlobalInt("GameTime", math.floor(CurTime()))
+end
+
 hook.Add("GS_PlayerDead", "MakePersonDead", function(plyID)
     GS_Round_System:AddDeadPly(plyID)
 end)
