@@ -22,15 +22,5 @@ function SWEP:ContextSlot()
     
     table.insert(options, strip)
 
-    local striptohand = {
-        label = "Eject magazine in hand", -- if have
-        icon  = "icon16/control_eject_blue.png",
-        click = function()
-            self:StripMagazineHand()
-        end,
-    }
-
-    table.insert(options, striptohand)
-
     return options
 end

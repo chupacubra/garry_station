@@ -31,17 +31,17 @@ util.AddNetworkString("gs_ent_request_examine")
 util.AddNetworkString("gs_ent_get_private_info")
 util.AddNetworkString("gs_ent_grab")
 
-util.AddNetworkString("gs_ent_connect_ply")
-
 util.AddNetworkString("gs_ent_container_open")
 util.AddNetworkString("gs_ent_container_close")
-
-util.AddNetworkString("")
 
 util.AddNetworkString("gs_wire_action")
 util.AddNetworkString("gs_ent_comp_client_send_command")
 util.AddNetworkString("gs_ent_comp_client_get_data")
 util.AddNetworkString("gs_comp_show_derma")
+util.AddNetworkString("gs_fabricator_update")
+
+util.AddNetworkString("gs_connect_ent")
+
 --hands
 util.AddNetworkString("gs_hand_draw_model")
 util.AddNetworkString("gs_hand_vm")

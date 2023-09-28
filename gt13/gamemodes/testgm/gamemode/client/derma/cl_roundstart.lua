@@ -455,6 +455,7 @@ function DrawStartroundMenu()
     function Menu:Think()
         local time = GS_RoundStatus:GetRoundTime(true)
         local stat = GS_RoundStatus:GetRoundStatus()
+        print(stat)
         local str = roundstr(stat)
 
         LStatus:SetText("Station status: "..str)

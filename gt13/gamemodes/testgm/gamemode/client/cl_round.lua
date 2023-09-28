@@ -16,7 +16,7 @@ function GS_RoundStatus:NetUpdateStatus(stat,time)
 end
 
 function GS_RoundStatus:GetRoundTime(nice)
-    local time = self.Time
+    local time = CurTime() - GetGlobalInt("GameTime")
 
     if nice then
         local formt = formattime(string.FormattedTime(math.ceil(time)))
@@ -27,7 +27,7 @@ function GS_RoundStatus:GetRoundTime(nice)
 end
 
 function GS_RoundStatus:GetRoundStatus()
-    return self.Round_Status
+    return GetGlobalInt("RoundStatus")
 end
 
 net.Receive("gs_round_status", function()

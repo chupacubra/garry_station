@@ -17,4 +17,19 @@ function RagdollGetBone(rag, hitpos)
     if !rag then
         return
     end
+
+end
+
+function fixtable(tbl)
+    --  from:
+    --      key1 = true,
+    --      key2 = true, 
+    --      ...
+    --  to:
+    --      key1, key2, ...
+    local t = {}
+    for k, v in pairs(tbl) do
+        table.insert(t, k)
+    end
+    return t
 end

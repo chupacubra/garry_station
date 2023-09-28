@@ -5,42 +5,97 @@ include("shared.lua")
 
 local function all_dmg(dmg)
     local ad = 0
+    PrintTable(dmg)
     for _,v in pairs(dmg) do
-        for _,vv in pairs(v) do
-            ad = ad + vv
-        end
+        --for _,vv in pairs(v) do
+            ad = ad + v
+        --end
     end
     return ad
 end
 
 function SWEP:Initialize()
     self:SetHoldType( self.HoldType )
-    self.magazine = self.magazine 
+    self.magazine = self.magazine
+    self.PumpT = 0 
     self:TriggerLoadWorldModel()
 end
 
 function SWEP:OnDrop()
     self:TriggerLoadWorldModel()
+    self:SetNWBool("Zoom", false)
 end
 
 function SWEP:Deploy()
     self:SetHoldType(self.HoldType)
+    self:SetNWBool("Zoom", false)
 end
 
 function SWEP:PumpSlide()
+    if self.PumpT > CurTime() then return end
+    
+    if !self.magazine.current then
+        if #self.magazine.ammo > 0 then
+            self.magazine.current = self.magazine.ammo[1]
+            table.remove(self.magazine.ammo, 1)
+
+            local reloadtime = self:PumpSlideAnim()
+            self.PumpT = CurTime() + reloadtime
+        
+            self:SetNextPrimaryFire(self.PumpT)
+        end
+    else
+        local shell = self.magazine.current
+        self.magazine.current = nil
+        local name_ap = shell.apn
+    
+        local ent = ents.Create("gs_item_shotgun_ammo_"..name_ap)
+        ent:SetPos(self:GetPos())
+        
+        local phys = ent:GetPhysicsObject()
+    
+        if phys then
+            phys:ApplyForceCenter(self:GetOwner():GetAimVector() * 15)
+        end
+    
+        local reloadtime = self:PumpSlideAnim()
+        self.PumpT = CurTime() + reloadtime
+    
+        self:SetNextPrimaryFire(self.PumpT)
+    end
+
+    
+    --[[
+    if #self.magazine.ammo < 1 then return end
+
+    local shell = self.magazine.ammo[1]
     table.remove(self.magazine.ammo, 1)
-    -- start animation slide
-    -- ACT_VM_PULLBACK
-    -- ACT_SHOTGUN_PUMP
-    self:PumpSlideAnim()
+    local name_ap = shell.apn
+
+    local ent = ents.Create("gs_item_shotgun_ammo_"..name_ap)
+    ent:SetPos(self:GetPos())
+    
+    local phys = ent:GetPhysicsObject()
+
+    if phys then
+        phys:ApplyForceCenter(self:GetOwner():GetAimVector() * 15)
+    end
+
+    local reloadtime = self:PumpSlideAnim()
+    self.PumpT = CurTime() + reloadtime
+
+    self:SetNextPrimaryFire(self.PumpT)
+    --]]
 end
 
 function SWEP:PumpSlideAnim()
     -- get anim of pump slide
     local VModel = self:GetOwner():GetViewModel()   
-    VModel:SendViewModelMatchingSequence( 0 )
-    --self:GetOwner():SetAnimation( PLAYER_RELOAD )
-    self:SendWeaponAnim( ACT_SHOTGUN_PUMP )
+    VModel:SendViewModelMatchingSequence( self.AnimList.pump_slide )
+    self:GetOwner():SetAnimation( PLAYER_RELOAD )
+    --self:EmitSound(self.ReloadSound)
+
+    return VModel:SequenceDuration()
 end
 
 function SWEP:Reload()
@@ -75,19 +130,25 @@ function SWEP:DealDamage(trace, dmgbullet)
     end
 end
 
-function SWEP:MakeSingleShoot(dmgbullet, modif)
+function SWEP:MakeSingleShoot(bullet)
     local spr = self.spread
     local num = 1
     local recoil = self.recoil
 
+    local dmgbullet = bullet.BulletDamage
+    local modif = bullet.Mod
+
+    --PrintTable(modif)
+
     if modif then
-        local spr =  modif.Spread or spr 
-        local num = modif.Amount or num
-        local recoil = modif.recoil or recoil
+        spr =  modif.Spread or spr 
+        num = modif.Amount or num
+        recoil = modif.Recoil or recoil
     end
 
-    self:SetNWInt("Num", num)
-    self:SetNWInt("Spr", spr)
+    print(spr, num, recoil)
+    --self:SetNWInt("Num", num)
+    --self:SetNWInt("Spr", spr)
 
     local bullet = {
         Damage = all_dmg(dmgbullet),
@@ -106,6 +167,14 @@ function SWEP:MakeSingleShoot(dmgbullet, modif)
     self:CallOnClient("ShootGunEffect")
     self:ShootEffects()
     self:MakeRecoil(recoil)
+
+    if modif then
+        net.Start("gs_weapon_base_effect")
+        net.WriteEntity(self)
+        net.WriteUInt(num, 5)
+        net.WriteUInt(spr * 100, 8)
+        net.Broadcast()
+    end
 end
 
 function SWEP:PrimaryAttack()
@@ -113,7 +182,29 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
+    if self.CanZoom then
+        self:SetNWBool("Zoom", !self:GetNWBool("Zoom"))
+    end
+end
 
+function SWEP:MagazineShot()
+    if self.magazine == nil then
+        return
+    end
+
+    if self.magazine.Private_Data.Bullets < 1 then
+        self:EmitSound(self.EmptySound)
+        return
+    end
+
+    local bullet = self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets]
+
+    self:MakeSingleShoot(bullet)
+
+    self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets] = nil
+    self.magazine.Private_Data.Bullets = self.magazine.Private_Data.Bullets - 1
+
+    self:SetNextPrimaryFire(CurTime() + self.shoot_speed)
 end
 
 function SWEP:MakeRecoil(r)
@@ -175,9 +266,9 @@ function SWEP:StripMagazineHand()
     end
 
     local hand = self:GetOwner():GetWeapon( "gs_swep_hand" )
-    local succes = hand:PutItemInHand(self.magazine)
+    local success = hand:PutItemInHand(self.magazine)
 
-    if succes then
+    if success then
         self.magazine = nil
         self:GetOwner():ChatPrint("You stripped magazine from "..self.Entity_Data.Name.." and put in hand")
         self:ReloadGunEffect()
@@ -216,6 +307,24 @@ function SWEP:InsertBullet(ammo_pile)
 
     ammo_pile.Private_Data.Stack = ammo_pile.Private_Data.Stack - 1
 
+    --self:ReloadGunEffect()
+    --self:PumpSlideAnim()
+
+    self:SendWeaponAnim(ACT_VM_RELOAD)
+    self:EmitSound(self.ReloadSound)
+    self:GetOwner():SetAnimation(PLAYER_RELOAD)
+
+    local reloadtime = self.Owner:GetViewModel():SequenceDuration() + 0.1
+
+    timer.Simple(reloadtime, function()
+        self:SetActivity(ACT_VM_IDLE)
+        self:SendWeaponAnim(ACT_VM_IDLE)
+        self:GetOwner():SetAnimation(PLAYER_IDLE)
+        --self:PumpSlideAnim()
+    end)
+
+    self:SetNextPrimaryFire(CurTime() + reloadtime)
+
     if ammo_pile.Private_Data.Stack < 1 then
         return nil
     end
@@ -243,12 +352,16 @@ function SWEP:ReloadGunEffect()
 
     timer.Simple(reloadtime, function()
         self:SetActivity(ACT_VM_IDLE)
+        --if self.action_type == GS_AW_PUMP then
+        --    self:PumpSlideAnim()
+        --end
     end)
 
     self:SetNextPrimaryFire(CurTime() + reloadtime)
 end
 
 function SWEP:TriggerLoadWorldModel()
+    if !self.HaveUnloadModel then return end
     self:SetNWBool("magazine", self.magazine != nil)
 end
 
@@ -263,5 +376,13 @@ concommand.Add("gs_weapon_strip_magazine", function(ply, str, arg)
         else
             weap:StripMagazine()
         end
+    end
+end)
+
+concommand.Add("gs_weapon_pump_slide", function(ply, str, arg)
+    local weap = ply:GetActiveWeapon()
+    
+    if weap:IsValid() and weap.IsGS_Weapon then
+        weap:PumpSlide()
     end
 end)

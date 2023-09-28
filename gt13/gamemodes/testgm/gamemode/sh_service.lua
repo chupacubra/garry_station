@@ -285,3 +285,11 @@ HitGroupPart = {
 function FromHitGroupToPart(hg)
     return HitGroupPart[hg]
 end
+
+function tblsum(tbl) do
+    local n = 0
+    for _, v in pairs(tbl) do
+        n = n + v
+    end
+    return n
+end

@@ -146,7 +146,9 @@ Bullets_Type = {
         },
         Mod = {
             Amount = 8,
-        }
+            Spread = 0.15,
+        },
+        apn = "shotgun_shot"
     },
     sh_shot_r = { 
         BulletDamage = {
@@ -166,6 +168,10 @@ Bullets_Type = {
             Spread = 0.01
         }
     }
+}
+
+Shell_AmmoPill = {
+    sh_shot = "shotgun_shot",
 }
 
 

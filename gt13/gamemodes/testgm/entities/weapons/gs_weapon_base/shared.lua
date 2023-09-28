@@ -13,6 +13,7 @@ SWEP.WorldModel = ""
 
 SWEP.UnloadedWorldModel = ""
 SWEP.LoadedWorldModel   = ""
+SWEP.HaveUnloadModel = true
 
 SWEP.UseHands = true
 
@@ -30,6 +31,16 @@ SWEP.spread = 0.3
 SWEP.damage = 10
 SWEP.damage_type = D_BRUTE
 SWEP.action_type = ""
+
+SWEP.AnimList = {
+    -- idle = 0,
+    -- reload = 1,
+    
+}
+
+SWEP.CanZoom = false
+SWEP.ZoomOffset = Vector()
+SWEP.ZoomAng    = Angle()
 
 SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "weapon"

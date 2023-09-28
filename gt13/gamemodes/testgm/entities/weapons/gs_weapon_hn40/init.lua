@@ -12,21 +12,5 @@ function SWEP:CompareWithEnt(ent)
 end 
 
 function SWEP:PrimaryAttack()
-    if self.magazine == nil then
-        return
-    end
-
-    local bullet = self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets]
-    if bullet == nil then
-        return
-    end
-    self:MakeSingleShoot(bullet)
-
-    self.magazine.Private_Data.Magazine[self.magazine.Private_Data.Bullets] = nil
-    self.magazine.Private_Data.Bullets = self.magazine.Private_Data.Bullets - 1
-    self:SetNextPrimaryFire(CurTime() + self.shoot_speed)
-end
-
-function SWEP:SecondaryAttack()
-
+    self:MagazineShot()
 end

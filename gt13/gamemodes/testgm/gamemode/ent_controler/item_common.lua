@@ -137,12 +137,14 @@ end
     b = 8
     c = 16
 
-    sum = 34
-    sred = 11.3
-    
+    bite 3.3
+
+    a = 6.7
+    b = 4.7
+    c = 12.7
 ]]
 
-function chemicalBite(chem)
+function chemicalBite(chem) -- unfinished
     local l = table.Count(chem)
     local m = 0
     local n = math.floor( 10 / l,1 )

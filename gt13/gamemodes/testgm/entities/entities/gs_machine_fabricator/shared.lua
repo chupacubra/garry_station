@@ -7,6 +7,9 @@ ENT.Spawnable = false
 ENT.Category = "gs"
 ENT.GS_Machine_Type = "machine"
 
+ENT.ConnectDist = 100
+
+
 ENT.Entity_Data = {
     Name = "Fabricator",
     Desc = "For making smthng",
@@ -18,7 +21,7 @@ ENT.ItemReceiver = true
 
 FABRICATOR_RECEIPTS = {
     tool = {
-        category = "Tools",
+        name = "Tools",
         items = {
             crowbar = {
                 typ = "swep",
@@ -43,6 +46,4 @@ FABRICATOR_RECEIPTS = {
             }
         }
     },
-    {},
-    {}
 }

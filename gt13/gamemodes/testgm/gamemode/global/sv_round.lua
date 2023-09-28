@@ -154,8 +154,11 @@ function GS_Round_System:StartPreparationPhase()
     
     self.Round_Status = GS_ROUND_PREPARE
     
+    self:UpdateClientStatus()
+
     timer.Simple(PREP_TIME, function()
-        self:StartRound() 
+        self:StartRound()
+        self:UpdateClientStatus()
     end) 
 end
 
@@ -178,6 +181,7 @@ end
 
 function GS_Round_System:EndRound()
     self.Round_Status = GS_ROUND_END
+    self:UpdateClientStatus()
 
     timer.Simple(30, function() 
         self:EndMatch() 

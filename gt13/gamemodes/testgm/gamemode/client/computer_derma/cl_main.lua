@@ -13,6 +13,7 @@ function CompPanel(name, parent)
 end
 
 NewCompPanel("board_cargo_order", function(parent)
+    local money = 2500
     local sheet = vgui.Create("DPropertySheet", parent, "category_list")
     sheet:Dock(FILL)
 
@@ -23,7 +24,7 @@ NewCompPanel("board_cargo_order", function(parent)
     money_count:Dock(TOP)
     money_count:DockMargin(10, 20, 0, 20)
     money_count:SetColor(Color(0,0,0))
-    money_count:SetText("Current money: $2500")
+    money_count:SetText("Current money: $"..string.Comma( money, ".") )
     local listRequest = vgui.Create("DListView", p_orderRequest, "list_order")
 
     listRequest:Dock(FILL)

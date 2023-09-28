@@ -20,12 +20,3 @@ ENT.Entity_Data = {
     Type = "base",
 }
 
-
---[[
-ENT.Entity_Status = {
-    build     = false, 
-    maintance = false,
-    bolt      = false,
-    broken    = false
-}
---]]

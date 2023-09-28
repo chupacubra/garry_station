@@ -95,8 +95,8 @@ function SWEP:StripMagazineHand()
     self:GetOwner():ConCommand("gs_weapon_strip_magazine 1")
 end
 
-function SWEP:EjectCasing()
-
+function SWEP:PumpSlide()
+    self:GetOwner():ConCommand("gs_weapon_pump_slide")
 end
 
 function SWEP:Examine()
@@ -109,16 +109,15 @@ function SWEP:GS_Pickup()
     net.SendToServer()
 end
 
-function SWEP:ShootGunEffect()
+function SWEP:ShootGunEffect(num, spr)
     self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
     self:EmitSound(self.Primary.Sound)
     self.Owner:MuzzleFlash()
     self:ShootEffects()
 
-    local spr = self:GetNWInt("Spr")
-    local num = self:GetNWInt("Num")
+    spr = spr or self.spread
 
-    num = num != 0 and num or 1
+    print(num, spr)
 
     local bullet = {
         Damage = 0,
@@ -127,7 +126,7 @@ function SWEP:ShootGunEffect()
         Src = self.Owner:GetShootPos(),
         Dir = self.Owner:GetAimVector(),
         Spread = Vector(spr, spr,0),
-        Num = num,
+        Num = num or 1,
     }
 
     self:FireBullets(bullet, false)
@@ -156,33 +155,35 @@ function SWEP:DrawWorldModel()
     end
 end
 
+function SWEP:GetViewModelPosition(pos, ang)
+    if !self.CanZoom then return end
+    
+    if self:GetNWBool("Zoom") then
+        local Offset = self.ZoomOffset
+
+        local Right 	= ang:Right()
+        local Up 		= ang:Up()
+        local Forward 	= ang:Forward()
+         
+        pos = pos + Offset.x * Right
+        pos = pos + Offset.y * Forward
+        pos = pos + Offset.z * Up
+            
+        return pos, ang
+    end
+
+end
+
+function SWEP:TranslateFOV(fov)
+    if self:GetNWBool("Zoom") then
+        return fov - 30
+    end
+end
+
 net.Receive("gs_weapon_base_effect", function()
-    --[[
-    local ef = {}
-    ef.entity = net.ReadEntity()
-    ef.origin = net.ReadVector()
-    ef.startpos = net.ReadVector()
-    ef.surfaceprop = net.ReadInt(8)
-    ef.hitbox = net.ReadInt(8)
+    local gun = net.ReadEntity()
+    local num = net.ReadUInt(5)
+    local spr = net.ReadUInt(8) / 100
 
-    local effect = EffectData()
-    effect:SetEntity(ef.entity)
-    effect:SetOrigin(ef.origin )
-    effect:SetStart(ef.startpos)
-    effect:SetSurfaceProp(ef.surfaceprop)
-    effect:SetDamageType(DMG_BULLET) 
-    effect:SetHitBox(ef.hitbox)
-    util.Effect( "Impact", effect )
-
-    local traceEf = EffectData()
-    traceEf:SetOrigin(ef.origin)
-    traceEf:SetScale(10000)
-    traceEf:SetFlags(4)
-    traceEf:SetStart(ef.startpos)
-    util.Effect( "Tracer", traceEf )
-
-    local impactEf = EffectData()
-
-    --Entity, Origin, Start, SurfaceProp, DamageType, HitBox
-    --]]
+    gun:ShootGunEffect(num, spr)
 end)

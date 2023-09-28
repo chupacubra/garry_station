@@ -1,13 +1,9 @@
 include("shared.lua")
 
 function ENT:Initialize()
-    self.ConnectedToEnt = false
-
-    self:CallOnRemove( "DisconnectPly", function()
-        if self.ConnectedToEnt then
-            self:DisconnectPly(true)
-        end
-    end)
+    --net.Start("gs_ent_client_init")
+    --net.WriteEntity(self)
+    --net.SendToServer()
 end
 
 function ENT:Examine()
@@ -18,6 +14,12 @@ end
 
 function ENT:Draw()
     self:DrawModel()
+end
+
+function ENT:OnReloaded() 
+    net.Start("gs_ent_client_init")
+    net.WriteEntity(self)
+    net.SendToServer()
 end
 
 function ENT:AddContextMenu() -- need for adding new buttons
@@ -69,37 +71,31 @@ function ENT:GetContextMenu()
     return contextButton
 end
 
-function ENT:ConnectPly()
-    timer.Create("gs_cl_ent_connect_"..tostring(self:EntIndex()), function()
-        if !self:IsVaild() then
-            timer.Remove("gs_cl_ent_connect_"..tostring(self:EntIndex()))
-        end
-        
-        net.Start("gs_ent_connect_ply")
-        net.WriteEnt(self)
+function ENT:ConnectToEnt()
+    timer.Create("gs_ply_connect_to_ent", 1, 0, function()
+        net.Start("gs_connect_ent")
+        net.WriteEntity(self)
         net.WriteBool(true)
         net.SendToServer()
     end)
-
-    self.ConnectedToEnt = true
 end
 
-function ENT:DisconnectPly(fromServer)
-    timer.Remove("gs_cl_ent_connect_"..tostring(self:EntIndex()))
+function ENT:DisconnectToEnt(from)
+    timer.Remove("gs_ply_connect_to_ent")
+    
+    if from then return end
 
-    if !fromServer then
-        net.Start("gs_ent_connect_ply")
-        net.WriteEnt(self)
-        net.WriteBool(false)
-        net.SendToServer()
-    end
-
-    self.ConnectedToEnt = false
-
+    net.Start("gs_connect_ent")
+    net.WriteEntity(self)
+    net.WriteBool(false)
+    net.SendToServer()
 end
 
-net.Receive("gs_ent_connect_ply", function()
+net.Receive("gs_connect_ent", function()
+    -- only 1 reason to receive thus - disconnect from ent
     local ent = net.ReadEntity()
-
-    ent:DisconnectPly(true)
+    ent:DisconnectToEnt(true)    
 end)
+
+-- how check "ply in GUI"?
+-- 1. ping-pong in 1 second

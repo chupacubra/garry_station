@@ -243,6 +243,7 @@ function GM:EntityTakeDamage( target, dmg )
 	end
 	
 	if target:IsPlayer() and dmg:GetAttacker() == Entity(0) then
+		
 		return true
 	end
 	return true

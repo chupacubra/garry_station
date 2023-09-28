@@ -1,6 +1,7 @@
 local files = {
     "item_base_examine.lua",
     "item_ammo.lua",
+    "item_box_ammo.lua",
     "item_containers.lua",
     "ent_containers.lua",
     "item_board.lua",
@@ -8,7 +9,7 @@ local files = {
     "item_common.lua",
     "equip_simple_accessories.lua",
     "map_entity_context.lua",
-    "id_generator.lua"
+    "id_generator.lua", 
 }
 
 GS_EntityList = {}

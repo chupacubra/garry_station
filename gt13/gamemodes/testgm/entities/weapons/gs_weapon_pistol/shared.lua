@@ -6,6 +6,7 @@ SWEP.WorldModel = "models/weapons/w_pist_p228.mdl"	-- Weapon world model
 
 SWEP.UnloadedWorldModel = "models/weapons/unloaded/pist_p228.mdl"
 SWEP.LoadedWorldModel   = "models/weapons/w_pist_p228.mdl"
+SWEP.HaveUnloadModel = true
 
 SWEP.IsGS_Weapon = true
 SWEP.CanPickup = true
@@ -21,6 +22,10 @@ SWEP.recoil = 1
 SWEP.spread = 0.02
 
 SWEP.action_type = GS_AW_MAGAZINE
+
+SWEP.CanZoom = true
+SWEP.ZoomOffset = Vector(-5.78, -2.52, 2.712)
+SWEP.ZoomAng    = Angle()
 
 SWEP.m_WeaponDeploySpeed = 1
 

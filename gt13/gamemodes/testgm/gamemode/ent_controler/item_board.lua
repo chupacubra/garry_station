@@ -17,6 +17,25 @@ GS_EntityList.tech_plate = {
                 part_electronic = 2,
             },
         },
+    },
+    fabricator = { 
+        Entity_Data = {
+            Name = "Fabricator machine board",
+            Desc = "Need for creating fabricator machine",
+            Model = "models/props/cs_office/computer_caseb_p3a.mdl",
+            ENT_Name = "board_fabricator",
+            ENUM_Type = GS_ITEM_BOARD,
+            ENUM_Subtype = GS_BOARD_MACHINE,
+            Simple_Examine = true,
+            Size = ITEM_SMALL,
+        },
+        Private_Data = {
+            Machine = "gs_machine_fabricator",
+            Parts = {
+                part_plug = 1, 
+                part_electronic = 2,
+            },
+        },
     }
 }
  

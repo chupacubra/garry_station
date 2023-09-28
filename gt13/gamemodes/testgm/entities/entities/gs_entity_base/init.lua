@@ -2,8 +2,27 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-ENT.DisassembleData = {
-    board = ""
+local function spawnPart(parts, ent, pos) -- theesee need check!!!!11
+    timer.Simple(0.1, function()
+        -- for this second the machine case can be exterminated, but parts MUST be spawned
+        -- we saving ENT and last POS
+        if ent:IsValid() then
+            pos = ent:GetPos()
+        end
+        
+        local pent = ents.Create(part[1])
+        pent:SetPos(pos)
+        pent:Spawn()
+
+        table.remove(parts, 1)
+        if #parts != 0 then
+            spawnPart(parts, ent, pos)
+        end
+    end)
+end
+
+ENT.DissasembleData = {
+    board = "" -- key GS_EntityList.tech_plate
 }
 
 function ENT:Initialize()
@@ -18,24 +37,12 @@ function ENT:Initialize()
         phys:Wake()
     end
 
+    self.PlyConnectList = {}
+    
     self:AfterInit()
 
-    self.ConnectedPly = {}
-
-    timer.Create("gs_ent_connected_ply_timer", 1, 0, function()
-        if table.IsEmpty(self.ConnectedPly) then return end
-
-        for ply, time in pairs(self.ConnectedPly) do
-            if CurTime() - time > 2 then
-                self:DisconnectPly(ply)
-            end
-        end
-    end)
-
-    self:CallOnRemove("DisconnectAllPly", function()
-        timer.Remove("gs_ent_connected_ply_timer")
-        
-        self:DisconnectPlyAll(true)
+    self:CallOnRemove("DisconnectPiple", function()
+        self:CleanConnect()
     end)
 end
 
@@ -50,6 +57,7 @@ function ENT:SetExamine(data) -- name, description
 
     self.Entity_Data.Name = data.name 
     self.Entity_Data.Desc = data.desc
+    --self:LoadInfoAbout()
 end
 
 function ENT:SetData(data) 
@@ -75,25 +83,26 @@ function ENT:SetFlagState(key, flag)
     end
 end 
 
-function ENT:FlipFlag(key)
-    local k = 2^key
-    local bool = bit.band(self.Key_State, k) == k
-
-    if bool then
-        if bit.band(self.Key_State, k) == k then
-            self.Key_State = bit.bxor(self.Key_State , k)
-        end
-    else
-        self.Key_State = bit.bor(self.Key_State, k)
-    end
-
-    return !bool
-end
-
 function ENT:GetFlagState(key)
     local k = 2 ^ key
 
     return bit.band(self.Key_State, k) == k
+end
+
+function ENT:FlipFlag(key)
+    local k = 2^key
+
+    local flag = self:GetFlagState(key)
+
+    if flag then
+        self.Key_State = bit.bor(self.Key_State, k)
+    else
+        if bit.band(self.Key_State, k) == k then
+            self.Key_State = bit.bxor(self.Key_State , k)
+        end
+    end
+
+    return !flag -- logichno
 end
 
 function ENT:GetFlag()
@@ -189,6 +198,33 @@ function ENT:Wrench(ply)
     end
 end
 
+function ENT:DissasembleMachine()
+    if !self.DissasembleData then self:Remove(); return end
+    -- get board data
+    -- get receipt list ents
+    -- spawn machine case
+    -- spawn parts
+
+    local drop_ents = {}
+    table.insert(drop_ents, "gs_item_tech_plate_"..self.DissasembleData.board)
+    
+    for k, v in pairs(GS_EntityList.tech_plate[self.DissasembleData.board]["Private_Data"]["Parts"]) do
+        for i=0, v do
+            table.insert(drop_ents, k)
+        end
+    end
+
+    local pos, ang = self:GetPos(), self:GetAngles()
+    self:Remove()
+    
+    local mc = ents.Create("gs_machine_casing")
+    mc:SetPos(pos)
+    mc:SetAngles(ang)
+    mc:Spawn()
+    
+    spawnPart(drop_ents, mc)
+end
+
 function ENT:Crowbar(ply)
 --[[
     ex if build and maint open --> uncraft machine
@@ -206,64 +242,55 @@ function ENT:Multitool(ply)
 
 end
 
-function ENT:Disassemble()
-    local machine_parts = {}
+function ENT:PlyConnect(ply)
+    local function checkDelay(ply)
+        self.PlyConnectList[ply] = CurTime()
+        timer.Simple(2, function()
+            if CurTime() - self.PlyConnectList[ply] > 2 then
+                self:PlyDisconnect(ply)
+            else
+                self.PlyConnectList[ply] = CurTime()
+                checkDelay(ply) -- i think it's a bad idea to call checkDelay, but i want test it
+            end
+        end)
+    end
 
-    table.insert(machine_parts, "gs_item_tech_plate_"..self.DisassembleData.board)
+    self.PlyConnectList = self.PlyConnectList or {}
+end
 
-    for part, amnt in pairs(GS_EntityList["tech_plate"][self.DisassembleData.board]["Private_Data"]["Parts"]) do
-        local id = GS_EntityList.Board_Parts_Fast[part]
+function ENT:PlyDisconnect(ply)
+    if !self.PlyConnectList then return end
 
-        for i = 0, amnt do
-            table.insert(machine_parts, "gs_item_parts_"..id)
+    self.PlyConnectList[ply] = nil 
+
+    net.Start("gs_connect_ent")
+    net.WriteEntity(self)
+    net.Send(ply)
+end 
+
+function ENT:GetConnectedPly()
+    return self.PlyConnectList or {} 
+end
+
+function ENT:CleanConnect()
+    for k, v in pairs(self.PlyConnectList) do
+        self:PlyDisconnect(ply)
+    end
+end
+
+net.Receive("gs_connect_ent", function(_, ply)
+    local ent = ent.ReadEntity()
+    local cnnct = ent.ReadBool()
+
+    if cnnct then
+        if ent:GetPos():Distance( ply:GetPos() ) <= (ent.ConnectDist or 75) then
+            ent:PlyConnect(ply)
+        else
+            net.Start("gs_connect_ent")
+            net.WriteEntity(self)
+            net.Send(ply) -- for deleting timer on client
         end
-    end
-
-    local pos, ang = self:GetPos(), self:GetAngles()
-    self:Remove()
-
-    local mc = ents.Create("gs_machine_casing")
-    mc:SetPos(pos)
-    mc:SetAngles(ang)
-    mc:Spawn()
-
-    for i = 1, #machine_parts do 
-        local part = ents.Create(machine_parts[i])
-        part:SetPos(pos)
-        part:Spawn()
-    end
-
-end
-
-function ENT:ConnectPly(ply)
-    self.ConnectedPly[ply] = CurTime()
-end
-
-function ENT:DisconnectPly(ply, fromClient)
-    self.ConnectedPly[ply] = nil
-
-    if !fromClient then
-        net.Start("gs_ent_connect_ply")
-        net.WriteEnt(self)
-        net.Send(ply)
-    end
-end
-
-function ENT:DisconnectPlyAll(onRemove)
-    for ply, _ in pairs(self.ConnectedPly) do
-        self:DisconnectPly(ply, onRemove)
-    end
-end
-
-net.Receive("gs_ent_connect_ply", function(_, ply)
-    local ent = net.ReadEntity()
-    local connect = net.ReadBool()
-
-    if !ent:IsValid() then return end
-
-    if connect then
-        ent:ConnectPly(ply)
     else
-        ent:DisconnectPly(ply, true)        
+        ent:PlyDisconnect(ply)
     end
 end)
