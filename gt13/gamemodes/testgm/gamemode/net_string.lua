@@ -47,6 +47,9 @@ util.AddNetworkString("gs_hand_draw_model")
 util.AddNetworkString("gs_hand_vm")
 util.AddNetworkString("gs_hand_item_make_action")
 
+--some equip
+util.AddNetworkString("gs_equip_functions")
+util.AddNetworkString("gs_eq_med_glasses_sensors")
 
 --weapon
 util.AddNetworkString("gs_weapon_base_comp_dataent")

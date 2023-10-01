@@ -286,7 +286,7 @@ function FromHitGroupToPart(hg)
     return HitGroupPart[hg]
 end
 
-function tblsum(tbl) do
+function tblsum(tbl)
     local n = 0
     for _, v in pairs(tbl) do
         n = n + v

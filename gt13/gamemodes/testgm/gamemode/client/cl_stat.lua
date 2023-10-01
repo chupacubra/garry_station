@@ -1,5 +1,5 @@
-GS_ClPlyStat = {}
-GS_ClPlyStat.init = false
+GS_ClPlyStat = GS_ClPlyStat or {}
+--GS_ClPlyStat.init = false
 
 --[[
     Receive the health stats,
@@ -52,7 +52,7 @@ end
 function GS_ClPlyStat:InitInventory()
     self.equipment = {
             BELT      = 0, 
-            GLOVES    = 0, 
+            EYES      = 0, 
             KEYCARD   = 0, 
             PDA       = 0,
             BACKPACK  = 0,
@@ -62,12 +62,15 @@ function GS_ClPlyStat:InitInventory()
             EAR       = 0,
     }
 
+    self.equipment_class = {} -- for saving class of equip item
+
     self.pocket = {{},{}}
 end
 
-function GS_ClPlyStat:EquipItem(item, typ)
+function GS_ClPlyStat:EquipItem(item, typ, class)
     self.equipment[FAST_EQ_TYPE[typ]] = item 
-    
+    self.equipment_class[FAST_EQ_TYPE[typ]] = class
+
     if typ == GS_EQUIP_BACKPACK then
         ContextMenu:DrawBackpackButton()
     end
@@ -77,6 +80,7 @@ end
 
 function GS_ClPlyStat:RemoveEquip(key)
     self.equipment[FAST_EQ_TYPE[key]] = 0
+    self.equipment_class[FAST_EQ_TYPE[key]] = nil
 
     ContextMenu:UpdateEquipmentItem()
 end
@@ -87,6 +91,10 @@ function GS_ClPlyStat:GetEquipName(key)
     end
 
     return self.equipment[key]["Name"]
+end
+
+function GS_ClPlyStat:GetEquipClass()
+    return self.equipment_class
 end
 
 function GS_ClPlyStat:GetEquipItem(key)
@@ -169,7 +177,6 @@ function GS_ClPlyStat:GetNameItemFromPocket(key)
     return self.pocket[key]["Name"] or ""
 end
 
-
 function GS_ClPlyStat:GetItemFromPockets()
     return self.pocket
 end
@@ -185,17 +192,6 @@ function GS_ClPlyStat:UpdateInventoryItems(items, from)
         ContextMenu:UpdateInventoryItems(items)
     end
 end
-
---[[
-function GS_ClPlyStat:CloseContainer()
-    net.Start()
-end
---]]
---[[
-function GS_ClPlyStat:OpenContainer(items)
-
-end
---]]
 
 function GS_ClPlyStat:ClientCloseContainer()
     net.Start("gs_ent_container_close")
@@ -272,13 +268,13 @@ net.Receive("gs_equipment_update",function()
     local key = net.ReadUInt(5)
     local bool = net.ReadBool()
     if bool then
-        local item = scripted_ents.Get(net.ReadString()).Entity_Data
-        GS_ClPlyStat:EquipItem(item, key)
+        local class = net.ReadString()
+        local item = scripted_ents.Get(class).Entity_Data
+        GS_ClPlyStat:EquipItem(item, key, class)
     else
         GS_ClPlyStat:RemoveEquip(key)
     end
 end)
-
 
 net.Receive("gs_cl_inventary_update", function()
     local from  = net.ReadUInt(5)

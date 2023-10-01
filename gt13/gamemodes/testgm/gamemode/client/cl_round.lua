@@ -6,7 +6,6 @@ GS_RoundStatus = {}
 function GS_RoundStatus:Init()
     self.Time = 0
     self.Round_Status = -1
-
 end
 
 function GS_RoundStatus:NetUpdateStatus(stat,time)

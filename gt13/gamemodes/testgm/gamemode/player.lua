@@ -243,7 +243,6 @@ function GM:EntityTakeDamage( target, dmg )
 	end
 	
 	if target:IsPlayer() and dmg:GetAttacker() == Entity(0) then
-		
 		return true
 	end
 	return true
@@ -251,6 +250,7 @@ end
 
 
 hook.Add("GS_PlyTakeDamage", "Main", function(victim, attacker, part, dmg)
+	-- check, have the ply armor (vest, helmet, armor suit)
 	player_manager.RunClass( victim, "HurtPart", part, dmg)
 end)
 

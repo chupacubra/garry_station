@@ -497,8 +497,6 @@ function DrawStartroundMenu()
 
 end
 
-DrawStartroundMenu()
-
 concommand.Add("gs_d", function()
     DrawStartroundMenu()
 end)   

@@ -9,11 +9,11 @@ local HUD_EQUEIP = {
     {
         "BACKPACK",
         "VEST",
-        "GLOVES",
+        "MASK",
     },
     {
         "HEAD",
-        "MASK",
+        "EYES",
         "EAR",
     },
 }
@@ -395,12 +395,12 @@ function ContextMenu:ContextMenuOpen()
     local eq_i = 1
 
     for i = 1,3 do
-        for k,v in pairs(HUD_EQUEIP[i]) do
+        for k, v in pairs(HUD_EQUEIP[i]) do
             local slot = vgui.Create("gt_button")
             slot:SetSize(100,100)
             slot:SetPos(10 + (110 * (k-1)), (H - ((H / 8) + ((i-1) * 110))))
             slot.type = "equip"
-            slot.key  = k
+            slot.key  = FAST_HUD_TYPE[v]
 
             if GS_ClPlyStat then
                 if GS_ClPlyStat.init then
@@ -412,7 +412,7 @@ function ContextMenu:ContextMenuOpen()
             slot:Droppable("item_drop")
             
             function slot:DoClick()
-                context:MakeContextItem(k, GS_ClPlyStat:GetEquipItem(v), CONTEXT_EQUIPMENT, self:GetPos())
+                context:MakeContextItem(FAST_HUD_TYPE[v], GS_ClPlyStat:GetEquipItem(v), CONTEXT_EQUIPMENT, self:GetPos())
             end
 
             self.derma_equip[v] = slot

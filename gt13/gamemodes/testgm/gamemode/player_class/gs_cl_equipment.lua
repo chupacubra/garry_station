@@ -11,7 +11,7 @@ function PLAYER_CL_EQ:SetupEquip()
 
     self.Player.EqModelDraw = {
         BELT      = {},
-		GLOVES    = {},
+		EYES      = {},
 		KEYCARD   = {},
 		PDA       = {},
 		BACKPACK  = {},

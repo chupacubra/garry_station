@@ -39,7 +39,7 @@ GS_EQUIP_BACKPACK = 1
 GS_EQUIP_ID       = 2
 GS_EQUIP_PDA      = 3
 GS_EQUIP_BELT     = 4
-GS_EQUIP_GLOVES   = 5
+GS_EQUIP_EYES     = 5
 GS_EQUIP_VEST     = 6
 GS_EQUIP_HEAD     = 7
 GS_EQUIP_MASK     = 8
@@ -73,7 +73,7 @@ FAST_EQ_TYPE = {
     "KEYCARD",
     "PDA",
     "BELT",
-    "GLOVES",
+    "EYES",
     "VEST",
     "HEAD",
     "MASK",
@@ -86,7 +86,7 @@ FAST_HUD_TYPE = {
     KEYCARD  = 2,
     PDA      = 3,
     BELT     = 4,
-    GLOVES   = 5,
+    EYES     = 5,
     VEST     = 6,
     HEAD     = 7,
     MASK     = 8,

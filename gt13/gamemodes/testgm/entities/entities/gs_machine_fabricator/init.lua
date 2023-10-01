@@ -103,7 +103,7 @@ function ENT:Think()
     for ply, _ in pairs(self:GetConnectedPly()) do
         if !ply:IsValid() then continue end
 
-        if self:GetPos():Distance( ply:GetPos() ) > 100 do
+        if self:GetPos():Distance( ply:GetPos() ) > 100 then
             self:PlyDisconnect(ply)
         end
     end

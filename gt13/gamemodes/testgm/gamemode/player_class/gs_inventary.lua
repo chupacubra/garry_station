@@ -3,7 +3,7 @@ PLAYER_INVENTARY = {}
 function PLAYER_INVENTARY:SetupInventary()
 	self.Player.Equipment = {
 		BELT      = 0,
-		GLOVES    = 0,
+		EYES    = 0,
 		KEYCARD   = 0,
 		PDA       = 0,
 		BACKPACK  = 0,
@@ -112,6 +112,8 @@ function PLAYER_INVENTARY:RemoveEquip(key)
 	if type(key) == "number" then
 		key = FAST_EQ_TYPE[key]
 	end
+
+	print(key)
 
 	if !self:HaveEquipment(key) then
 		return false

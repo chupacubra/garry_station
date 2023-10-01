@@ -1,5 +1,23 @@
 PLAYER_HP = {}
 
+function GetIcon(dmg)
+	if dmg != 0 then
+		if dmg < 30 then
+			return 2
+		elseif dmg < 50 then
+			return 3
+		elseif dmg < 70 then
+			return 4
+		elseif dmg < 90 then
+			return 5
+		else 
+			return 6
+		end
+	else
+		return 1
+	end
+end
+
 function PLAYER_HP:SetupHPSystem()
     self:SetupParts()
     self:SetupOrganismValues()
@@ -299,22 +317,8 @@ function PLAYER_HP:HealthPartClientUpdate(part)
 		parthp = math.floor(self:GetHealthPercentPart(part))
 	end
 
-	local icon = 1 -- the base 100% icon
 	local dmg = math.floor(self:GetSumDMG())
-	
-	if dmg != 0 then
-		if dmg < 30 then
-			icon = 2
-		elseif dmg < 50 then
-			icon = 3
-		elseif dmg < 70 then
-			icon = 4
-		elseif dmg < 90 then
-			icon = 5
-		else 
-			icon = 6
-		end
-	end
+	local icon = GetIcon(dmg)
 
 	--local hp = math.floor(self:GetHealthPercent())
 

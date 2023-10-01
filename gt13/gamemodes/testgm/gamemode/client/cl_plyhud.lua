@@ -15,11 +15,11 @@ local HUD_EQUEIP = {
     {
         "BACKPACK",
         "VEST",
-        "GLOVES",
+        "EYES",
     },
     {
         "HEAD",
-        "MASK",
+        "EYES",
         "EAR",
     },
 }
@@ -47,8 +47,6 @@ function SelectNextWep()
     local list = ClGetWeaponsSlot(true, LocalPlayer())
     local curid = table.KeyFromValue( list, LocalPlayer():GetActiveWeapon() )
     if curid < #list then
-        --input.SelectWeapon( list[curid+1] )
-        --GS_HUD.selected_wep = curid+1
         SelectWep(curid+1)
     end
 end
@@ -57,8 +55,6 @@ function SelectPrevWep()
     local list = ClGetWeaponsSlot(true, LocalPlayer())
     local curid = table.KeyFromValue( list, LocalPlayer():GetActiveWeapon() )
     if curid != 1 then
-        --input.SelectWeapon( list[curid-1] )
-        --GS_HUD.selected_wep = curid - 1
         SelectWep(curid - 1)
     end
 end
