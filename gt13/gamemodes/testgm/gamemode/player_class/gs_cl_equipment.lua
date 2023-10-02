@@ -24,6 +24,11 @@ function PLAYER_CL_EQ:SetupEquip()
     self.Player.Loaded = true
 end
 
+function PLAYER_CL_EQ:GetEquipModel(key)
+    if table.IsEmpty(self.Player.EqModelDraw) then return false end
+    return self.Player.EqModelDraw[key]["model"]:GetModel()
+end
+
 function PLAYER_CL_EQ:CreateEqModel(eq_model, id_eq)
     if EQ_IGNORE[id_eq] then return end
     local offseta = cl_equip_config[eq_model]["ang"]

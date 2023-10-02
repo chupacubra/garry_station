@@ -3,7 +3,7 @@ PLAYER_INVENTARY = {}
 function PLAYER_INVENTARY:SetupInventary()
 	self.Player.Equipment = {
 		BELT      = 0,
-		EYES    = 0,
+		EYES      = 0,
 		KEYCARD   = 0,
 		PDA       = 0,
 		BACKPACK  = 0,
@@ -11,10 +11,11 @@ function PLAYER_INVENTARY:SetupInventary()
 		HEAD      = 0,
 		MASK      = 0,
 		EAR       = 0,
+		--SUIT      = 0,
 	}
 
 	self.Player.Pocket = {{},{}}
-	self.Player.Suit = "casual"
+	--self.Player.Suit = "casual"
 end
 
 function PLAYER_INVENTARY:InsertItemInPocket(item, pocket)
@@ -94,13 +95,17 @@ function PLAYER_INVENTARY:EquipItem(itemData, key)
 	end
 	
 	self.Player.Equipment[key] = itemData
-	PrintTable(itemData)
+	--PrintTable(itemData)
 	self:EquipmentEquipClient(itemData, key)
 	
 	return true
 end
 
 function PLAYER_INVENTARY:GetEquipItem(key)
+	if key == "SUIT" then
+		return self:GetSuit()
+	end
+
 	if !self:HaveEquipment(key) then
 		return false
 	end
@@ -113,7 +118,7 @@ function PLAYER_INVENTARY:RemoveEquip(key)
 		key = FAST_EQ_TYPE[key]
 	end
 
-	print(key)
+	--print(key)
 
 	if !self:HaveEquipment(key) then
 		return false
@@ -492,6 +497,10 @@ function PLAYER_INVENTARY:SetSuit(suit)
 		self.Player.Suit = suit
 	end
 
+end
+
+function PLAYER_INVENTARY:GetSuit()
+	return self.Player.Suit
 end
 
 function PLAYER_INVENTARY:ChangeSuit(itemData)

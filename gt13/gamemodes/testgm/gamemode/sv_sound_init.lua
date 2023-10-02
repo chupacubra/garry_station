@@ -1,3 +1,5 @@
+-- trash
+
 sound.Add({
 	name = 			"Weapon_P228.1",
 	channel = 		CHAN_USER_BASE+10,

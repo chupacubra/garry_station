@@ -1,3 +1,6 @@
+AR_VEST = 0
+AR_MET  = 1
+
 cl_equip_config = {
     ["models/blacksnow/backpack.mdl"] = {
         vec = Vector( 0, -2, 0 ),
@@ -13,5 +16,17 @@ cl_equip_config = {
         vec = Vector(2, 0.9, 0),
         ang = Angle(0, -90, -90),
         bone = "ValveBiped.Bip01_Head1",
+    },
+    ["armorvest"] = {
+        vec = Vector(2, 0.9, 0),
+        ang = Angle(0, -90, -90),
+        bone = "ValveBiped.Bip01_Spine2",
+        armor = AR_VEST,
+    },
+    ["armorvest"] = {
+        vec = Vector(2, 0.9, 0),
+        ang = Angle(0, -90, -90),
+        bone = "ValveBiped.Bip01_Head1",
+        armor = AR_MET,
     }
 }

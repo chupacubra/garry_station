@@ -211,8 +211,8 @@ function GS_ClPlyStat:SendActionToServer(rec,drp)
     item_1, entity_1 = typeRet(rec.item)
     item_2, entity_2 = typeRet(drp.item)
 
-    from1 = itemfrom(rec.type)
-    from2 = itemfrom(drp.type)
+    from1 = ITEM_FROM[rec.type]
+    from2 = ITEM_FROM[drp.type]
 
     print(from1,from2)
 

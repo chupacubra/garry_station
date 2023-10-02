@@ -183,7 +183,7 @@ function roundstr(stat)
         return "..."
     end
 end
-
+--[[
 function itemfrom(str)
     if str == "weap" then return CONTEXT_WEAPON_SLOT
     elseif str == "hand" then return CONTEXT_HAND
@@ -194,6 +194,17 @@ function itemfrom(str)
     elseif str == "container" then return CONTEXT_CONTAINER
     elseif str == "c_item" then return CONTEXT_ITEM_IN_CONT end
 end
+--]]
+ITEM_FROM = {
+    weap      = CONTEXT_WEAPON_SLOT,
+    hand      = CONTEXT_HAND,
+    backpack  = CONTEXT_BACKPACK,
+    pocket    = CONTEXT_POCKET,
+    equip     = CONTEXT_EQUIPMENT,
+    item      = CONTEXT_ITEM_IN_BACK,
+    container = CONTEXT_CONTAINER,
+    c_item    = CONTEXT_ITEM_IN_CONT,
+}
 
 W_RED   = 1
 W_GREEN = 2
@@ -332,4 +343,13 @@ MAP_DMG = {
     [DMG_NERVEGAS]       = D_TOXIN,	
     [DMG_POISON]	     = D_TOXIN,
     [DMG_RADIATION]      = D_TOXIN,
+}
+
+ARMORY_PART = {
+    head   = {"HEAD", "MASK"}
+    hand_l = {"SUIT"},
+    hand_r = {"SUIT"},
+    body   = {"VEST", "SUIT"},
+    leg_l  = {"SUIT"},
+    leg_r  = {"SUIT"},
 }

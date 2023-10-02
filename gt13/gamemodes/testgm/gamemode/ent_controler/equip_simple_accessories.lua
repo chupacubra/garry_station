@@ -198,3 +198,6 @@ net.Receive("gs_equip_functions", function(_, ply)
     --print(eq, name, func, tp)
     GS_EntityList[tp][name]["SV_EQ_Func"][func](ply)
 end)
+
+-- Появилась мощная идея функции создания снаряги
+-- CreateNewEquipment(таблица, со всеми данными, таблица для cl_equip_config.lua )

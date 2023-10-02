@@ -193,23 +193,8 @@ function PLAYER_HP:SetHP(body)
 end
 
 function PLAYER_HP:HurtPart(mainpart, dmg)
-	-- need to remake with HITGROUP
-	--[[
-	local bone = self.Player:TranslatePhysBoneToBone(bone)
-	local mainpart
-
-	while true do
-		local isPart, part = getMainBodyPart(bone)
-		if isPart then
-			mainpart = part
-			break
-		end
-		
-		bone = self.Player:GetBoneParent(bone)
-	end
-	--]]
-
 	local brutesum = self:GetSumDMGBrute()
+
 	for k,v in pairs(dmg) do
 		if k == D_STAMINA or k == D_TOXIN then
 			continue
