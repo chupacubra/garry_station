@@ -346,7 +346,7 @@ MAP_DMG = {
 }
 
 ARMORY_PART = {
-    head   = {"HEAD", "MASK"}
+    head   = {"HEAD", "MASK"},
     hand_l = {"SUIT"},
     hand_r = {"SUIT"},
     body   = {"VEST", "SUIT"},

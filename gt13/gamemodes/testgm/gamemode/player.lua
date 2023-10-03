@@ -273,7 +273,7 @@ hook.Add("GS_PlyTakeDamage", "Main", function(victim, attacker, part, dmg)
 			-- HOW?
 			-- ChatPrint("The armory softened impact") dont matching, because it's can go to SPAM
 			-- need use the some SOUND if metalick or another impact
-			victim:EmitSound(table.Random(ArmoryImpact))
+			-- victim:EmitSound(table.Random(ArmoryImpact))
 			return
 		end
 	end

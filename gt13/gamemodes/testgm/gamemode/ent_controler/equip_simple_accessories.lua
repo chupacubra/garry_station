@@ -1,3 +1,30 @@
+-- base name for typos 
+--    backpacks
+--    hats
+--    vest
+--    belt
+--    mask
+--    goggles
+--    ears
+--    pda
+--
+--    id is not base equip
+
+local function AddEquipment(typ, name, data, drawdata)
+    if !typ or !name or !data or !drawdata then
+        GS_MSG("Cant create equipment, invalid arguments!")
+        return
+    end
+
+    if !GS_EntityList[typ] then GS_EntityList[typ] = {} end
+    GS_EntityList[typ][name] = data
+    
+    if CLIENT and drawdata then
+        if !cl_equip_config then cl_equip_config = {} end
+        cl_equip_config[data.Entity_Data.Model] = drawdata
+    end
+end
+
 GS_EntityList.hats = {
     test_hat = { 
         Entity_Data = {
@@ -113,6 +140,7 @@ GS_EntityList.goggles = {
 }
 
 GS_EntityList.vest = {
+    --[[
     armor_vest = { 
         Entity_Data = {
             Name = "Bulletproof vest",
@@ -135,6 +163,7 @@ GS_EntityList.vest = {
             }
         }
     },
+    --]]
 }
 
 GS_EntityList.suit = {
@@ -201,3 +230,66 @@ end)
 
 -- Появилась мощная идея функции создания снаряги
 -- CreateNewEquipment(таблица, со всеми данными, таблица для cl_equip_config.lua )
+
+-- nice model fro EFT equip
+-- backpacks civ
+-- models/backpack_sanitar_medbag/backpack_sanitar_medbag.mdl
+-- models/backpack_redfox/backpack_redfox.mdl
+-- models/backpack_sportbag/backpack_sportbag.mdl
+-- models/backpack_daypack/backpack_daypack.mdl 
+--
+-- armor vest
+-- models/armor_custom_thorcrv/ar_thorcrv.mdl
+-- models/armor_slick/armor_slick_black.mdl
+
+AddEquipment("vest", "armor_vest",
+    { 
+        Entity_Data = {
+            Name = "Bulletproof vest",
+            Desc = "To be honest, I wouldn't have much hope for him.",
+            Model = "models/armor_custom_thorcrv/ar_thorcrv.mdl",
+            ENUM_Type = GS_ITEM_EQUIP,
+            ENUM_Subtype = GS_EQUIP_VEST,
+            Simple_Examine = true,
+            Size = ITEM_V_MEDIUM,
+            Item_Max_Size =  ITEM_MEDIUM,
+        },
+        Private_Data = {
+            Armor_Setting = {
+                Protection = 20,
+            }
+        }
+    },
+    {
+        vec = Vector(-5, 4, 0),
+        ang = Angle(180, -90, -90),
+        bone = "ValveBiped.Bip01_Spine2",
+        armor = AR_VEST,
+    }
+)
+
+AddEquipment("hats", "helmet",
+    { 
+        Entity_Data = {
+            Name = "Bulletproof helmet",
+            Desc = "Better with a helmet than without it.",
+            Model = "models/helmet_ulach_black/ulach.mdl",
+            ENUM_Type = GS_ITEM_EQUIP,
+            ENUM_Subtype = GS_EQUIP_HEAD,
+            Simple_Examine = true,
+            Size = ITEM_V_MEDIUM,
+            Item_Max_Size =  ITEM_MEDIUM,
+        },
+        Private_Data = {
+            Armor_Setting = {
+                Protection = 20,
+            }
+        }
+    },
+    {
+        vec = Vector(-2, -2, 0),
+        ang = Angle(0, -80, -90),
+        bone = "ValveBiped.Bip01_Head1",
+        armor = AR_MET,
+    }
+)

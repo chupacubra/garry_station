@@ -4,6 +4,10 @@ EQ_IGNORE = {
     KEYCARD = true
 }
 
+function PLAYER_CL_EQ:Spawn()
+    self:SetupEquip()
+end
+
 function PLAYER_CL_EQ:SetupEquip()
     if self.Player.Loaded then
         return
@@ -25,8 +29,14 @@ function PLAYER_CL_EQ:SetupEquip()
 end
 
 function PLAYER_CL_EQ:GetEquipModel(key)
-    if table.IsEmpty(self.Player.EqModelDraw) then return false end
+    print(key, 56)
+    if table.IsEmpty(self.Player.EqModelDraw[key]) then return false end
     return self.Player.EqModelDraw[key]["model"]:GetModel()
+end
+
+function PLAYER_CL_EQ:GetEquipData(key)
+    if table.IsEmpty(self.Player.EqModelDraw[key]) then return false end
+    return self.Player.EqModelDraw[key]["model"]
 end
 
 function PLAYER_CL_EQ:CreateEqModel(eq_model, id_eq)
