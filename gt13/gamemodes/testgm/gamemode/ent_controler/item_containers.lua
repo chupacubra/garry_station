@@ -29,7 +29,7 @@ GS_EntityList.ent_chem_container_small = {
             ENUM_Type = GS_ITEM_CHEM_CONTAINER,
             Size = ITEM_MEDIUM,
         },
-        Private_Data = {
+        Private_Data = { -- TRASH
             Unit = 0,
             Max_unit = 100,
             Chem = {},

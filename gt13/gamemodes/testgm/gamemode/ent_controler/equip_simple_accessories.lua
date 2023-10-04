@@ -10,21 +10,6 @@
 --
 --    id is not base equip
 
-local function AddEquipment(typ, name, data, drawdata)
-    if !typ or !name or !data or !drawdata then
-        GS_MSG("Cant create equipment, invalid arguments!")
-        return
-    end
-
-    if !GS_EntityList[typ] then GS_EntityList[typ] = {} end
-    GS_EntityList[typ][name] = data
-    
-    if CLIENT and drawdata then
-        if !cl_equip_config then cl_equip_config = {} end
-        cl_equip_config[data.Entity_Data.Model] = drawdata
-    end
-end
-
 GS_EntityList.hats = {
     test_hat = { 
         Entity_Data = {

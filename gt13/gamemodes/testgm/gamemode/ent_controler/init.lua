@@ -5,6 +5,30 @@ include("item_data_operations.lua")
 include("sh_item_list.lua")
 AddCSLuaFile("sh_item_list.lua")
 
+function AddEquipment(typ, name, data, drawdata)
+    if !typ or !name or !data or !drawdata then
+        GS_MSG("Cant create equipment, invalid arguments!")
+        return
+    end
+
+    if !GS_EntityList[typ] then GS_EntityList[typ] = {} end
+    GS_EntityList[typ][name] = data
+    
+    if CLIENT and drawdata then
+        if !cl_equip_config then cl_equip_config = {} end
+        cl_equip_config[data.Entity_Data.Model] = drawdata
+    end
+end
+
+function AddItem(typ, name, data)
+    if !typ or !name or !data or !drawdata then
+        GS_MSG("Cant create equipment, invalid arguments!")
+        return
+    end
+
+    if !GS_EntityList[typ] then GS_EntityList[typ] = {} end
+    GS_EntityList[typ][name] = data
+end
 
 function GS_EntityControler:MakeEntity(name, typ, pos)
     print(typ,name)
@@ -20,19 +44,6 @@ function GS_EntityControler:MakeEntity(name, typ, pos)
     --local edata = table.Copy(GS_EntityList[typ][name])
     local entity = ents.Create("gs_item_"..typ.."_"..name)
 
-    --[[
-    entity:SetData(edata.Entity_Data)
-
-    entity.Private_Data = edata.Private_Data
-    entity.Examine_Data = edata.Examine_Data
-
-    entity.Data_Labels = {
-        id = name,
-        type = typ,
-    } 
-
-    PrintTable(entity.Data_Labels)
---]]
     entity:SetPos(pos)
     entity:Spawn()
     
@@ -49,7 +60,7 @@ function GS_EntityControler:MakeItem(etype, name, pos, ang)
 
 end 
  
-function GS_EntityControler:MakeAmmoBox(name,type,pos,ang)
+function GS_EntityControler:MakeAmmoBox(name,type,pos,ang) -- old
     print(name)
     if ammo_name[name] == nil then 
         return
@@ -74,7 +85,7 @@ function GS_EntityControler:MakeAmmoBox(name,type,pos,ang)
     entity:Spawn()
 end
 
-function GS_EntityControler:CreateFullMagazine(name,typ,pos,ang)
+function GS_EntityControler:CreateFullMagazine(name,typ,pos,ang) -- old but need
     local ent = fastMagazine(name, typ)
     print(ent)
     if !ent then

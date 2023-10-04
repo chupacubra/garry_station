@@ -102,7 +102,7 @@ function HaveAccess(have, need)
 end
 
 function GS_ID:CreateID()
-    -- generate new ID and return entity
+    -- generate clear ID and return entity
     return ents.Create("gs_item_keycard")
 end
 

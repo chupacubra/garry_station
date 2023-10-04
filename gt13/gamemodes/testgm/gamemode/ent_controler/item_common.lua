@@ -51,8 +51,8 @@ GS_EntityList.food = {
             Simple_Examine = true,
             Size = ITEM_SMALL,
         },
-        Private_Data = {
-            chemicals = {
+        Private_Data = {  -- bad example of making chemical container item
+            chemicals = { -- IS FACKING FAULT, in ITEM:Initialize() need add init ChemContainer()
                 fiber = 20
             }
         },
@@ -144,22 +144,17 @@ end
     c = 12.7
 ]]
 
-function chemicalBite(chem) -- unfinished
-    local l = table.Count(chem)
-    local m = 0
-    local n = math.floor( 10 / l,1 )
-    local bite = {}
-    for k, v in pairs(chem) do
-        if v < n then
-            bite[k] = v
-            chem[k] = 0
-        else
-            bite[k] = n
+function foodBite(chem) -- unfinished
+    local bite = 10
+    local biteChems = {}
 
-        end
+    local countChems = table.Count(chem)
+    local chemBite = math.Truncate(numberbite / biteChems, 2)
+
+    for k, v in pairs(chem) do
+
     end
 
-    return chem, bite
 end
 
 

@@ -121,7 +121,7 @@ CHEMIC:New("Potassium",{
 CHEMIC:New("Toxin",{
 	simpleName = "toxin",
 	callbackInPly = function(comp,ply)
-	  ply:TakeDamage( 4, Entity(0), Entity(0))
+	  --ply:TakeDamage( 4, Entity(0), Entity(0))
 	end,
 	callBackInMix = function() end,
 	activeid = -1,
