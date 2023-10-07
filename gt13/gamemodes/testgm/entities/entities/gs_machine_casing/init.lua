@@ -2,6 +2,8 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
+-- remake the using ENT_Name here, need use class of item
+
 function ENT:Initialize()
 	self:SetModel( "models/props_junk/wood_crate001a.mdl" )
 	self:PhysicsInit( SOLID_VPHYSICS )
