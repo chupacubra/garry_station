@@ -172,12 +172,13 @@ function GS_ChatPrint(ply, text, color)
 	net.WriteString(text)
 	net.Send(ply)
 end
-
+--[[
 function GS_ReturnExamineTable(ply, tbl)
 	net.Start("gs_cl_inventary_examine_return")
 	net.WriteTable(tbl)
 	net.Send(ply)
 end
+--]]
 --[[
 function ClassRun(...)
 	local ply = arg[1]

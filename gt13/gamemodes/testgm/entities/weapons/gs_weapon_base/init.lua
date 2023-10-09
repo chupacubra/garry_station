@@ -64,28 +64,6 @@ function SWEP:PumpSlide()
         self:SetNextPrimaryFire(self.PumpT)
     end
 
-    
-    --[[
-    if #self.magazine.ammo < 1 then return end
-
-    local shell = self.magazine.ammo[1]
-    table.remove(self.magazine.ammo, 1)
-    local name_ap = shell.apn
-
-    local ent = ents.Create("gs_item_shotgun_ammo_"..name_ap)
-    ent:SetPos(self:GetPos())
-    
-    local phys = ent:GetPhysicsObject()
-
-    if phys then
-        phys:ApplyForceCenter(self:GetOwner():GetAimVector() * 15)
-    end
-
-    local reloadtime = self:PumpSlideAnim()
-    self.PumpT = CurTime() + reloadtime
-
-    self:SetNextPrimaryFire(self.PumpT)
-    --]]
 end
 
 function SWEP:PumpSlideAnim()
@@ -98,17 +76,20 @@ function SWEP:PumpSlideAnim()
     return VModel:SequenceDuration()
 end
 
+function SWEP:HaveMagazine()
+    return self.magazine != nil
+end
+
 function SWEP:Reload()
     -- base action (+alt key): reload ammo with ammobelt
     -- if gun = shotgun then make pump slide action
     if self:GetOwner():KeyPressed(IN_WALK) then
-        -- reload with ammobelt
-        return
+        if self.action_type == GS_AW_PUMP then
+            self:PumpSlide()
+        end
     end
-    
-    if self.action_type == GS_AW_PUMP then
-        self:PumpSlide()
-    end
+
+    player_manager.RunClass(self:GetOwner(), "ReloadFromUnloading", self)
 end
 
 function SWEP:DealDamage(trace, dmgbullet)
@@ -138,17 +119,11 @@ function SWEP:MakeSingleShoot(bullet)
     local dmgbullet = bullet.BulletDamage
     local modif = bullet.Mod
 
-    --PrintTable(modif)
-
     if modif then
         spr =  modif.Spread or spr 
         num = modif.Amount or num
         recoil = modif.Recoil or recoil
     end
-
-    print(spr, num, recoil)
-    --self:SetNWInt("Num", num)
-    --self:SetNWInt("Spr", spr)
 
     local bullet = {
         Damage = all_dmg(dmgbullet),
@@ -275,17 +250,32 @@ function SWEP:StripMagazineHand()
     end
 end
 
+function SWEP:UnloadEquipReload(itemData) -- wtf with name
+    if self.action_type != GS_AW_MAGAZINE then
+        return false, nil
+    end
+
+    if !self:HaveMagazine() then
+        return self:CompareWithEnt(itemData), nil
+    end
+    
+    local old = self.magazine
+    local rez = self:CompareWithEnt()
+
+    return rez, old
+end
+
 function SWEP:InsertMagazine(ent)
     if self:GetOwner():GetActiveWeapon() != self then
         self:GetOwner():ChatPrint("You need to hold a gun in your hands")
         return false
     end
 
-    if self.magazine != nil then
+    if self.ammo_type != ent.Entity_Data.ENT_Name then -- need change to ent class
         return false
     end
 
-    if self.ammo_type != ent.Entity_Data.ENT_Name then
+    if self.magazine != nil then
         return false
     end
 

@@ -50,6 +50,10 @@ function ENT:AfterInit() -- need for setup values after init
 
 end
 
+function ENT:Use()
+
+end
+
 function ENT:SetExamine(data) -- name, description
     if data == false then
         return

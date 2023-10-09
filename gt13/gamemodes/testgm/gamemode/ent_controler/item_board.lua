@@ -13,8 +13,8 @@ GS_EntityList.tech_plate = {
         Private_Data = {
             Machine = "gs_entity_vendomat",
             Parts = {
-                part_plug = 1, 
-                part_electronic = 2,
+                gs_item_parts_plug = 1, 
+                gs_item_parts_p_electronic = 2,
             },
         },
     },
@@ -32,8 +32,8 @@ GS_EntityList.tech_plate = {
         Private_Data = {
             Machine = "gs_machine_fabricator",
             Parts = {
-                part_plug = 1, 
-                part_electronic = 2,
+                gs_item_parts_plug = 1, 
+                gs_item_parts_p_electronic = 2,
             },
         },
     }

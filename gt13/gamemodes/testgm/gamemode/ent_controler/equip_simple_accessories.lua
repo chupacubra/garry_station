@@ -253,6 +253,32 @@ AddEquipment("vest", "armor_vest",
     }
 )
 
+AddEquipment("belt", "unloading_vest",
+    { 
+        Entity_Data = {
+            Name = "Unloading vest",
+            Desc = "For storing various military gadgets, but in general for magazines",
+            Model = "models/armor_custom_thorcrv/ar_thorcrv.mdl",
+            ENUM_Type = GS_ITEM_EQUIP,
+            ENUM_Subtype = GS_EQUIP_BELT,
+            Simple_Examine = true,
+            Size = ITEM_MEDIUM,
+            Item_Max_Size =  ITEM_SMALL,
+        },
+        Private_Data = {
+            Items = {},
+            Max_Items = 8,
+            Unloading_Ammo = true, -- for fast access for ammo magazines (only R and you a reloading)
+        }
+    },
+    {
+        vec = Vector(-5, 4, 0),
+        ang = Angle(180, -90, -90),
+        bone = "ValveBiped.Bip01_Spine2",
+        armor = AR_VEST,
+    }
+)
+
 AddEquipment("hats", "helmet",
     { 
         Entity_Data = {
