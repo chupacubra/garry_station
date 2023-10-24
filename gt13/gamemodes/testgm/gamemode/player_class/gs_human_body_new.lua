@@ -63,7 +63,7 @@ function PLAYER_HP:SetupOrganismValues()
 	}
 
     if !self.Ragdolled then
-        self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(200)
+        self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 200)
         self.Player.HealthStatus = GS_HS_OK
         self.Ragdolled = false
         self.CritParalyzeDelay = 0
@@ -236,11 +236,11 @@ function PLAYER_HP:DamageHealth(part, typeD, dmg)
 end
 
 function PLAYER_HP:InjectChemical(chem, unit) -- insert in human chem  food, poison etc
-	self.Player.Chemicals:Component(chem, unit)
+	self.Player.Chemicals:AddComponent(chem, unit)
 end
 
 function PLAYER_HP:RemoveChemical(chem, unit)
-	self.Player.Chemicals:Component(chem,-unit)
+	self.Player.Chemicals:DecComponent(chem, unit)
 end
 
 function PLAYER_HP:SetHP(body)
@@ -397,10 +397,7 @@ function PLAYER_HP:SaturationStatusTrigger()
 end
 
 function PLAYER_HP:Metabolize()
-	-- activate 1 unit of chemicals on timer
-	for k,v in pairs(self.Player.Chemicals.content) do
-		v:OnPlyClbck(self.Player, 1)
-	end
+	self.Player.Chemicals:HumanMetabolize(1)
 end
 
 function PLAYER_HP:HungerThink()

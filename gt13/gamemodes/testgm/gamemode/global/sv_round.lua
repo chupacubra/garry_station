@@ -255,5 +255,3 @@ function GS_Round_System:RaffleJob()
         debug.Trace()
     end
 end
-
-GS_Round_System:InitGame()

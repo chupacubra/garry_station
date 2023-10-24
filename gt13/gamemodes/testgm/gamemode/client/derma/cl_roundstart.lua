@@ -455,7 +455,7 @@ function DrawStartroundMenu()
     function Menu:Think()
         local time = GS_RoundStatus:GetRoundTime(true)
         local stat = GS_RoundStatus:GetRoundStatus()
-        print(stat)
+        --print(stat)
         local str = roundstr(stat)
 
         LStatus:SetText("Station status: "..str)
@@ -472,7 +472,7 @@ function DrawStartroundMenu()
                     else
                         self:SetText("Ready: NO")
                     end
-                    print(self.Ready)
+                    --print(self.Ready)
                     --[[
                         menu handler ready button
                     ]]

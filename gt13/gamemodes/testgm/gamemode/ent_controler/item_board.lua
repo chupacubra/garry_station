@@ -66,6 +66,10 @@ GS_EntityList.pc_plate = {
                 }
             end,
 
+            itemUpdate = function(ply, ent, arg)
+
+            end,
+
             order = function(ply, ent, arg)
                 print(ply, ent, arg)
             end,
@@ -75,6 +79,10 @@ GS_EntityList.pc_plate = {
             end,
 
             removeOrder = function(ply, ent, arg)
+
+            end,
+
+            clientUpdate = function(ply, ent, arg)
 
             end
         }

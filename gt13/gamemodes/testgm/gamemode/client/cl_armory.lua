@@ -80,7 +80,7 @@ end
 concommand.Add("makeimp", function(ply)
     local bonepos = ply:GetBonePosition( 6 )
     local startpos = bonepos + Vector(math.random(-30, 30), math.random(-30, 30), math.random(-30, 30))
-    print(startpos, bonepos, ply:GetPos())
+    --print(startpos, bonepos, ply:GetPos())
 
     debugoverlay.Line(startpos , bonepos, 10)
 

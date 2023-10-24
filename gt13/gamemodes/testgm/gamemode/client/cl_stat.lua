@@ -93,8 +93,8 @@ function GS_ClPlyStat:GetEquipName(key)
     return self.equipment[key]["Name"]
 end
 
-function GS_ClPlyStat:GetEquipClass()
-    return self.equipment_class
+function GS_ClPlyStat:GetEquipClass(typ)
+    return self.equipment_class[typ]
 end
 
 function GS_ClPlyStat:GetEquipItem(key)
@@ -106,7 +106,7 @@ function GS_ClPlyStat:GetEquipItem(key)
 end
 
 function GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
-    print(iconstat)
+    --print(iconstat)
     if part != "0" then
         self.hp[part] = parthp
     end

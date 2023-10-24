@@ -1,4 +1,4 @@
-ammo_name = {
+GS_EntityList.ammo = {
     pistol = {
         Entity_Data = {
             Name = "Pistol ammo box",
@@ -77,39 +77,9 @@ ammo_name = {
         },
         Examine_Data = BaseExamine.gun_magazine
     },
-    --[[
-    pile_9mm = {
-        Entity_Data = {
-            Name = "Pile of 9MM bullets",
-            Desc = "A lot of bullets",
-            Model = "models/Items/357ammo.mdl",
-            ENUM_Type = GS_ITEM_MATERIAL,
-            ENUM_Subtype = AMMO_9MM,
-        },
-        Private_Data = {
-            Stack = 1,
-            Max_Stack = 20,
-            BulletDamage = {
-                [D_BRUTE] = 10,
-                [D_STAMINA] = 10,
-            }
-        },
-        Examine_Data = BaseExamine.pile_stack 
-    },
-    pile_9mm_r = {
-        Entity_Data = {
-            Name = "Pile of resin 9MM bullets",
-            Desc = "A lot of bullets",
-            Model = "models/Items/357ammo.mdl",
-            ENUM_Type = GS_ITEM_MATERIAL,
-            ENUM_Subtype = AMMO_9MM_R,
-        },
-        Private_Data = {
-
-        }
-    }
-    -]]
 }
+
+--GS_EntityList.ammo.pistol
 
 BULLETS = {
     {  -- normal
@@ -131,6 +101,7 @@ Bullets_Type = {
     p_9mm = {
         BulletDamage = {
             [D_BRUTE] = 20,
+            [D_STAMINA] = 4,
         }
     },
     p_9mm_r = {

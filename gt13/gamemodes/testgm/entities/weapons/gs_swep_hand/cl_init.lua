@@ -170,7 +170,7 @@ function SWEP:ContextSlot()
         }
         table.insert(options, button) 
     end
-    PrintTable(options)
+    --PrintTable(options)
     return options
 end
 
@@ -211,7 +211,7 @@ end )
 
 hook.Add( "PlayerButtonUp", "CheckManipControlUp", function(ply, key)
     if ply:IsValid() and ply:Team() == TEAM_PLY then
-        print(ply, ply:Team(), TEAM_PLY, player_manager.GetPlayerClass(ply))
+        --print(ply, ply:Team(), TEAM_PLY, player_manager.GetPlayerClass(ply))
         local wep = ply:GetActiveWeapon()
         if !IsValid(wep) then return end
         if wep:GetClass() == "gs_swep_hand" then

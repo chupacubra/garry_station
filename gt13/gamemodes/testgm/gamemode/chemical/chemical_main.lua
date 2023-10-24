@@ -6,38 +6,9 @@ FOR_CL    = {} -- information about chemicals for clients
 chem = {}
 
 CHEMIC_CONTAINER = {} -- is "container" for all
-CHEMIC_CONTAINER.__index = CHEMIC_CONTAINER
 
---[[
-
-	!TEST THIS!
-	facking shit
-]]
---[[
-function AllCompUnits(bucket)
-	local i = 0
-	for k,v in pairs(bucket.content) do
-		i = i + v:getUnits()
-	end
-	return i
-end
---]]
-
-
--- now we make with COMMENTS!
 -- making OOP-style containers
-function CHEMIC_CONTAINER:New_Container(ent_container, _limit) -- ent_container can be a bucket or player
-	local obj = {
-		limit = _limit or 100,
-		content = {},
-		ent = ent_container,
-	}
-
-	-- content for simplifyng
-	-- saving only {name = unit}
-
-	setmetatable(obj,self); return self
-end
+-- working now
 
 function CHEMIC_CONTAINER:GetAll()
 	return self.content
@@ -83,18 +54,12 @@ function CHEMIC_CONTAINER:DecComponent(name, unit)
 	end
 end
 
-function CHEMIC_CONTAINER:OnPlyClbck(ply, name, unit)
-	if !ply then return end
 
-	CHEMICALS[name]["callbackInPly"](ply)
-	self:DecComponent(name, unit)
-end
-
-function CHEMIC_CONTAINER:OnPlyClbck(ply, name, unit)
-	if !ply then return end
-
-	CHEMICALS[name]["callbackInPly"](ply)
-	self:DecComponent(name, unit)
+function CHEMIC_CONTAINER:HumanMetabolize(unit)
+	for chem, _ in pairs(self.content) do
+		CHEMICALS[chem]["callbackInPly"](self.ent)
+		self:DecComponent(chem, unit)
+	end
 end
 
 function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and i dont want to do ths
@@ -132,19 +97,34 @@ function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and 
 	end
 end
 
+
+function CHEMIC_CONTAINER:New_Container(ent_container, _limit) -- ent_container can be a bucket or player
+	local obj = {}
+
+	obj = {
+		limit = _limit or 100,
+		content = {},
+		ent = ent_container,
+	}
+
+	table.Merge( obj, self ) -- fak setmetatable
+
+	return obj
+end
+
 function CHEMIC:New(name,data)
-  CHEMICALS[data["simpleName"]] = {
-	simpleName    = data["simpleName"],
-	normalName    = name,
-	callbackInPly = data["callbackInPly"],
-	callBackInMix = data["callBackInMix"],
-	activeid      = data["activeid"],
-	active        = data["active"],
-	notdispense   = data["notdispense"] or false
-  }
-  if data["receipt"] then
-	RECEIPTS[data["simpleName"]] = data["receipt"]
-  end
+	CHEMICALS[data["simpleName"]] = {
+		simpleName    = data["simpleName"],
+		normalName    = name,
+		callbackInPly = data["callbackInPly"],
+		callBackInMix = data["callBackInMix"],
+		activeid      = data["activeid"],
+		active        = data["active"],
+		notdispense   = data["notdispense"] or false
+	}
+	if data["receipt"] then
+		RECEIPTS[data["simpleName"]] = data["receipt"]
+	end
 
 end
 
@@ -174,11 +154,9 @@ local function CanMake(have,need)
 end
 
 function FormContent(bucket)
-  local arr = {}
-  for k,v in pairs(bucket.content) do
-	arr[k] = v:getUnits()
-  end
-  return arr
+	local arr = {}
+	for k,v in pairs(bucket.content) do
+		arr[k] = v:getUnits()
+	end
+	return arr
 end
-
-  

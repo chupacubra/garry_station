@@ -10,6 +10,60 @@
 --
 --    id is not base equip
 
+
+
+
+--[[
+    FUNCTION equipments
+    if NEED to add some functionality for your equip, use CL_EQ_Func and SV_EQ_Func
+    but
+
+    examples:
+
+    shared func: (CL and SV)
+        onEquip -- run if after eq
+        onDrop  -- run if before drop
+        (?) ContextButton -- on CL run net.SendToServer with some args, server catch net message and run some funcs
+    
+    client func:
+        DrawHUD - running PostDrawHUD
+        (?) GetContextButtons - return context buttons (how about simple ContextButtons in GS_EntityList?)
+    
+    server func:
+        server functions are mostly custom functions of objects. For medical glasses - medical sensor, etc.
+        for using this
+
+]]
+
+
+-- I need to check several ways to run functions - one of them is a hook
+-- hook.Run("GS_Equip_OnEquip", ply, typ, name, itemData)
+
+hook.Add("GS_Equip_OnEquip", "base", function(ply, typ, name, itemData)
+    local f = GS_EntityList[typ][name]["OnEquip"]
+    if f then return f(ply, itemData) end
+end)
+
+hook.Add("GS_Equip_OnDrop", "base", function(ply, typ, name, itemData)
+    local f = GS_EntityList[typ][name]["OnEquip"]
+    if f then return f(ply, itemData) end
+end)
+
+
+if CLIENT then 
+    hook.Add("GS_Equip_GetContextButtons", "base", function(typ, name)
+        local f = GS_EntityList[typ][name]["GetContextButtons"]
+        if f then return f() end
+    end)
+
+    hook.Add("GS_Equip_DrawHUD", "base", function(typ, name)
+        --debug.Trace()
+        --print(typ, name)
+        local f = GS_EntityList[typ][name]["CL_EQ_Func"]["DrawHUD"]
+        if f then return f() end
+    end)
+end
+
 GS_EntityList.hats = {
     test_hat = { 
         Entity_Data = {
@@ -56,12 +110,12 @@ GS_EntityList.goggles = {
             Size = ITEM_VERY_SMALL,
         },
         CL_EQ_Func = {
-            OnEquip = function()
+            --OnEquip = function()
                 -- start equip function
-            end,
-            OnDrop = function()
+            --end,
+            --OnDrop = function()
                 --
-            end,
+            --end,
             DrawHUD = function()
                 -- new day - new bad ideas
                 -- we chosed to split client/server info - now its kick me in teeths
@@ -77,18 +131,27 @@ GS_EntityList.goggles = {
                     net.WriteString("med_glasses")
                     net.WriteString("sensor")
                     net.SendToServer()
+
                     MED_GLASS_TIMER = CurTime() + 1
                 end
 
-                --if table.IsEmpty(MED_GLASS_ARRAY) then return end
-                for i = 1, #MED_GLASS_ARRAY do
-                    local draw_data = MED_GLASS_ARRAY[i]
-                    local pos = draw_data.pos:ToScreen()
-                    --surface.SetDrawColor( 255, 0, 0 )
-                    --surface.DrawOutlinedRect( pos.x, pos.y, 75, 50, 1)
-                    surface.SetTextColor( GetProcentColor(draw_data.hp))
-                    surface.SetTextPos( pos.x+10, pos.y+10 )
-                    surface.DrawText(tostring(draw_data.hp).. "%")
+                local lmed_array = MED_GLASS_ARRAY -- for optims, but i think is not helping some
+
+                for i = 1, #lmed_array do
+                    local pos, hp = GetCorners(lmed_array[i]["coords"]), lmed_array[i]["hp"]
+
+                    --surface.SetTextColor( GetProcentColor(hp))
+                    --surface.SetTextPos( pos.x+10, pos.y+10 )
+                    --surface.DrawText(tostring(draw_data.hp).. "%")
+
+                    -- fuck youuuu
+                    -- im obfuskate your code of drawing four lines
+                    surface.SetDrawColor(255, 0, 0)
+
+                    surface.DrawLine(pos[1], pos[2], pos[3], pos[2])
+                    surface.DrawLine(pos[3], pos[2], pos[3], pos[4])
+                    surface.DrawLine(pos[1], pos[4], pos[3], pos[4])
+                    surface.DrawLine(pos[1], pos[2], pos[1], pos[4])
                 end
             end
         },
@@ -124,32 +187,32 @@ GS_EntityList.goggles = {
     },
 }
 
-GS_EntityList.vest = {
-    --[[
-    armor_vest = { 
-        Entity_Data = {
-            Name = "Bulletproof vest",
-            Desc = "To be honest, I wouldn't have much hope for him.",
-            Model = "models/glasses_oakley/glasses_oakley.mdl",
-            ENUM_Type = GS_ITEM_EQUIP,
-            ENUM_Subtype = GS_EQUIP_VEST,
-            Simple_Examine = true,
-            Size = ITEM_V_MEDIUM,
-            Item_Max_Size =  ITEM_MEDIUM,
-        },
-        Private_Data = {
-            Armor_Setting = {
-                Protection = 20,
-                -- Ex: Final damage = Damage - Protection
-                -- if Final damage <= 0:
-                --     Armor softened the impact
-                -- else > 0:
-                --     Armor was pierced!
-            }
-        }
+
+--[[
+armor_vest = { 
+    Entity_Data = {
+        Name = "Bulletproof vest",
+        Desc = "To be honest, I wouldn't have much hope for him.",
+        Model = "models/glasses_oakley/glasses_oakley.mdl",
+        ENUM_Type = GS_ITEM_EQUIP,
+        ENUM_Subtype = GS_EQUIP_VEST,
+        Simple_Examine = true,
+        Size = ITEM_V_MEDIUM,
+        Item_Max_Size =  ITEM_MEDIUM,
     },
-    --]]
-}
+    Private_Data = {
+        Armor_Setting = {
+            Protection = 20,
+            -- Ex: Final damage = Damage - Protection
+            -- if Final damage <= 0:
+            --     Armor softened the impact
+            -- else > 0:
+            --     Armor was pierced!
+        }
+    }
+},
+--]]
+
 
 GS_EntityList.suit = {
     suit_casual = { 
@@ -213,8 +276,7 @@ net.Receive("gs_equip_functions", function(_, ply)
     GS_EntityList[tp][name]["SV_EQ_Func"][func](ply)
 end)
 
--- Появилась мощная идея функции создания снаряги
--- CreateNewEquipment(таблица, со всеми данными, таблица для cl_equip_config.lua )
+
 
 -- nice model fro EFT equip
 -- backpacks civ

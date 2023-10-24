@@ -147,7 +147,7 @@ function PLAYER_ORGANS:BrainThink()
         -- show hypoxia icon
         -- damage organism hypoxia damage
         -- hypoxia dmg - result of lack of oxygen 
-        --return
+        -- return
     end
 
     if self.Player.Spec_Damage.hypoxia > 25 then
