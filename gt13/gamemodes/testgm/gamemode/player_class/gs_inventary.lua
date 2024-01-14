@@ -540,32 +540,38 @@ function PLAYER_INVENTARY:ReloadFromUnloading(weap)
 	-- 2. belt
 	-- need think about pockets
 
-
-	-- here i don't make: local equip_itemData = self.Player.Equipment[equip], because i think cloning (big) data of belts and all data is bad
-	-- and making straight access makin fast (i thinjk)
 	local flag_reload = false
+	-- need make some value iterator
+	-- because this will return first magazine in equip
+	-- and this mag can be already empty
+	for k, equip in pairs(CAN_BE_FAST_UNLOAD) do
+		if !self:HaveEquipment(key)	then 
+			continue
+		end
 
-	for k, equip in pairs(CAN_BE_FAST_UNLOAD) do -- cursed, i dont know how evade nil array indexing error
-		if self.Player.Equipment[equip] != 0 then
-			if self.Player.Equipment[equip]["Private_Data"] then
-				if self.Player.Equipment[equip]["Private_Data"]["Items"] and self.Player.Equipment[equip]["Private_Data"]["Unloading_Ammo"] then
-					for kk, item in pairs(self.Player.Equipment[equip]["Private_Data"]["Items"]) do
-						local rez, old = weap:UnloadEquipReload(item)
-						if rez != false then
-							table.remove(self.Player.Equipment[equip]["Private_Data"]["Items"], kk)
-							if old then
-								table.insert(self.Player.Equipment[equip]["Private_Data"]["Items"], old)
-							end
-							flag_reload = true
-							break
-						end
+		if !self.Player.Equipment[equip]["Private_Data"] then 
+			continue 
+		end
+
+		if self.Player.Equipment[equip]["Private_Data"]["Items"] and self.Player.Equipment[equip]["Private_Data"]["Unloading_Ammo"] == true then
+			for kk, item in pairs(self.Player.Equipment[equip]["Private_Data"]["Items"]) do
+				local rez, old = weap:UnloadEquipReload(item)
+
+				if rez != false then
+					table.remove(self.Player.Equipment[equip]["Private_Data"]["Items"], kk)
+					if old then
+						table.insert(self.Player.Equipment[equip]["Private_Data"]["Items"], old)
 					end
-					if flag_reload then
-						break
-					end
+					flag_reload = true
+					break
 				end
 			end
+
+			if flag_reload then
+				break
+			end
 		end
+
 	end
 
 end

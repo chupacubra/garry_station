@@ -153,7 +153,6 @@ function SWEP:MakeSingleShoot(bullet)
 end
 
 function SWEP:PrimaryAttack()
- 
 end
 
 function SWEP:SecondaryAttack()
@@ -196,6 +195,7 @@ end
 function SWEP:StripMagazine()
     if self.action_type == GS_AW_PUMP or self.action_type == GS_AW_BOLT then
         -- cant strip magazine from shotgun and bolt rifles
+        -- because they dont have it
         return
     end
 
@@ -251,6 +251,9 @@ function SWEP:StripMagazineHand()
 end
 
 function SWEP:UnloadEquipReload(itemData) -- wtf with name
+    -- itemData here its magazine from equip
+    -- inventory ply run this function
+
     if self.action_type != GS_AW_MAGAZINE then
         return false, nil
     end
@@ -260,7 +263,7 @@ function SWEP:UnloadEquipReload(itemData) -- wtf with name
     end
     
     local old = self.magazine
-    local rez = self:CompareWithEnt()
+    local rez = self:CompareWithEnt(itemData)
 
     return rez, old
 end

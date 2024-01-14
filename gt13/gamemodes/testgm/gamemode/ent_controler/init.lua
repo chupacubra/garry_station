@@ -27,34 +27,20 @@ function GS_EntityControler:MakeEntity(name, typ, pos)
 
     return entity
 end
---[[
-function GS_EntityControler:CreateFullMagazine(name,typ,pos,ang) -- old but need
-    local ent = fastMagazine(name, typ)
+
+function GS_EntityControler:CreateAmmoArray(ammo_type, ammo_count) -- only for bullets, not shels
+    local array = {}
+    local bullet = Bullets_Type[ammo_type]
+
+    for i = 0, i == ammo_count do
+        table.insert(array, bullet)
+    end
     
-    if !ent then
-        return
-    end
-
-    local entity = ents.Create( "gs_entity_base_item" )
-    entity:SetPos(pos)
-    entity:SetData(ent.Entity_Data)
-     
-    if ent.Private_Data then
-        entity:SetPrivateData(ent.Private_Data)
-    end
-
-    if ent.Examine_Data then
-        entity:SetExamineData(ent.Examine_Data)
-    end
-
-    entity:Spawn()
+    return array
 end
---]]
 
-
-
-
-function GS_EntityControler:CreateFullMagazine(name, typ, pos, ang)
+function GS_EntityControler:CreateFullMagazine(ent_mag, ammo_type, typ, pos, ang) -- 
+    local mag = GS_EntityControler:MakeEntData("ent_mag", "ammo")
 
 end
 
@@ -83,6 +69,7 @@ function GS_EntityControler.RunFunctionEntity(action, id, typ, entity, ply, cont
 end
 
 function EntityCanBeSpawned(ent) -- check ent model out of bounds
+    -- dont some cool work
     local pos = {ent:OBBCenter(),  ent:OBBMaxs(),  ent:OBBMins()}
 
     PrintTable(pos)

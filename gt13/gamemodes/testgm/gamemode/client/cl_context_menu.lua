@@ -338,6 +338,8 @@ function ContextMenu:ContextMenuOpen()
     local H = ScrH()
     local W = ScrW()
 
+    TopBar:Init()
+
     local context = self
     self.derma = {}
     self.openback = false
@@ -446,6 +448,8 @@ function ContextMenu:ContextMenuClose()
     for k,v in pairs(self.derma) do
         v:Remove()
     end
+
+    TopBar:Close()
 
     self.Open = false
 

@@ -47,7 +47,7 @@ function PLAYER:GS_GetName()
 
     if !name then
         GS_MSG("The player "..self:Nick().." don't have character name", MSG_WARNING)
-        return ""
+        return nil
     end
 
     return name

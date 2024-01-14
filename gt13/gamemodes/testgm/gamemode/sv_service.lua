@@ -34,3 +34,11 @@ function fixtable(tbl)
     return t
 end
 
+
+function getGameTimeStamp()
+    -- ril lafe 2024
+    -- gs13 teme 2024+28
+    -- 2052-10-31 18:00:00
+    local t = os.date("!*t")
+    return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
+end

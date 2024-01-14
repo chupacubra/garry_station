@@ -10,7 +10,7 @@ SWEP.magazine = {
 }
 
 function SWEP:CompareWithEnt(ent)
-    -- can only compare with shotgun shells = reload
+    -- can only compare with shotgun shells BOX/PILE = reload
     -- shotgun shells in shels box
     if ent.Entity_Data.ENUM_Type == GS_ITEM_AMMO_PILE and ent.Entity_Data.ENUM_Subtype == GS_W_SHOTGUN then
         print("INSERT SHELL")
