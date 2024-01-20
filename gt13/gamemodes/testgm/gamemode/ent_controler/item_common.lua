@@ -52,7 +52,7 @@ GS_EntityList.food = {
             Size = ITEM_SMALL,
         },
         Private_Data = {  -- bad example of making chemical container item
-            chemicals = { -- IS FACKING FAULT, in ITEM:Initialize() need add init ChemContainer()
+            chemicals = {
                 fiber = 20
             }
         },

@@ -17,3 +17,11 @@ function GM:CreateTeams()
     team.SetUp( TEAM_PLY, "Player", Color(255,255,255))
     team.SetUp( TEAM_SPEC, "Ghost", Color(80,80,80))
 end
+
+function getGameTimeStamp()
+    -- ril lafe 2024
+    -- gs13 teme 2024+28
+    -- 2052-10-31 18:00:00
+    local t = os.date("!*t")
+    return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
+end

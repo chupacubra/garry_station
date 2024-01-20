@@ -35,6 +35,25 @@ for _, v in pairs(ART) do
 end
 
 ART = nil
+local startload = SysTime()
+
+include( "shared.lua" )
+include( "sv_service.lua")
+include( "player.lua" )
+include( "sh_enum.lua" )
+include( "sh_service.lua" )
+include( "map_controller/map_init.lua" )
+include( "ent_controler/init.lua" )
+include( "concmd.lua" )
+include( "net_string.lua" )
+include( "chemical/sv_init.lua" )
+include( "derma_client_handler/init.lua" )
+include( "global/sv_init.lua" )
+include( "resource.lua" )
+include( "jobs_system/init.lua" )
+include( "client/cl_ply_models.lua" )
+
+MsgC(Color(66,170,255), "[GS] Modules loaded in ".. tostring(math.Round( SysTime() - startload, 3)).."\n")
 
 AddCSLuaFile( "player_class/gs_human.lua" )
 AddCSLuaFile( "cl_init.lua" )
@@ -42,8 +61,14 @@ AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "sh_service.lua" )
 AddCSLuaFile( "sh_enum.lua" )
 AddCSLuaFile( "jobs_system/init.lua")
+AddCSLuaFile( "paperwork_system/init.lua" )
+AddCSLuaFile( "paperwork_system/stamps.lua" )
+AddCSLuaFile( "paperwork_system/bbc.lua" )
+AddCSLuaFile( "paperwork_system/cl_derma.lua" )
 AddCSLuaFile( "client/cl_plyhud.lua" )
 AddCSLuaFile( "client/cl_round.lua" )
+AddCSLuaFile( "client/cl_notes.lua" )
+
 AddCSLuaFile( "client/cl_context_topbar.lua" )
 AddCSLuaFile( "client/cl_context_menu.lua" )
 AddCSLuaFile( "client/cl_stat.lua" )
@@ -66,23 +91,6 @@ AddCSLuaFile( "client/cl_ply_models.lua" )
 local startload = SysTime()
 
 MsgC(Color(66,170,255), "[GS] GS13 initialize, load server files\n\n")
-
-include( "shared.lua" )
-include( "sv_service.lua")
-include( "player.lua" )
-include( "sh_enum.lua" )
-include( "sh_service.lua" )
-include( "map_controller/map_init.lua" )
-include( "ent_controler/init.lua" )
-include( "concmd.lua" )
-include( "net_string.lua" )
-include( "chemical/sv_init.lua" )
-include( "derma_client_handler/init.lua" )
-include( "global/sv_init.lua" )
-include( "resource.lua" )
-include( "jobs_system/init.lua" )
-include( "client/cl_ply_models.lua" )
-
 
 include = _include
 

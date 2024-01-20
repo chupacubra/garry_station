@@ -1,38 +1,32 @@
 GS_Notes = {}
-GS_Notes.Note = ""
-
+GS_Notes.NoteText = "[b]My notes[/b]"
 function GS_Notes:Init()
-    --self:Add("")
+    self.NoteText = "[b]My notes[/b]"
 end
-
-function GS_Notes:SetUp()
-
-end
-
-function GS_Notes:Add(text)
-
-end
-
 
 --[[
-
-Hello im a [b]kaloed[/b]
-ya nasral pod [i]tvoy[/i] dver
-
-string = "Hello <p>im</p> a [b]kaloed[/b]"
-pattern '<%a+>'
-
--- part of removing all html tags from client text
-"<%a+>(%a+)<%A%a+>", "%1"
-"<(%a+)>" "%1"
-"</(%a+)>" "%1"
-
--- now we replacing all BBCode tags with html tags
-text = "[b]skibidi[/b]" 
-pattern = "%[b%](%a+)%[%/b%]",
-replace = [[<strong>%1</strong>]]
---[[
-
-its a key for BBCode - real copy of SS13 papers
-
+    tbl = {
+        name = "Skibidi Tualetovich",
+        antag = "nil",
+        antag_obj = {},
+        id_acc(?) = 123123,
+        obj = {}, 
+    }
 --]]
+
+function GS_Notes:SetUp(tbl)
+    -- add some data about character, objection, targets...
+end
+
+function GS_Notes:Add(text, id)
+    self.NoteText = PWork:Proccesing(self.NoteText, text, id, LocalPlayer())
+
+    if IsValid(self.Note) then
+        self.Note:UpdateText(self.NoteText)
+    end
+end
+
+function GS_Notes:View()
+    if IsValid(self.Note) then return end
+    self.Note = CL_PW:ShowPaper(self.NoteText, "My notes", nil, function(text, id) GS_Notes:Add(text, id) end)
+end

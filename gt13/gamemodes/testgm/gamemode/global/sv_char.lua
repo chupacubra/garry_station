@@ -147,9 +147,6 @@ function GS_PLY_Char:GetCharData(token)
 end
 
 function GS_PLY_Char:UpdateCharData(token, char)
-	-- ONLY FOR CHANGE DATA ABOUT JOB ATC
-	-- don't change name or smth
-
 	if !self.Chars[token] then
 		GS_MSG(tostring(token).." no loaded chars on this token")
 		return {}
@@ -160,6 +157,17 @@ function GS_PLY_Char:UpdateCharData(token, char)
 	PrintTable(self.Chars)
 end
 
+function GS_PLY_Char:SendPlyData(ply)
+	local char = self:GetCharData(self:GetPlyChar(ply))
+	if !char then
+		GS_MSG(tostring(ply).." - want to send to client info but him char is nil")
+	end
+	-- send ply:
+	-- name
+	-- job, and antag
+
+	//net.Start()
+end
 
 net.Receive("gs_sys_char_send", function(_, ply)
 	local data = net.ReadTable()

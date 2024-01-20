@@ -31,6 +31,8 @@ function GS_ClPlyStat:InitHP()
     self.hunger = 100
     self.hungerColor = hungerColor(self.hunger)
     self.icon_stat = GS_HS_OK
+
+    GS_Notes:Init()
 end
 
 function GS_ClPlyStat:GetHPStatIcon()

@@ -20,7 +20,7 @@ function TopBar:Build()
     local function createsub(parrent, child)
         for k, v in pairs(child) do -- rooooot
             for kk,vv in pairs(v) do
-                PrintTable(v)
+                //PrintTable(v)
                 if vv.func then
                     parrent:AddOption(vv.nice, vv.func)
                 elseif vv.array then
@@ -41,7 +41,7 @@ function TopBar:Build()
             local b = self.Bar:GetChild(k-1)
             b.DoClick = v.func
         elseif v.array then
-            print(v.nice)
+            //print(v.nice)
             createsub(m, v.array)
         end
     end
@@ -103,7 +103,16 @@ end
 
 TopBar:AddButton("Craft", function() print("shhiiiiieeet") end)
 TopBar:AddButton("Emotions", function() end)
-TopBar:AddButton("IC", function() print("toieled") end)
+TopBar:AddSubButton("IC",{
+    {
+    {
+        nice = "Notes",
+        func = function()
+            GS_Notes:View()
+        end,
+    },
+}
+} )
 TopBar:AddButton("OOC", function() print("toieled") end)
 TopBar:AddSubButton("Help", {
     {
