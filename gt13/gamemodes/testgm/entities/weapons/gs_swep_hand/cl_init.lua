@@ -231,7 +231,7 @@ hook.Add("PostPlayerDraw", "GS_HandsDrawItem" , function(ply, flags)
     if ply:GetActiveWeapon():GetClass() != "gs_swep_hand" then return end
     local hands = ply:GetActiveWeapon()
 
-    if IsValid(hands.IWorldModel) then
+    if IsValid(hands) then
         local owner = hands:GetOwner()
         if !owner:IsValid() then return end
         local offsetVec = Vector(3, -3, -1)
@@ -250,6 +250,4 @@ hook.Add("PostPlayerDraw", "GS_HandsDrawItem" , function(ply, flags)
         hands.IWorldModel:SetupBones()
         hands.IWorldModel:DrawModel()
     end
-        
-
 end)

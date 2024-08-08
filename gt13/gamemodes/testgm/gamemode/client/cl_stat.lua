@@ -4,12 +4,15 @@ GS_ClPlyStat = GS_ClPlyStat or {}
 --[[
     Receive the health stats,
     Receive update of inventory
-
     Send update of inventory
 
     initialize
 ]]
   
+
+/*
+    need to divide funcs
+*/
 
 function GS_ClPlyStat:Initialize()
     self:InitHP()
@@ -53,25 +56,23 @@ end
 
 function GS_ClPlyStat:InitInventory()
     self.equipment = {
-            BELT      = 0, 
-            EYES      = 0, 
-            KEYCARD   = 0, 
-            PDA       = 0,
-            BACKPACK  = 0,
-            VEST      = 0,
-            HEAD      = 0,
-            MASK      = 0,
-            EAR       = 0,
+        BELT      = nil, 
+        EYES      = nil, 
+        KEYCARD   = nil, 
+        PDA       = nil,
+        BACKPACK  = nil,
+        VEST      = nil,
+        HEAD      = nil,
+        MASK      = nil,
+        EAR       = nil,
     }
 
-    self.equipment_class = {} -- for saving class of equip item
-
-    self.pocket = {{},{}}
+    //self.equipment_class = {} -- for saving class of equip item
+    self.pocket = {}
 end
 
 function GS_ClPlyStat:EquipItem(item, typ, class)
-    self.equipment[FAST_EQ_TYPE[typ]] = item 
-    self.equipment_class[FAST_EQ_TYPE[typ]] = class
+    self.equipment[typ] = item 
 
     if typ == GS_EQUIP_BACKPACK then
         ContextMenu:DrawBackpackButton()
@@ -81,8 +82,7 @@ function GS_ClPlyStat:EquipItem(item, typ, class)
 end
 
 function GS_ClPlyStat:RemoveEquip(key)
-    self.equipment[FAST_EQ_TYPE[key]] = 0
-    self.equipment_class[FAST_EQ_TYPE[key]] = nil
+    self.equipment[key] = 0
 
     ContextMenu:UpdateEquipmentItem()
 end
@@ -95,16 +95,12 @@ function GS_ClPlyStat:GetEquipName(key)
     return self.equipment[key]["Name"]
 end
 
-function GS_ClPlyStat:GetEquipClass(typ)
-    return self.equipment_class[typ]
-end
-
 function GS_ClPlyStat:GetEquipItem(key)
-    if self.equipment[key] == nil or self.equipment[key] == 0 then
-        return {}
-    end
+    //if self.equipment[key] == nil or self.equipment[key] == 0 then
+    //    return false
+    //end
 
-    return self.equipment[key]
+    return self.equipment[key] or nil
 end
 
 function GS_ClPlyStat:UpdateHP(hp, part, parthp, iconstat)
@@ -138,9 +134,7 @@ function GS_ClPlyStat:HaveEquip(key)
     return self.equipment[key] != 0
 end
 
--- need remake this shiit in ConCMDs
--- gs_drop_ent_inventary FROM key
-
+--[[
 function GS_ClPlyStat:UseWeaponFromInventary(key, from)
     net.Start("gs_cl_inventary_use_weapon")
     net.WriteUInt(from, 5)
@@ -161,23 +155,15 @@ function GS_ClPlyStat:DropSWEP(entity)
     LocalPlayer():ConCommand("gs_dropswep "..tostring(id))
     SelectWep(1)
 end
-
-function GS_ClPlyStat:ExamineData(examinedata)
-    for k,v in pairs(examinedata) do
-        if k == 1 then
-            v = "It is ".. v
-        end
-        LocalPlayer():ChatPrint(v)
-    end
-end
+--]]
 
 function GS_ClPlyStat:GetItemFromPocket(key)
-    return self.pocket[key]
+    return self.pocket[key] or nil
 end
 
-function GS_ClPlyStat:GetNameItemFromPocket(key)
-    return self.pocket[key]["Name"] or ""
-end
+--function GS_ClPlyStat:GetNameItemFromPocket(key)
+--    return self.pocket[key]["Name"] or ""
+--end
 
 function GS_ClPlyStat:GetItemFromPockets()
     return self.pocket
@@ -185,8 +171,11 @@ end
 
 function GS_ClPlyStat:UpdatePockets(items)
     self.pocket = items
+    if ContextMenu.Open then
+        ContextMenu:UpdatePockets()
+    end
 end
- 
+
 function GS_ClPlyStat:UpdateInventoryItems(items, from)
     if from == CONTEXT_POCKET then
         self:UpdatePockets(items)
@@ -195,19 +184,14 @@ function GS_ClPlyStat:UpdateInventoryItems(items, from)
     end
 end
 
-function GS_ClPlyStat:ClientCloseContainer()
-    net.Start("gs_ent_container_close")
-    net.SendToServer()
-end
-
 function GS_ClPlyStat:DeEquipItem(key)
     net.Start("gs_equipment_update")
     net.WriteUInt(key, 5)
     net.SendToServer()
 end
 
+--[[
 function GS_ClPlyStat:SendActionToServer(rec,drp)
-    PrintTable(drp)
     local item_1, item_2, entity_1, entity_2, from1, from2
     
     item_1, entity_1 = typeRet(rec.item)
@@ -230,6 +214,7 @@ function GS_ClPlyStat:SendActionToServer(rec,drp)
 
     net.SendToServer()
 end
+--]]
 
 function GS_ClPlyStat:DeathStatus()
     self.init = false
@@ -245,8 +230,52 @@ end
 
 function GS_ClPlyStat:HungerSet(int)
     self.hunger = int
-
     self.hungerColor = hungerColor(int)
+end
+
+
+
+function DropItem(item)
+    // drop item from slots (equip, item, pocket, container)
+    // neeed thinkinh!
+    /*
+    net.Start("gs_item_drop")
+    net.WriteUInt(from)
+    net.WriteUInt(key)
+    net.WriteEntity(item)
+    */
+end
+
+function OpenContainer(item)
+    net.Start("gs_ent_container_open")
+    net.WriteEntity(item)
+    net.SendToServer()
+end
+
+function CloseContainer()
+    net.Start("gs_ent_container_close")
+    net.SendToServer()
+end
+
+function SendActionToServer(rec,drp)
+    -- not sending ents, send slots
+    // from = container, equip, pocket, swep
+    // id
+    //local item_1, entity_1 = typeRet(rec.item)
+    //local item_2, entity_2 = typeRet(drp.item)
+
+    //local from1 = ITEM_FROM[rec.type]
+    //local from2 = ITEM_FROM[drp.type]
+
+    net.Start("gs_cl_context_item_action")
+
+    net.WriteUInt(rec.from or 0, 6)
+    net.WriteUInt(rec.key, 5)
+
+    net.WriteUInt(drp.from or 0, 6)
+    net.WriteUInt(drp.key, 5)
+
+    net.SendToServer()
 end
 
 net.Receive("gs_ply_hunger", function()
@@ -262,6 +291,7 @@ net.Receive("gs_cl_init_stat", function()
     if bool then
         GS_ClPlyStat:Initialize()
     else
+        -- need some hooks?
         GS_ClPlyStat:DeathStatus()
     end
 end)
@@ -298,10 +328,13 @@ net.Receive("gs_health_update",function()
 end)
 
 net.Receive("gs_ent_container_open", function()
+    local cont  = net.ReadEntity()
     local items = net.ReadTable()
-    ContextMenu:OpenContainer(items)
+
+    ContextMenu:OpenContainer(items, cont)
 end)
 
 net.Receive("gs_ent_container_close",function()
     ContextMenu:CloseContainer()
 end)
+

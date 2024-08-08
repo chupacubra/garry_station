@@ -1,4 +1,6 @@
 --[[
+TRASH!
+
 function GetCoordinates(ent) -- put this on client
     local min,max = ent:OBBMins(),ent:OBBMaxs()
     local corners = {
@@ -65,6 +67,8 @@ net.Receive("gs_eq_med_glasses_sensors", function()
 
 end)
 
+
+--[[
 hook.Add("PostDrawHUD", "GlassDrawHUD", function()
     -- if we have googles and googles have DrawHUD, then call him
     if !GS_ClPlyStat.init then return end
@@ -79,5 +83,5 @@ hook.Add("PostDrawHUD", "GlassDrawHUD", function()
     if !dl then return end
 
     hook.Run("GS_Equip_DrawHUD", dl.type, dl.id)
-    
 end)
+--]]

@@ -47,6 +47,22 @@ function GM:PlayerLoadout( ply )
 	player_manager.RunClass( ply, "Loadout" )
 end
 
+function PickupSWEP(ply, ent)
+	// we have 2 hands
+	// for BIG weapons (shotguns, automats, miniguns etc) need 2 hands to using
+	// for small arms (pistols, smg) and non-weapons swep need 1 free hand
+	// 
+	// in future:
+	// 		small arms - if you have item in hand, when you have a gun - 
+	//		holdtype = pistol and some more recoil (depends of power of gun)
+	//		if another hands are free:
+	//		holdtype = depends of gun(SWEP.DoubleHandedHT, for pistol its a revolver)
+	//			and dont have recoil penalty
+	
+	// check size gun
+	ply:PickupWeapon( ent, false )
+end
+
 function GS_EquipWeapon(ply, weapon) -- for start loadout
 	local ent = ents.Create(weapon)
 	ply:PickupWeapon( ent )
@@ -151,6 +167,7 @@ function GM:PlayerDisconnected( ply )
 	end
 end
 
+--[[
 net.Receive("gs_ply_equip_item",function()
 	print("eqiop item")
 	local ply = net.ReadEntity()
@@ -163,6 +180,20 @@ net.Receive("gs_ply_equip_item",function()
 		if succes then ent:Remove() end
 		PrintTable(itemData)
 	end
+end)
+--]]
+
+net.Receive("gs_ply_equip_item",function()
+	local ply = net.ReadEntity()
+	local ent = net.ReadEntity()
+
+	if !player_manager.RunClass( ply, "CanEquipItem", ent ) then return end
+	// we CAN equip
+	ent:ItemHide()
+	ent:ItemSetParentContainer(ply)
+
+	player_manager.RunClass( ply, "EquipItem", item)
+
 end)
 
 function GS_ChatPrint(ply, text, color)

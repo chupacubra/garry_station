@@ -101,12 +101,18 @@ end
 
 function PLAYER:Loadout()
     self.Player:RemoveAllAmmo()
-	GS_EquipWeapon(self.Player, "gs_swep_hand")
-
-	self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
+	//
+	GS_EquipWeapon(self.Player, "gs_hand_l")
+	GS_EquipWeapon(self.Player, "gs_hand_r")
+	//
+	self:SetupHandsMode()
+	//self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
 end
 
+local dev = GetConVar( "developer")
+
 function PLAYER:BodyDebugPrint()
+	if !dev:GetBool() then return end
 	-- show debug with body status
 	-- need show:
 	-- Organism_Value
@@ -146,14 +152,14 @@ function PLAYER:BodyDebugPrint()
 
 	for k, v in pairs(self.Player.Organs) do
 		if type(v) == "table" then
-			--i = i + 1
+			i = i + 1
 			for kk, vv in pairs(v) do
 				local vv = tostring(vv)
 				debug_print[i] = debug_print[i]..stringspacer("| "..k.."."..kk..": "..vv, 20)
 				i = i + 1
 			end
-			--debug_print[i] = debug_print[i]..stringspacer("|", 20)
-			--i = i + 1
+			debug_print[i] = debug_print[i]..stringspacer("|", 20)
+			i = i + 1
 			continue
 		end
 		local v = tostring(v)
@@ -166,14 +172,14 @@ function PLAYER:BodyDebugPrint()
 
 	for k, v in pairs(self.Player.Bones) do
 		if type(v) == "table" then
-			--i = i + 1
+			i = i + 1
 			for kk, vv in pairs(v) do
 				local vv = tostring(vv)
 				debug_print[i] = debug_print[i]..stringspacer("| "..k.."."..kk..": "..vv, 20)
 				i = i + 1
 			end
-			--debug_print[i] = debug_print[i]..stringspacer("|", 20)
-			--i = i + 1
+			debug_print[i] = debug_print[i]..stringspacer("|", 20)
+			i = i + 1
 			continue
 		end
 		local v = tostring(v)
@@ -183,7 +189,7 @@ function PLAYER:BodyDebugPrint()
 	end
 
 	for k,v in pairs(debug_print) do
-		--print(v)
+		print(v)
 	end
 	
 end

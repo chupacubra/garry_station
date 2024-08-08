@@ -1,9 +1,7 @@
 GS_EntityControler = {}
-GS_EntityList = {}
 
 AddCSLuaFile("sh_item_list.lua")
 
-include("item_data_operations.lua")
 include("sh_item_list.lua")
 
 function GS_EntityControler:MakeEntity(name, typ, pos)
@@ -28,6 +26,7 @@ function GS_EntityControler:MakeEntity(name, typ, pos)
     return entity
 end
 
+--[[
 function GS_EntityControler:CreateAmmoArray(ammo_type, ammo_count) -- only for bullets, not shels
     local array = {}
     local bullet = Bullets_Type[ammo_type]
@@ -38,6 +37,7 @@ function GS_EntityControler:CreateAmmoArray(ammo_type, ammo_count) -- only for b
     
     return array
 end
+
 
 function GS_EntityControler:CreateFullMagazine(ent_mag, ammo_type, typ, pos, ang) -- 
     local mag = GS_EntityControler:MakeEntData("ent_mag", "ammo")
@@ -82,5 +82,9 @@ function EntityCanBeSpawned(ent) -- check ent model out of bounds
             return false
         end
     end
+    return true
+end
+--]]
+function EntityCanBeSpawned(ent)
     return true
 end

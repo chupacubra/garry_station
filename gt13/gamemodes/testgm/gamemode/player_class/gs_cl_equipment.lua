@@ -29,7 +29,7 @@ function PLAYER_CL_EQ:SetupEquip()
 end
 
 function PLAYER_CL_EQ:GetEquipModel(key)
-    print(key, 56)
+//    print(key, 56)
     if table.IsEmpty(self.Player.EqModelDraw[key]) then return false end
     return self.Player.EqModelDraw[key]["model"]:GetModel()
 end

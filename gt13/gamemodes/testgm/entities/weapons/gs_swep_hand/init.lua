@@ -149,11 +149,17 @@ function SWEP:PickupEntity()
     end
 
     if trace.Entity.CanPickup then
-        self.hand_item.item = duplicator.CopyEntTable(trace.Entity)
+        /*self.hand_item.item = duplicator.CopyEntTable(trace.Entity)
 
         PrintTable(self.hand_item.item)
         
         trace.Entity:Remove()
+        */
+    
+        self.hand_item.item = trace.Entity
+        trace.Entity:ItemHide()
+        trace.Entity:SetParentContainer(self)
+
         self:SendToClientDrawModel(true)
         self:HoldTypeTriger(self.hand_item != nil)
     end
@@ -355,10 +361,19 @@ function SWEP:DropItem()
 
     self:SendToClientDrawModel(false)
 
-    local trace = self:MakeTrace(50)
-    local ent = duplicator.CreateEntityFromTable( nil, self.hand_item.item )
-    ent:SetPos(trace.HitPos)
-    ent:Spawn()
+    //local trace = self:MakeTrace(50)
+    //local ent = duplicator.CreateEntityFromTable( nil, self.hand_item.item )
+    //ent:SetPos(trace.HitPos)
+    //ent:Spawn()
+
+    local trace = {
+        start = self:GetOwner():EyePos(),
+        endpos = self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * 50,
+        filter =  function( ent ) return ( ent != self:GetOwner() ) end
+    }
+    
+    trace = util.TraceEntityHull(trace, self.hand_item.item)
+    self.hand_item.item:ItemRecover(trace.HitPos)
 
     self.hand_item.item = nil
     self:HoldTypeTriger(self:HaveItem())

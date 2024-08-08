@@ -1,3 +1,6 @@
+-- trash
+
+
 
 GL_CLIENT_CHEM = {}
 CHEMIA = {}

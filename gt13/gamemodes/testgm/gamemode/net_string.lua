@@ -14,7 +14,7 @@ util.AddNetworkString("gs_cl_weapon_drop")
 util.AddNetworkString("gs_cl_weapon_move_inventary")
 util.AddNetworkString("gs_ply_pickup_weapon")
 util.AddNetworkString("gs_ply_equip_item")
-util.AddNetworkString("gs_cl_contex_item_action")
+util.AddNetworkString("gs_cl_context_item_action")
 util.AddNetworkString("gs_cl_chatprint")
 util.AddNetworkString("gs_cl_actions_human")
 util.AddNetworkString("gs_ply_hunger")
@@ -94,9 +94,8 @@ util.AddNetworkString("gs_map_entity_get_type")
 util.AddNetworkString("gs_map_ent_action")
 util.AddNetworkString("gs_zones_draw")
 
---[[
-    vse chto nuzhno dlya taza
-    sab chetire kolpaka
-    i posadka i ksenon
-    tonirovka pyatakom
-]]
+
+// new strings
+util.AddNetworkString("gs_ent_run_callback")
+
+

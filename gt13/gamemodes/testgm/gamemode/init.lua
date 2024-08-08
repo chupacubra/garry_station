@@ -1,5 +1,6 @@
 -- I NEED TO TEST THIS
 -- Because is beatifuleee and give some info about init time
+-- (because i see it in ss13, why yu can do amigus dtrip)
 _include = include
 
 function include(file)
@@ -35,7 +36,6 @@ for _, v in pairs(ART) do
 end
 
 ART = nil
-local startload = SysTime()
 
 include( "shared.lua" )
 include( "sv_service.lua")
@@ -53,13 +53,14 @@ include( "resource.lua" )
 include( "jobs_system/init.lua" )
 include( "client/cl_ply_models.lua" )
 
-MsgC(Color(66,170,255), "[GS] Modules loaded in ".. tostring(math.Round( SysTime() - startload, 3)).."\n")
+MsgC(Color(66,170,255), "[GS] Modules loaded\n")
 
 AddCSLuaFile( "player_class/gs_human.lua" )
 AddCSLuaFile( "cl_init.lua" )
 AddCSLuaFile( "shared.lua" )
 AddCSLuaFile( "sh_service.lua" )
 AddCSLuaFile( "sh_enum.lua" )
+AddCSLuaFile( "resource.lua" )
 AddCSLuaFile( "jobs_system/init.lua")
 AddCSLuaFile( "paperwork_system/init.lua" )
 AddCSLuaFile( "paperwork_system/stamps.lua" )

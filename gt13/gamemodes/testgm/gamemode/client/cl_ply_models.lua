@@ -1,3 +1,5 @@
+// need shared version
+
 Ply_Models = {
     ["male_01"] = {
         casual = {"models/player/casual/male_01.mdl"},

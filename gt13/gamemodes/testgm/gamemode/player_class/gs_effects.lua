@@ -86,6 +86,8 @@ function PLAYER_EFFECT:EffectSpeedHave(effect)
 	return self.EffectSpeed[effect] != nil
 end
 
+
+-- need remake this shit, because we can only freeze ply and dont strip weapons
 function PLAYER_EFFECT:Ragdollize() -- from ragmod
 	--debug.Trace()
 	if self.Ragdolled then

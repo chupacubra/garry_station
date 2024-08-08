@@ -4,6 +4,25 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 -- for viewmodel
 
+--[[
+need remake hands
+ * add viewmodel handling item in hands
+ * rework controlling:
+
+ R - to combat mode
+ ПКМ - manipulator mod
+	in combat mode smthng another
+ alt - drop item
+ shift alt -> thrown item
+
+ * combat mode
+ on pkm you can block some melee damage to corpse and head
+
+ block like it mordhau block with shiel
+ viewmodel on this gets some up in screen
+--]]
+
+
 local anim_list = {
 	deploy = 0,
 	idle   = 1,
@@ -53,14 +72,6 @@ end
 
 function SWEP:SwingAnim(hit)
 	local VModel = self:GetOwner():GetViewModel()
-
-	--[[
-	if hit then
-		anim = "hit".. math.random(1, 4)
-	else
-		anim =  "swing".. math.random(1, 2)
-	end
-	--]]
 
 	local anim = (hit and "hit".. math.random(1, 4)) or "swing".. math.random(1, 2) -- i like this metod
 

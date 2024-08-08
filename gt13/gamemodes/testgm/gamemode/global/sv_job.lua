@@ -23,6 +23,8 @@
         name = "Assistent",
         
     })
+
+    need shared version
 ]]
 
 GS_Job = {}

@@ -42,8 +42,18 @@ MSG_ERROR = Color( 255, 25, 25 )
 MSG_WARNING = Color( 255, 251, 132)
 MSG_INFO = Color( 66,170,255)
 
-function GS_MSG(text,color)
+local LogColor = {
+    i = MSG_INFO,
+    w = MSG_WARNING,
+    e = MSG_ERROR,
+}
+
+function GS_MSG(text)
     MsgC(MSG_INFO, "[GS] "..text.."\n")
+end
+
+function GS_Log(c, text)
+    MsgC(c, "[GS] "..text.."\n")
 end
 
 function typeRet(item)
@@ -95,26 +105,30 @@ end
 
 function hungerColor(int)
     --[[
-        100 - 0,200,0
-        75  - 100,200,0
-        50  - 200,200,0
-        25  - 200,100,0
-        0   - 200,0,0
+        100%       ->   50%
+        0,255,0         255,255,0
+
+        50%        ->    0%
+        255,255,0        255,0,0 
+    
+        100 - 0
+        50  - 255
+
+        int = ((100 - int) / 50) -- % * 100
+        red = 255 * int
     ]]
 
-    if int == 100 then
-        return Color(0,200,0,255)
-    end
+    local clr = Color(0,255,0)
 
-    if int > 50 then
-        local red = (100 - int) * 4
-
-        return Color(red, 200, 0, 255)
+    if int >= 50 then
+        int = ((100 - int) / 50) -- % * 100
+        clr.r = 255 * int
     else
-        local green = int * 4
-
-        return Color(200, green, 0, 255)
+        int = (int / 50)
+        clr.g = 255 * (1-int)
     end
+
+    return clr
 end
 
 function table_max(tbl)
@@ -151,7 +165,7 @@ function PrintBones( entity )
 end
 
 function generateID(str)
-    -- simple
+    -- simple (but why so complicated...)
     -- 1. rand_str = str + number day of the year(365)
     -- 2. rez = util.SHA1(rand_str)
     -- 3. strip all letters
@@ -168,6 +182,8 @@ function generateID(str)
     return rez
 end
 
+
+// i think for Notifys and another like-this shit need a separated file 
 if CLIENT then
     net.Receive("gs_cl_show_notify", function()
         local title = net.ReadString()
@@ -183,7 +199,7 @@ else
         net.Send(ply)
     end
 end
-
+--[[
 function Entity_SetNWData(ent, tab)
     for k, v in pairs(tab) do
         local typ = type(v)
@@ -196,7 +212,7 @@ function Entity_SetNWData(ent, tab)
         end
     end
 end
-
+--]]
 function ClGetWeaponsSlot(needEntity, ply)
     local arr = {}
     local allWeapons = ply:GetWeapons()

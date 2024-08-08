@@ -1,16 +1,17 @@
 -- ENUM
 -- The more I create enums, the more I think it's a sin
--- 
---
 
-E_NIL = Entity(-1)
+//
+// половина енумов уже не используется, это позор
+//
+
+//E_NIL = Entity(-1)
 
 GS_HUD_100 = 1
 GS_HUD_75  = 2
 GS_HUD_50  = 3
 GS_HUD_25  = 4
 GS_HUD_0   = 5 
-
 
 HUD_COLOR = {
     Color(50,205,50),
@@ -35,17 +36,20 @@ function GetProcentColor(num)
     end
 end
 
-GS_EQUIP_BACKPACK = 1
-GS_EQUIP_ID       = 2
-GS_EQUIP_PDA      = 3
-GS_EQUIP_BELT     = 4
-GS_EQUIP_EYES     = 5
-GS_EQUIP_VEST     = 6
-GS_EQUIP_HEAD     = 7
-GS_EQUIP_MASK     = 8
-GS_EQUIP_EAR      = 9
-GS_EQUIP_SUIT     = 10
 
+EQUIP_BACKPACK = 1
+EQUIP_ID       = 2
+EQUIP_PDA      = 3
+EQUIP_BELT     = 4
+EQUIP_EYES     = 5
+EQUIP_VEST     = 6
+EQUIP_HEAD     = 7
+EQUIP_MASK     = 8
+EQUIP_EAR      = 9
+EQUIP_SUIT     = 10
+
+-- next trash
+--[[
 GS_ENT_PROP     = 1
 GS_ENT_MACHINE  = 2
 GS_ENT_COMPUTER = 3
@@ -67,7 +71,7 @@ GS_ITEM_COMMON = 14
 
 GS_BOARD_MACHINE = 1
 GS_BOARD_COMPUTER = 2
-
+--]]
 FAST_EQ_TYPE = {
     "BACKPACK",
     "KEYCARD",
@@ -93,7 +97,8 @@ FAST_HUD_TYPE = {
     EAR      = 9,
 }
 
--- ammo for guns, 
+-- ammo for guns
+--[[
 AMMO_9MM       = 1
 AMMO_9MM_R     = 2
 AMMO_SHOTGUN   = 3
@@ -118,7 +123,7 @@ GS_W_RIFLE   = 4
 GS_AW_MAGAZINE = 1
 GS_AW_PUMP     = 2
 GS_AW_BOLT     = 3
-
+--]]
 GS_BPART_HEAD      = 6
 GS_BPART_BODY_TORS = 0
 GS_BPART_L_HAND    = 14
@@ -133,6 +138,7 @@ GS_HS_UNCONSCIOUS = 4
 GS_HS_STUN  = 5
 GS_HS_DEAD  = 6
 
+--[[
 CONTEXT_WEAPON_SLOT = 1
 CONTEXT_BACKPACK    = 2
 CONTEXT_POCKET      = 3
@@ -141,12 +147,29 @@ CONTEXT_ITEM_IN_BACK = 5
 CONTEXT_CONTAINER    = 6
 CONTEXT_ITEM_IN_CONT = 7
 CONTEXT_HAND = 8
+--]]
+
+CONTEXT_SWEP        = 1
+CONTEXT_CONTAINER   = 2
+CONTEXT_EQUIP       = 3
+CONTEXT_POCKET      = 4
+
+
 
 -- if ITEM_SMALL then they fit in anywhere
 -- if ITEM_MEDIUM then they don't fit in small box and pockets
 -- if ITEM_BIG then they don't fit in backpacks
 -- if ITEM_V_BIG then they don't fit in big box and can't handle
 -- ITEM_V_MEDIUM for medium containers
+
+ITEM_SIZE_TEXT = {
+    [ITEM_VERY_SMALL]   = "very small",
+    [ITEM_SMALL]        = "small",
+    [ITEM_MEDIUM]       = "medium size",
+    [ITEM_V_MEDIUM]     = "large size",
+    [ITEM_BIG]          = "big",
+    [ITEM_V_BIG]        = "very huge",
+}
 
 ITEM_VERY_SMALL = 0
 ITEM_SMALL  = 1
@@ -159,29 +182,21 @@ GS_ROUND_WAIT_PLY = -1
 GS_ROUND_PREPARE = 0
 GS_ROUND_RUNNING = 1
 GS_ROUND_END     = 2
-
+--[[
 T_SCREWDRIVER = 0
 T_CROWBAR     = 1
 T_WRENCH      = 2
 T_HAMMER      = 3
-
-CB_FLOOR      = 1
-CB_HAND       = 2
-CB_EQUIP      = 3
-
+--]]
+STATS_STR = {
+    [GS_ROUND_WAIT_PLY] = "Wait some piple...",
+    [GS_ROUND_PREPARE]  = "Preparing game",
+    [GS_ROUND_RUNNING]  = "Game is running!",
+    [GS_ROUND_END]      = "Game is end!",
+}
 
 function roundstr(stat)
-    if stat == GS_ROUND_WAIT_PLY then
-        return "Wait some piple..."
-    elseif stat == GS_ROUND_PREPARE then
-        return "Preparing game"
-    elseif stat == GS_ROUND_RUNNING then
-        return "Game is running!"
-    elseif stat == GS_ROUND_END then
-        return "Game is end!"
-    else
-        return "..."
-    end
+    return STATS_STR[stat] or "..."
 end
 --[[
 function itemfrom(str)
@@ -249,6 +264,8 @@ KS_BOLT      = 2
 KS_BROKEN    = 3
 KS_ROTATING  = 4
 
+// next to DELETE
+// now is some placeholder
 JOB_LIST_DERMA = {
     ["Cargo Department"] = {
         --quartermaster = "Quartermaster",
@@ -277,7 +294,6 @@ JOB_LIST_DERMA = {
         station_master = "Station Master"
     }
 }
-
 
 S_EXAMINE    = 1 -- exam ply
 s_EXAMINE_EQ = 2 -- exam eq
@@ -353,3 +369,4 @@ ARMORY_PART = {
     leg_l  = {"SUIT"},
     leg_r  = {"SUIT"},
 }
+

@@ -2,7 +2,7 @@
 concommand.Add( "gs_spawn", function( ply, cmd, args, str )
     GS_EntityControler:MakeEntity(0,0,ply:GetPos()+Vector(50,0,50),0)
  end )
---]]
+
 concommand.Add( "gs_box", function( ply, cmd, args, str )
     GS_EntityControler:MakeEntity2("cardboard_box","ent_container",ply:GetPos()+Vector(50,0,50),0)
 end )
@@ -158,3 +158,4 @@ concommand.Add( "gs_craft", function( ply, cmd, args, str )
     GS_Craft:CraftEntity(ply)
 end )
 --GS_Craft:CraftEntity
+--]]

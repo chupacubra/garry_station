@@ -1,5 +1,6 @@
 include("shared.lua")
 include("sh_enum.lua")
+include("resource.lua")
 include("sh_service.lua")
 include("jobs_system/init.lua")
 include("paperwork_system/init.lua")
@@ -21,6 +22,12 @@ include("client/cl_armory.lua")
 include("client/computer_derma/cl_main.lua")
 include("client/win98skin.lua")
 include("client/cl_ply_models.lua")
+
+--[[
+all HUD func need be in directory hud
+split cl_context
+]]
+
 
 local hide = {
 	["CHudHealth"]  = true,
@@ -61,7 +68,6 @@ function GM:OnContextMenuOpen()
     gui.EnableScreenClicker(true)
 end
 
-
 function GM:OnContextMenuClose()
     if LocalPlayer():Team() == TEAM_SPECTATOR then
         return
@@ -88,13 +94,3 @@ function MakeDermaAction(name, func, arg)
     net.WriteTable(arg)
     net.SendToServer()
 end 
-
-function GM:PreDrawPlayerHands( hands, vm, ply, weapon )
-    if weapon:GetClass() == "gs_swep_hand" then
-        if weapon:GetNWBool("FightHand") then
-            return false
-        else
-            return true 
-        end
-    end
-end

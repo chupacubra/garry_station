@@ -22,6 +22,10 @@ function CHEMIC_CONTAINER:HaveComp(name)
 	end
 end
 
+function CHEMIC_CONTAINER:IsEmpty()
+	return table.Count(self.content) == 0
+end
+
 function CHEMIC_CONTAINER:AddComponent(name, unit)
 	if !CHEMICALS[name] then 
 		return
@@ -52,6 +56,10 @@ function CHEMIC_CONTAINER:DecComponent(name, unit)
 			self.content[name] = nil
 		end
 	end
+end
+
+function CHEMIC_CONTAINER:RemoveComponent(name)
+	self.content[name] = nil
 end
 
 
