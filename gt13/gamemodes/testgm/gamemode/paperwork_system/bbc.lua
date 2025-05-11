@@ -63,7 +63,7 @@ local bbcode = {
 	end,
 
 	code = function(text)
-		text = string.gsub(text, pattern.code,  replace.code,  )
+		text = string.gsub(text, pattern.code,  replace.code )
 		return text
 	end,
 
@@ -150,6 +150,7 @@ function BBCProccesing(text, tags, ply)
 	return text
 end
 
+/*
 -- Add new tags
 function BBCExtend(tag, patt, repl)
 	if type(tag) == "string" and type(patt) == "string" then
@@ -165,20 +166,4 @@ function BBCExtend(tag, patt, repl)
         end
 	end
 end
-
-
---[[
-return setmetatable({
-	_LICENSE     = "MIT/X11",
-	_URL         = "https://github.com/karai17/lua-bbcode",
-	_VERSION     = "1.0",
-	_DESCRIPTION = "BBCode parser for Lua.",
-	extend       = extend,
-	all          = all,
-	text_only    = text_only,
-	embed_only   = embed_only,
-	basic        = basic
-}, {
-	__call = function(_, ...) return process(...) end
-})
---]]
+*/

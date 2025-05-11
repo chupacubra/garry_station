@@ -34,7 +34,9 @@ function ENT:InsertItemInContainer(item)
 		return false
 	end
 
+    item:SetParentContainer(self)
     table.insert(self.Items, item)
+
     //player_manager.RunClass( self.ContainerUser, "OpenEntContainer", self)
     -- need syncronise with all
     return self:GetContainerItems()
@@ -44,10 +46,27 @@ function ENT:RemoveItem(key)
     table.remove(self.Items, key)
 end
 
+function ENT:UpdateItem(upd_ent, key)
+    if key <= 0 then
+        GS_MSG("Trying update item in cont, but ket is invalid")
+        return
+    end
+    if upd_ent == nil then
+        // removing item
+        self:RemoveItem(key)
+    else
+        self.Items[key] = upd_ent
+    end 
+end
+
 function ENT:CanBeOpened(user)
     // custom rewrite func
     // etc check if lock have lock or smthng
     return true
+end
+
+function ENT:ItemInteraction(ent)
+    return self:InsertItemInContainer(ent)
 end
 
 function ENT:ThinkContainerCheck()

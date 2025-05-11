@@ -34,7 +34,7 @@ function PLAYER_OTHER:ExamineBody(ply)
         GS_ChatPrint(ply, v.." is "..st)
     end
     
-    if self.Player.Organism_Value.pain_shock then
+    if self.Player.Organism_Value.pain_shock or self.Player.Organism_Value.blood.value < 75 then
         GS_ChatPrint("the skin is pale")
     end
 end
@@ -48,6 +48,9 @@ function PLAYER_OTHER:MakeAction(ply, id)
         self:ExamineBody(ply)
     end
 end
+
+--[[
+GOING TO player_ext.lua
 
 function PLAYER_OTHER:GetID() -- getting id from equip and hands
     local id = self:GetEquipItem("KEYCARD")
@@ -77,3 +80,4 @@ function PLAYER_OTHER:GetIDAccess()
         return 0 -- zero access because don't have id
     end
 end
+--]]

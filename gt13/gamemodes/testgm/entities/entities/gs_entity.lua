@@ -1,29 +1,35 @@
 AddCSLuaFile()
 
 if SERVER then
-include("container.lua")
-include("pickup.lua")
+    include("pickup.lua")
 end
 
 ENT.Type = "anim"
 
-ENT.PrintName		= "gs_base"
-ENT.Author			= "chupa"
-ENT.Spawnable = false
-ENT.Category = "gs"
+ENT.PrintName   = "gs_base"
+ENT.Author      = "chupa"
+ENT.Spawnable   = false
 
-ENT.GS_Entity  = true
-ENT.CanPickup = true
+ENT.GS_Entity   = true
+ENT.CanPickup   = true
 
 ENT.Name  = "NAME"
 ENT.Desc  = "DESC"
 ENT.Model = ""
 ENT.Size  = ITEM_SMALL
 ENT.Color = nil
+ENT.CarryAng = Angle(0,0,0)
+
 /*
 ENT.IsEquip = false
 ENT.TypeEquip = EQUIP_BACKPACK  
 */
+
+local function CanPickup(ent)
+    local phys = ent:GetPhysicsObject(ent)
+    if !phys then return end
+    return phys:GetMass() < 40
+end
 
 function ENT:Initialize()
     self.PreInit()
@@ -41,30 +47,26 @@ function ENT:Initialize()
 
     self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- for no collide with ply, for items only, big structures will be collided
 
-//  self:SetupFlag()
-
     if self.Color then
         self:SetColor(self.ENT_Color)
     end
 
     if SERVER then
         self:CallOnRemove("ItemDeleting", function(ent)
-            timer.Simple(0, function() -- fear parent item will acuse some phys problems to childs 
-                if ent.Container:IsPlayer() then
-                    player_manager.RunClass(ent.Container, "RemoveFromInventary", ent)
-                end
-                
-                if IsValid(ent.Container) and ent.Container.RemoveItem then
-                    -- for sync
-                    ent.Item_Container:RemoveItem(self)
-                end
+            if ent.Container:IsPlayer() then
+                player_manager.RunClass(ent.Container, "RemoveFromInventary", ent)
+            end
+            
+            if IsValid(ent.Container) and ent.Container.RemoveItem then
+                -- for sync
+                ent.Item_Container:RemoveItem(self)
+            end
 
-                if ent.Item_Container then
-                    for _, item in pairs(ent.Private_Data.Items) do
-                        ItemRecover(item, ent:GetPos())
-                    end
+            if ent.Item_Container then
+                for _, item in pairs(ent.Private_Data.Items) do
+                    ItemRecover(item, ent:GetPos())
                 end
-            end)
+            end
         end)
     end
 
@@ -72,6 +74,20 @@ function ENT:Initialize()
     self.ContextCallback = {}
 
     self:PostInit()
+end
+
+function ENT:CarryAng()
+    return self.CarryAng or Angle(0,0,0)
+end
+
+// UseItem()?
+function ENT:Use(ply)
+    if ply:KeyPressed(IN_WALK) then
+        --self:UseItem()
+        return
+    end
+
+    if !self:IsPlayerHolding() and CanPickup(self) then ply:PickupObject(self) end
 end
 
 function ENT:PostInit()
@@ -93,14 +109,8 @@ end
 function ENT:GetButtons(self)
     -- buttons for context menu
 end
-/*
-function ENT:CanItemInteract(item)
-    // check here for test item can be interact
-    // это под обсуждением
-    return false
-end
-*/
-function ENT:ItemInteraction(drop)
+
+function ENT:ItemInteraction(drop, ply)
     // custom func to interact item with item (drop -> receiver)
     // if true then delete item from last cont
     // false - dont delete
@@ -117,9 +127,9 @@ AddContextCallback("Examine",
 */
 function ENT:AddContextCallback(name, func, icon)
     self.ContextCallback[name] = {
-        name = name
-        func = func
-        icon = icon
+        name = name,
+        func = func,
+        icon = icon,
     }
 end
 
@@ -141,12 +151,16 @@ function ENT:RunContext(name, ply)
     self.ContextCallback[name][func](self, ply)
 end
 
-function ENT:AddToThink(func)
-    table.Add(self.ThinkLine, func)
+function ENT:AddToThink(key, func)
+    self.ThinkLine[func] = func
+end
+
+function ENT:RemoveFromThink(key)
+    self.ThinkLine[func] = nil
 end
 
 function ENT:Think()
-    if #self.ThinkLine == 0 then return end
+    //if #self.ThinkLine == 0 then return end
     for _, func in pairs(self.ThikLine) do
         func(self)
     end

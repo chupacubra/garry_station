@@ -10,6 +10,7 @@ else
 	include("gs_cl_equipment.lua")
 end
 
+
 DEFINE_BASECLASS( "player_default" )
 
 local PLAYER = {}
@@ -31,7 +32,6 @@ function PLAYER:SetModel(name)
 end
 
 if SERVER then
-
 	--INCLUDE INVENTARY FUNCTION
 	for k,v in pairs(PLAYER_INVENTARY) do
 		PLAYER[k] = v
@@ -97,13 +97,16 @@ end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
+	print("123")
 end
 
 function PLAYER:Loadout()
     self.Player:RemoveAllAmmo()
 	//
-	GS_EquipWeapon(self.Player, "gs_hand_l")
-	GS_EquipWeapon(self.Player, "gs_hand_r")
+	self.Player:PickupWeapon("gs_hand_l")
+	self.Player:PickupWeapon("gs_hand_r")
+	
+	print("123")
 	//
 	self:SetupHandsMode()
 	//self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
@@ -118,6 +121,8 @@ function PLAYER:BodyDebugPrint()
 	-- Organism_Value
 	-- organs hp
 	-- body parts hp
+
+	// NASRALI
 
 	local debug_print = {"--------------DEBUG----------------"}
 
@@ -261,11 +266,4 @@ net.Receive("gs_equipment_update", function(_, ply)
 	player_manager.RunClass(ply, "RemoveEquip", FAST_EQ_TYPE[key] )
 end)
 
-concommand.Add( "gs_dropswep", function(ply, str, arg)
-	if ply:Team() == TEAM_PLY then
-		local id = tonumber(arg[1])
-		local wep = GetSWEPFromID(id, ply)
-
-		player_manager.RunClass(ply, "DropSWEP", wep)
-	end
-end)
+print("SKIBIDI")

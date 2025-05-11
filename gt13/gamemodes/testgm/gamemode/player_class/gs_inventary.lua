@@ -16,12 +16,14 @@ function PLAYER_INVENTARY:SetupInventary()
 		HEAD      = NULL,
 		MASK      = NULL,
 		EAR       = NULL,
+		SUIT	  = NULL,
 	}
 
+	if CLIENT then
+		self.Player.CLEquipment = {}
+	end
+
 	self.Player.Pocket = {NULL, NULL}
-	// for pockets need Entity-container OR we can make pocket - equipment slot
-	// or we make SUIT container of pockets
-	self.Player.Suit = "casual"
 end
 
 function PLAYER_INVENTARY:CanOpenContainer()
@@ -31,6 +33,10 @@ end
 
 function PLAYER_INVENTARY:GetEquip(key)
 	return self.Player.Equipment[key]
+end
+
+function PLAYER_INVENTARY:GetAllEquip()
+	return self.Player.Equipment
 end
 
 function PLAYER_INVENTARY:HaveEquipment(key)	
@@ -64,7 +70,6 @@ function PLAYER_INVENTARY:EquipItem(item)
 	self.Player.Equipment[item.TypeEquip] = item
 	item:SetParentContainer(self.Player)
 	self:EquipSyncClient()
-
 	return true
 end
 
@@ -126,7 +131,6 @@ function PLAYER_INVENTARY:RemoveItemFromInventary(ent)
 			return self:RemoveItemFromPocket(i)
 		end
 	end
-
 	// if not in pocket, then check equip
 	for k, v in pairs(self.Player.Equipment) do
 		if v == ent then
@@ -136,9 +140,43 @@ function PLAYER_INVENTARY:RemoveItemFromInventary(ent)
 end
 
 function PLAYER_INVENTARY:EquipSyncClient()
-	--[[
-		send client 
-	--]]
+	if SERVER then return end
+	for eq, ent_eq in pairs(self.Player.Equipment) do
+		if ent_eq then
+			if eq == EQUIP_ID or eq == EQUIP_SUIT then continue end
+			if self.Player.CLEquipment[eq] then
+				// check, for this ent we draw
+				if self.Player.CLEquipment[eq].item != ent_eq then
+					local model = self.Player.CLEquipment[eq]
+					model.item  = ent_eq
+					model.color = ent_eq:GetColor()
+					model.pos = {} // for offsets and bones
+					
+					if model.ent:IsValid() then
+						model.ent:Remove()
+					end
+					model.ent = ClientsideModel(ent_eq:GetModel())
+
+					self.Player.CLEquipment = model
+				end
+			else
+				local model = {}
+				model.item  = ent_eq
+				model.color = ent_eq:GetColor()
+				model.pos = {} // for offsets and bones
+
+				model.ent = ClientsideModel(ent_eq:GetModel())
+				
+				self.Player.CLEquipment = model
+			end
+		else
+			if self.Player.CLEquipment[eq] then
+				// delete model
+				self.Player.CLEquipment[eq].ent:Remove()
+				self.Player.CLEquipment[eq] = nil
+			end
+		end
+	end
 end
 
 
@@ -221,9 +259,18 @@ function PLAYER_INVENTARY:HandleContextAction(rec, drp)
 
 	if !rec_slot.empty then
 		if !drp_slot.empty then
+			/*
 			if rec_slot.item:ItemInteraction(rec_slot.item) then
 				// need delete item from his cont/equip
 				deleteItem(slot)
+			end
+			*/
+			//if rec_slot.slot == CONTEXT_SWEP then
+				
+			//end
+			local rez = rec_slot.item:ItemInteraction(rec_slot.item)
+			if rez != false then
+				drp_slot.item:UpdateItem(rez, drp_slot.key)
 			end
 		end
 	else
@@ -241,8 +288,9 @@ function PLAYER_INVENTARY:HandleContextAction(rec, drp)
 		else
 			// inserting item in cont
 			if !drp_slot.empty then
-				if rec_slot.cont:ItemInteraction(drp_slot.item) then
-					deleteItem(slot)
+				local rez = rec_slot.item:ItemInteraction(rec_slot.item)
+				if rez != false then
+					drp_slot.item:UpdateItem(rez, drp_slot.key)
 				end
 			end
 		end
@@ -262,4 +310,44 @@ net.Receive("gs_cl_contex_item_action", function(_, ply)
 	}
 
 	player_manager.RunClass(ply, "HandleContextAction", rec, drp)
+end)
+
+if SERVER then return end
+
+function PLAYER_INVENTARY:DrawEquip()
+    self:EquipSync()
+
+    for k, eq in pairs(self.Player.CLEquipment) do
+        if !table.IsEmpty(eq) then
+            local boneid = self.Player:LookupBone( eq.bone )
+                
+            if not boneid then
+                return
+            end
+            
+            local matrix = self.Player:GetBoneMatrix( boneid )
+            
+            if not matrix then 
+                return 
+            end
+            
+            local newpos, newang = LocalToWorld(eq.offset["vec"], eq.offset["ang"], matrix:GetTranslation(), matrix:GetAngles() )
+            
+            eq.model:SetRenderOrigin(newpos)
+            eq.model:SetRenderAngles(newang)
+            eq.model:SetupBones()
+            eq.model:DrawModel()
+
+			/*
+			PARENT TO BONE!
+			*/
+        end
+    end
+
+end
+
+hook.Add( "PostPlayerDraw" , "gs_draw_equip_model", function( ply )
+    if ply:IsValid() then
+        player_manager.RunClass(ply, "DrawEquip")
+    end
 end)

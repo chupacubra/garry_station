@@ -1,14 +1,23 @@
-CHEMICALS = {} -- all components
+CHEMICALS = CHEMICALS or {} -- all components
 CHEMIC    = CHEMIC or {} -- for func
 RECEIPTS  = {} -- all receipts
 FAST_REC  = {} -- FAST receipts without perebor
-FOR_CL    = {} -- information about chemicals for clients
-chem = {}
+
 
 CHEMIC_CONTAINER = {} -- is "container" for all
 
 -- making OOP-style containers
 -- working now
+
+BASE_CHEM_COLOR = Color(255,255,255,20)
+
+local function kv_sum(arr1, arr2)
+	local rez = {}
+	for k, v in pairs(arr1) do
+		rez[k] = v + arr2[k]
+	end
+	return rez
+end
 
 function CHEMIC_CONTAINER:GetAll()
 	return self.content
@@ -62,12 +71,36 @@ function CHEMIC_CONTAINER:RemoveComponent(name)
 	self.content[name] = nil
 end
 
-
-function CHEMIC_CONTAINER:HumanMetabolize(unit)
+function CHEMIC_CONTAINER:HumanMetabolize(unit) // only for humanclass
 	for chem, _ in pairs(self.content) do
 		CHEMICALS[chem]["callbackInPly"](self.ent)
 		self:DecComponent(chem, unit)
 	end
+end
+
+function CHEMIC_CONTAINER:GetColor()
+	if #self.content == 0 then return Color(0,0,0) 
+	elseif #self.content == 1 then return CHEMICALS[table.GetKeys(self.content)[1]]["color"] or BASE_CHEM_COLOR end
+
+	local sum = tblsum(self.content)
+	local proc = {}
+
+	for k, v in SortedPairsByValue(self.content, true) do
+		proc[#proc+1] = {
+			proc = (v * 100) / sum,
+			clr =  CHEMICALS[k]["color"] or BASE_CHEM_COLOR
+		}
+	end
+
+	local blend, rat = proc[1]["clr"], proc[1]["proc"]
+	for i = 2, #proc do
+ 		blend:Lerp(proc[i]["clr"], proc[i][proc] / rat)
+		rat = rat + proc[i][proc]
+	end
+ 
+	blend.a = math.Clamp(blend.a, 20, 255)
+
+	return blend
 end
 
 function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and i dont want to do ths
@@ -121,6 +154,7 @@ function CHEMIC_CONTAINER:New_Container(ent_container, _limit) -- ent_container 
 end
 
 function CHEMIC:New(name,data)
+	/*
 	CHEMICALS[data["simpleName"]] = {
 		simpleName    = data["simpleName"],
 		normalName    = name,
@@ -129,7 +163,12 @@ function CHEMIC:New(name,data)
 		activeid      = data["activeid"],
 		active        = data["active"],
 		notdispense   = data["notdispense"] or false
+		color		  = data["color"]
 	}
+	*/
+
+	CHEMICALS[data.simpleName] = data
+
 	if data["receipt"] then
 		RECEIPTS[data["simpleName"]] = data["receipt"]
 	end

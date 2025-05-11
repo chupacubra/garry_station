@@ -100,35 +100,36 @@ function PLAYER_ORGANS:SetupThinkOrgans()
         self:LungsThink()
         self:StomachThink()
         --PrintTable(self.Player.Organs)
+        self:BodyDebugPrint()
     end)
 end
 
 function PLAYER_ORGANS:SetupBones()
     self.Player.Bones = {
-        skull = false,
-        spine = false,
-        l_arm = false,
-        r_arm = false,
-        l_leg = false,
-        r_leg = false,
-        ribs  = false,
+        skull = true,
+        spine = true,
+        l_arm = true,
+        r_arm = true,
+        l_leg = true,
+        r_leg = true,
+        ribs  = true,
     }
 end
 
 function PLAYER_ORGANS:BoneBroken(bone)
-    return self.Player.Bones[bone]
+    if self.Player_Bones == true then
+        self.Player.Bones[bone] = false
+    end
 end
 
 function PLAYER_ORGANS:BreakBone(bone)
-    if !self.Player.Bones[bone] then
-        self.Player.Bones[bone] = true
+    if self.Player.Bones[bone] == true then
+        self.Player.Bones[bone] = false
     end
 end
 
 function PLAYER_ORGANS:FixBone(bone)
-    if self.Player.Bones[bone] then
-        self.Player.Bones[bone] = false
-    end
+    self.Player.Bones[bone] = false
 end
 
 function PLAYER_ORGANS:BrainThink()
@@ -158,7 +159,6 @@ function PLAYER_ORGANS:BrainThink()
     end
 
     if self.Player.Organs.brain.hp == 0 then
-
         self:Death()
         return
     end

@@ -1,3 +1,9 @@
+if SERVER then
+    AddCSLuaFile("stamps.lua")
+    AddCSLuaFile("bbc.lua")
+    AddCSLuaFile("cl_derma.lua")
+end
+
 include("stamps.lua")
 include("bbc.lua")
 include("cl_derma.lua")

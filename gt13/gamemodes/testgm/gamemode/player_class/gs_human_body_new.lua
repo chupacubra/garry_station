@@ -94,7 +94,6 @@ function PLAYER_HP:SetupOrganismThink()
 			self.Player.Spec_Damage.hypoxia = self.Player.Spec_Damage.hypoxia - 1
 		end
 
-
         local dmg = self:GetSumDMG()
 
         if dmg < 100 then
@@ -112,7 +111,12 @@ function PLAYER_HP:SetupOrganismThink()
 
 		self:HungerThink()
 		self:HealthPartClientUpdate(mainpart)
-		self:RagdollThink()
+
+		if self:RagdollThink() then
+			self:Ragdollize()
+		else
+			self:Unragdollize()
+		end
 		--PrintTable(self.Player.Organism_Value)
 		--PrintTable(self.Player.Spec_Damage)
 		self:BodyDebugPrint()
@@ -482,24 +486,18 @@ function PLAYER_HP:RagdollThink()
 	self.HungerRagdoll = math.Clamp(self.HungerRagdoll - 1, 0, 15)
 	
 	if self.Player.Organism_Value.pain_shock then
-		self:Ragdollize()
-		return
+		return true
 	end
 
 	if self.Player.Spec_Damage.hypoxia > 50 then
-		self:Ragdollize()
-		return
+		return true
 	end
 
 	if self.Player.HealthStatus == GS_HS_CRIT and self.CritRagdoll != 0 then
-		self:Ragdollize()
-		return
+		return true
 	end
 
 	if self.HungerRagdoll != 0 then
-		self:Ragdollize()
-		return
+		return true
 	end
-
-	self:Unragdollize()
 end

@@ -30,9 +30,6 @@ function ENT:ItemHide()
 end
 
 function ENT:SetParentContainer(parent)
-    // set/change parent - owner
-    // i hope already hided items can be parent to other - backpack in player and etc
-
     if !parent:IsValid() then
         return
     end
@@ -56,4 +53,28 @@ function ENT:ItemRecover(pos)
     
     ent.HideData = nil
     ent.Hided = false
+end
+
+function ENT:MoveItemInContainer(cont) // strange name but ok
+    if !self.Hided then
+        self:ItemHide()
+    end
+    self:SetParentContainer(parent)
+end
+
+function RemoveItemFromInv(ent)
+    if ent.Container:IsPlayer() then
+        player_manager.RunClass(ent.Container, "RemoveFromInventary", ent)
+    end
+    
+    if IsValid(ent.Container) and ent.Container.RemoveItem then
+        -- for sync
+        ent.Item_Container:RemoveItem(self)
+    end
+
+    if ent.Item_Container then
+        for _, item in pairs(ent.Private_Data.Items) do
+            ItemRecover(item, ent:GetPos())
+        end
+    end
 end

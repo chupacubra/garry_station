@@ -97,7 +97,7 @@ CHEMIC:New("Tea",{
 	  out = {
 		tea =  1,
 	  },
-	  notdispense = true
+
 	}
 })
 

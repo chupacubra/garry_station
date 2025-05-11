@@ -25,6 +25,18 @@ function getMainBodyPart(bone) -- hardcode
     return false
 end
 
+function CalcSizeEnt(ent)
+    // if weight > 40 then dont pickup 
+    //
+    // if ent is phys prop or need
+    // 1. get obb max,min
+    // 2. calc diag
+    if IsValid(ent) then return ITEM_V_BIG end 
+    local phys = ent:GetPhysicsObject()
+    if !phys then return ITEM_V_BIG end
+
+end
+
 function cantype(receiver, typ)
     if type(receiver) == "table" then
         for k,v in pairs(receiver) do
@@ -104,30 +116,7 @@ function tbl_get_from_index(tbl, ind)
 end
 
 function hungerColor(int)
-    --[[
-        100%       ->   50%
-        0,255,0         255,255,0
-
-        50%        ->    0%
-        255,255,0        255,0,0 
-    
-        100 - 0
-        50  - 255
-
-        int = ((100 - int) / 50) -- % * 100
-        red = 255 * int
-    ]]
-
-    local clr = Color(0,255,0)
-
-    if int >= 50 then
-        int = ((100 - int) / 50) -- % * 100
-        clr.r = 255 * int
-    else
-        int = (int / 50)
-        clr.g = 255 * (1-int)
-    end
-
+    local clr = Color(0,255,0):Lerp(Color(255,0,0), int/100)
     return clr
 end
 
@@ -199,20 +188,7 @@ else
         net.Send(ply)
     end
 end
---[[
-function Entity_SetNWData(ent, tab)
-    for k, v in pairs(tab) do
-        local typ = type(v)
-        if typ == "number" then
-            ent:SetNWInt(k, v, 10)
-        elseif typ == "string" then
-            ent:SetNWString(k, v)
-        else
-            print("watafak mazafak", typ)
-        end
-    end
-end
---]]
+
 function ClGetWeaponsSlot(needEntity, ply)
     local arr = {}
     local allWeapons = ply:GetWeapons()
@@ -244,37 +220,6 @@ function GetSWEPFromID(id, ply)
     return allwep[id]
 end
 
-function rgbToHex(rgb)
-	local hexadecimal = '#'
-
-    local rgb = {rgb.r,rgb.g,rgb.b}
-	for key, value in pairs(rgb) do
-		local hex = ''
-
-		while(value > 0)do
-			local index = math.fmod(value, 16) + 1
-			value = math.floor(value / 16)
-			hex = string.sub('0123456789ABCDEF', index, index) .. hex			
-		end
-
-		if(string.len(hex) == 0)then
-			hex = '00'
-
-		elseif(string.len(hex) == 1)then
-			hex = '0' .. hex
-		end
-
-		hexadecimal = hexadecimal .. hex
-	end
-
-	return hexadecimal
-end
-
-function hexTorgb(hex)
-    hex = hex:gsub("#","")
-    return Color(tonumber("0x"..hex:sub(1,2)), tonumber("0x"..hex:sub(3,4)), tonumber("0x"..hex:sub(5,6)))
-end
-
 function FromPhysicsBoneToPart(bone)
     local bone = self.Player:TranslatePhysBoneToBone(bone)
 	while true do
@@ -286,6 +231,15 @@ function FromPhysicsBoneToPart(bone)
 	end
 end
 
+BonesNiceName = {
+    skull = "skull",
+    spine = "spine",
+    l_arm = "left argm",
+    r_arm = "right arm",
+    l_leg = "left leg",
+    r_leg = "right leg",
+    ribs  = "ribs",
+}
 HitGroupPart = {
     [HITGROUP_GENERIC]    = "body",
     [HITGROUP_HEAD]       = "head",
@@ -308,4 +262,30 @@ function tblsum(tbl)
         n = n + v
     end
     return n
+end
+
+function GetHands(ply)
+    local tbl = {}
+    local s = ""
+    for k, v in ipairs(ply:GetWeapons()) do
+        s = v:GetClass()
+        if s == "gs_hands_l" or s == "gs_hands_l" then tbl[#tbl+1] = v end
+    end
+    return tbl
+end
+
+function HandsFree(ply)
+    local tbl = GetHands(ply)
+    for k, v in ipairs(tbl) do
+        if v:HaveItem() then return false end
+    end
+    return true
+end
+
+function getGameTimeStamp()
+    -- ril lafe 2024
+    -- gs13 teme 2024+28
+    -- 2052-10-31 18:00:00
+    local t = os.date("!*t")
+    return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
 end
