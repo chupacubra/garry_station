@@ -32,7 +32,7 @@ local function CanPickup(ent)
 end
 
 function ENT:Initialize()
-    self.PreInit()
+    self:PreInit()
 
     self:SetModel(self.Model or "models/props_junk/cardboard_box004a_gib01.mdl")
     self:PhysicsInit(SOLID_VPHYSICS)
@@ -83,7 +83,7 @@ end
 // UseItem()?
 function ENT:Use(ply)
     if ply:KeyPressed(IN_WALK) then
-        --self:UseItem()
+        self:UseItem()
         return
     end
 
@@ -169,7 +169,7 @@ end
 if SERVER then
     net.Receive("gs_ent_run_callback", function(_, ply)
         local ent = net.ReadEntity()
-        local name = net.ReadEntity()
+        local name = net.ReadString()
 
         if ent:IsValid() then
             ent:RunContext(name, ply)

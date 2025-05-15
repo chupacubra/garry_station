@@ -1,5 +1,8 @@
 PLAYER_HP = {}
 
+local god_enable = GetConVar("ps_god")
+
+
 function GetIcon(dmg)
 	if dmg != 0 then
 		if dmg < 30 then
@@ -157,6 +160,7 @@ function PLAYER_HP:BloodLevel(int)
 end
 
 function PLAYER_HP:Bleed()
+	if god_enable:GetBool() then return end
     if self.Player.Organism_Value.blood.bleed == false then
         self.Player.Organism_Value.blood.bleed = true
         self.Player.Organism_Value.blood.bleed_rate = 4
@@ -197,6 +201,7 @@ function PLAYER_HP:SetHP(body)
 end
 
 function PLAYER_HP:HurtPart(mainpart, dmg)
+	if god_enable:GetBool() then return end
 	local brutesum = self:GetSumDMGBrute()
 
 	for k,v in pairs(dmg) do
@@ -232,6 +237,7 @@ function PLAYER_HP:HealHealth(part, typeD, hp)
 end
 
 function PLAYER_HP:DamageHealth(part, typeD, dmg)
+	if god_enable:GetBool() then return end
 	if self.Player.Body_Parts[part] == nil then
 		return false
 	end
@@ -337,6 +343,7 @@ function PLAYER_HP:HealHealth(part, typeD, hp)
 end
 
 function PLAYER_HP:DamageHealth(part, typeD, dmg)
+	if god_enable:GetBool() then return end
 	if self.Player.Body_Parts[part] == nil then
 		return false
 	end

@@ -1,13 +1,13 @@
 Ply_Models = {
-    "models/Humans/Group01/Male_01.mdl",
-    "models/Humans/Group01/Male_02.mdl",
-    "models/Humans/Group01/Male_03.mdl",
-    "models/Humans/Group01/Male_04.mdl",
-    "models/Humans/Group01/Male_05.mdl",
-    "models/Humans/Group01/Male_06.mdl",
-    "models/Humans/Group01/Male_07.mdl",
-    "models/Humans/Group01/Male_08.mdl",
-    "models/Humans/Group01/Male_09.mdl",
+    "models/player/group01/male_01.mdl",
+    "models/player/group01/male_02.mdl",
+    "models/player/group01/male_03.mdl",
+    "models/player/group01/male_04.mdl",
+    "models/player/group01/male_05.mdl",
+    "models/player/group01/male_06.mdl",
+    "models/player/group01/male_07.mdl",
+    "models/player/group01/male_08.mdl",
+    "models/player/group01/male_09.mdl",
 }
 
 function PlayerModel()

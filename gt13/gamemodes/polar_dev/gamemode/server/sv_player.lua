@@ -1,21 +1,19 @@
 //include("sv_player_ext.lua")
 
---function GM:PlayerInitialSpawn(ply)
---end
+function GM:PlayerInitialSpawn(ply)
+	ply:SetTeam( TEAM_PLY )
+end
 
 function GM:PlayerSpawn( ply )
 	debug.Trace()
-	--print(ply:Team(),TEAM_CONNECTING, TEAM_UNASSIGNED)
+
 	if ply:Team() == TEAM_UNASSIGNED then -- joined/conected, set team to specc
-	//	self:PlayerSpawnAsSpectator(ply)
-	//	return
-		ply:SetTeam( TEAM_PLY )
+		self:PlayerSpawnAsSpectator(ply)
+		return
 	end
 
-print(ply:Team(), "12313")
-	
     player_manager.SetPlayerClass( ply, "gs_human" )
-	print( player_manager.GetPlayerClass(ply))
+
     ply:SetupHands()
 
     player_manager.OnPlayerSpawn( ply )
@@ -26,9 +24,6 @@ print(ply:Team(), "12313")
 	ply:SetNoCollideWithTeammates( false )
     self:PlayerLoadout( ply )
 
-
-	
-	// check have the ply corpse
 end
 
 function GM:PlayerSetModel( ply )
@@ -37,12 +32,7 @@ function GM:PlayerSetModel( ply )
 end
 
 function GM:PlayerSetHandsModel( ply, ent )
-
-	
-
 	local info = player_manager.RunClass( ply, "GetHandsModel" )
-
-	print(ply, ent, info)
 
 	if ( !info ) then
 		local playermodel = player_manager.TranslateToPlayerModelName( ply:GetModel() )
@@ -58,11 +48,7 @@ function GM:PlayerSetHandsModel( ply, ent )
 end
 
 function GM:PlayerLoadout( ply )
-	//player_manager.RunClass( ply, "Loadout" )
-	ply:RemoveAllAmmo()
-	//
-	print(ply:Give("gs_hands_l"))
-	print(ply:Give("gs_hands_r"))
+	player_manager.RunClass( ply, "Loadout" )
 
 	print("give player hands")
 end
@@ -123,7 +109,7 @@ function GM:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
 end
 
 function GM:PlayerCanPickupWeapon()
-	return false
+	//return false
 end
 
 function GM:PlayerDeathSound() 
@@ -142,7 +128,8 @@ function GM:PlayerDeath( victim, inflictor, attacker )
 end
 
 function GM:PlayerDeathThink( ply )
-    return true -- can't respawn
+	//return false
+    //return true -- can't respawn
 end 
 
 function GM:PlayerSpawnAsSpectator( ply )
@@ -179,7 +166,7 @@ function PlayerSpawnAsSpectator( ply )
 end
 
 function GM:CanPlayerSuicide()
-	return false
+	return true
 end
 
 function GM:PlayerDisconnected( ply )
@@ -188,7 +175,7 @@ function GM:PlayerDisconnected( ply )
 		 	create ragdoll with label "deep depression"
 		 IF player -> ragdolled
 		 	override this ragdoll to DEATH
-	]]
+
 	if ply:IsDead() and ply:Team() == TEAM_SPECTATOR then
 		--spectators....
 
@@ -202,6 +189,7 @@ function GM:PlayerDisconnected( ply )
 
 		hook.Run("GS_PlayerDead", ply:SteamID())
 	end
+	--]]
 end
 
 

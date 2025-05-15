@@ -6,6 +6,7 @@ SWEP.Contact		= "Sky"
 SWEP.Purpose		= "Make"
 SWEP.Instructions	= ""
 SWEP.SlotPos        = 0
+SWEP.PrintName = "Left hand"
 
 SWEP.IsHands    = true
 SWEP.CanDrop    = true
@@ -27,8 +28,13 @@ SWEP.ManipMode  = false
 
 SWEP.MinDMG = 3
 SWEP.MaxDMG = 6
-
 SWEP.CritRand = 0.2
+
+SWEP.BlockCD = 0
+SWEP.NextR = 0
+
+local SwingSound = Sound( "WeaponFrag.Throw" )
+local HitSound = Sound( "Flesh.ImpactHard" )
 
 /*
 need make some hard work
@@ -138,6 +144,8 @@ function SWEP:MakeTrace(range)
     
     trace = util.TraceLine(trace)
 
+    debugoverlay.Line( self:GetOwner():EyePos(), self:GetOwner():EyePos() + self:GetOwner():GetAimVector() * (70 or range))
+
     return trace
 end
 
@@ -170,9 +178,11 @@ function SWEP:SetupDataTables()
 end
 
 function SWEP:Initialize()
+    self:SetHoldType("normal")
+    self.BlockCD = 0
     if SERVER then return end
     self.iwm = NULL // clientside model
-    self.CallOnRemove("RemoveCM", function(self)
+    self:CallOnRemove("RemoveCM", function(self)
         if self.iwm:IsValid() then
             self.iwm:Remove()
         end
@@ -184,21 +194,26 @@ function SWEP:Deploy()
     // if hand is not active - cant deploy
     //
     self:UpdateHoldType()
+    return true
 end
 
 function SWEP:Holster( wep )
-    if not IsFirstTimePredicted() then return end
+    //if not IsFirstTimePredicted() then return end
     self:ManipModeReset()
-    if wep and self.Blocking then
-        return false
-    end
+
+    //if wep and self.Blocking then
+    //    return false
+    //end
+    return true
 end
 
-function SWEP:Blocking()
+function SWEP:IsBlocking()
+
     return self.Blocking == true
 end
 
 function SWEP:UpdateHoldType()
+
     if self:IsCombat() then
         self:SetHoldType("fist")
     else
@@ -239,36 +254,50 @@ function SWEP:UpdateItem(upd_ent, key)
 end
 
 function SWEP:HaveItem()
-    return self:GetItem() != nil
+    return IsValid(self:GetItem())
 end
 
 function SWEP:ChangeMode()
     if CLIENT then return end
     -- making request to a player class handler
     
-    local combat = player_manager.RunClass(self:GetOwner(), "HandsChangeMode")
+    //local combat = player_manager.RunClass(self:GetOwner(), "HandsChangeMode")
 
-    if !combat then
+    local combat = self:GetOwner():GetNWBool("CombatMode")
+    
+    if combat then
         self:SetHoldType("normal")
         GS_ChatPrint(self:GetOwner(), "You lowered your fists")
+        self:GetOwner():SetNWBool("CombatMode", false)
     else
         self:SetHoldType("fist")
         GS_ChatPrint(self:GetOwner(), "You prepared FISTS", Color(255,50,50))
     
         //local VModel = self:GetOwner():GetViewModel()
         //VModel:SendViewModelMatchingSequence( 2 )
+        self:GetOwner():SetNWBool("CombatMode", true)
     end
 end
 
 function SWEP:CanChangeMode()
-    return !(self:HaveItem() or self.Blocking)
+    return !(self:HaveItem() or self:IsBlocking())
 end
 
 function SWEP:Reload()
     if not IsFirstTimePredicted() then return end
+    if self.NextR > CurTime() then return end
+    if IsValid(self:GetItem()) then
+        print("123")
+        self:DropItem()
+        return
+    end
+
     if self:CanChangeMode() then
         self:ChangeMode()
+        self:UpdateHoldType()
     end
+    print(self.NextR)
+    self.NextR = CurTime() + 1
 end
 
 function SWEP:IsCombat()
@@ -276,6 +305,7 @@ function SWEP:IsCombat()
 end
 
 function SWEP:PickupItem(itm)
+    if CLIENT then return end
     if !itm then
         local trace = self:MakeTrace()
     
@@ -286,29 +316,38 @@ function SWEP:PickupItem(itm)
         itm = trace.Entity
     end
 
+
+
     if itm.Size > ITEM_V_MEDIUM then
         print("ITEM IS BIG!")
         return false
     end
 
-
     itm:MoveItemInContainer(self)
 
     self:SetItem(itm)
-
+    print("Ent pickip", itm)
     return true
 end
 
 local punch_force = 30
 function SWEP:Punch()
-    if CLIENT then return end
+    //if CLIENT then return end
 
     //local VModel = self:GetOwner():GetViewModel()
     //VModel:SendViewModelMatchingSequence( math.random(3, 5) )
     
-    self:EmitSound(SwingSound)
+    local own = self:GetOwner()
+	own:SetAnimation( PLAYER_ATTACK1 )
     self:SetNextPrimaryFire(CurTime() + 0.8)
 
+    if CLIENT then return end
+    
+
+
+    self:EmitSound(SwingSound)
+
+    
     timer.Simple(0.2, function()
         if !IsValid(self) then return end
 
@@ -375,11 +414,15 @@ function SWEP:Block()
     end)
 end
 
+function SWEP:ItemPrimary()
+    print("PRIMARY ACTION", self:GetItem())
+end
+
 function SWEP:PrimaryAttack()
     if !IsFirstTimePredicted then return end
     if self:IsCombat() then
         self:Punch()
-    elseif self:GetManipmode() then
+    elseif self:GetManipMode() then
         self:ManipPickupEnt()
     else
         if self:HaveItem() then
@@ -392,7 +435,6 @@ end
 
 function SWEP:ChangeManipulatemode()
     if self.ManipulateMode then 
-//        self:ManipulateModeEnd()
         self:ManipModeReset()
     else
         self:SetManipMode(true)
@@ -460,17 +502,18 @@ function SWEP:DropItem()
 
     if SERVER then
         local start  = self:GetOwner():EyePos()
-        local vector = self:GetOwner():GetAimVector()
+        local vector = self:GetOwner():EyeAngles()
         
         local trace = {
             start = start,
-            endpos = start + vector * 50,
+            endpos = start + vector:Forward() * 200,
             filter =  function( ent ) return ( ent != self:GetOwner() ) end
         }
         
-        trace = util.TraceEntityHull(trace, ent)
+        trace = util.TraceLine(trace)
         
-        ent:ItemRecover(trace.HitPos)
+        debugoverlay.Line( self:GetOwner():EyePos(), trace.HitPos)
+        ent:ItemRecover(trace.HitPos )
     end
 
     self:SetItem(nil)

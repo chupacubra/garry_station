@@ -1,3 +1,5 @@
+DeriveGamemode("sandbox")
+
 if SERVER then
     AddCSLuaFile("player_class/gs_human.lua")
 end

@@ -19,8 +19,8 @@ function ENT:ItemHide()
     end
 
     self.HideData = {}
-    self.HideData.MT = ent:GetMoveType()
-    self.HideData.SD = ent:GetSolid()
+    self.HideData.MT = self:GetMoveType()
+    self.HideData.SD = self:GetSolid()
     
     self:SetMoveType(MOVETYPE_NONE)
     self:SetSolid(SOLID_NONE)

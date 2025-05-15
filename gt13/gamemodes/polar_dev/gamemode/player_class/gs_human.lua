@@ -97,16 +97,31 @@ end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
-	print("123")
+end
+
+function GS_EquipWeapon(ply, weapon) -- for start loadout
+	local ent = ents.Create(weapon)
+	ply:PickupWeapon( ent )
+	if weapon == "gs_swep_hand" then
+		timer.Simple(0.5, function()
+			ent:SetHoldType("normal")
+		end)
+	end
 end
 
 function PLAYER:Loadout()
-    self.Player:RemoveAllAmmo()
+    self.Player:StripAmmo()
+    self.Player:StripWeapons()
+	//print(123)
 	//
-	self.Player:PickupWeapon("gs_hand_l")
-	self.Player:PickupWeapon("gs_hand_r")
+	//self.Player:PickupWeapon("gs_hand_l")
+	//self.Player:PickupWeapon("gs_hand_r")
 	//
-	self:SetupHandsMode()
+
+	GS_EquipWeapon(self.Player, "gs_hands_l")
+	GS_EquipWeapon(self.Player, "gs_hands_r")
+
+	//self:SetupHandsMode()
 	//self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
 end
 
@@ -114,6 +129,7 @@ local dev = GetConVar( "developer")
 
 function PLAYER:BodyDebugPrint()
 	if !dev:GetBool() then return end
+	if true then return end
 	-- show debug with body status
 	-- need show:
 	-- Organism_Value
@@ -215,11 +231,12 @@ net.Receive("gs_cl_inventary_drop_ent", function(_, ply)
 	local key = net.ReadUInt(6)
 	player_manager.RunClass( ply, "DropEntFromInventary", key, from)
 end)
-
+--[[
 net.Receive("gs_cl_weapon_drop", function(_, ply)
 	local ent = net.ReadEntity()
 	player_manager.RunClass( ply, "DropSWEP", ent )
 end)
+--]]
 
 net.Receive("gs_cl_inventary_examine_item", function(_, ply)
 	local from    = net.ReadUInt(5)

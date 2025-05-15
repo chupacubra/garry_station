@@ -1,7 +1,7 @@
 
 
 -- 1인칭 풀바디 시점 설정
-local enableFirstPerson = false -- 1인칭 모드 활성화 여부
+local enableFirstPerson = true -- 1인칭 모드 활성화 여부
 local customFOV = 100 -- 기본 FOV 값
 local customPitchMin, customPitchMax = -90, 90 -- 시야 제한
 local customYawMin, customYawMax = -360, 360

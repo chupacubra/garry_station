@@ -9,7 +9,7 @@ function PlayerHandsModelClear(ply)
 end
 
 function PlayerUpdateWorldModelsSWEP(ply, weps, active)
-    if !ply:IsActive() then return end
+    //if !ply:IsActive() then return end
     if !ply.HandItemModels then
         ply.HandItemModels = {}
     else
@@ -17,24 +17,26 @@ function PlayerUpdateWorldModelsSWEP(ply, weps, active)
     end
 
     for i = 1, #weps <= 2 and #weps or 2 do
-        local itm = weps[i]
-        local isActive = active == itm
-        
-        if itm.IsHands then
+        local wep = weps[i]
+        local isActive = active == wep
+        local itm;
+        if wep.IsHands then
             itm = wep:GetItem()
-            if !itm then continue end
+            if !IsValid(itm) then 
+                continue
+            end
         elseif isActive then continue end // because we dont create weapon model, if weapon is active
-
-        local model = ClientsideModel(wep:GetModel())
-        model:SetColor(wep:GetColor())
+        print(wep, isActive, wep )
+        local model = ClientsideModel(itm:GetModel())
+        model:SetColor(itm:GetColor())
         
-        local boneid = ply:LookupBone( "ValveBiped.Bip01_R_Hand" and isActive or "ValveBiped.Bip01_L_Hand" )
+        local boneid = ply:LookupBone(  Either(isActive, "ValveBiped.Bip01_R_Hand" , "ValveBiped.Bip01_L_Hand" ))
         if !boneid then continue end
         
-        local matrix = owner:GetBoneMatrix(boneid)
+        local matrix = ply:GetBoneMatrix(boneid)
         if !matrix then continue end
 
-        local offsetVec = model.HandOffsetVec or Vector(3, -3, -1)
+        local offsetVec = model.HandOffsetVec or Vector(0,0,0)
         local offsetAng = model.HandOffsetAng or Angle(0, 0, 0)
 
         local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
