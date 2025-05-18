@@ -14,7 +14,7 @@ function AddEntItem(data, name, base)
         local base = table.Copy(GS_EntityList[base])
         table.Merge(base, data)
         data = base
-    end
+    end 
 
     GS_EntityList[name] = data
     PrintTable(GS_EntityList)

@@ -42,4 +42,4 @@ end
 // Add item in list,
 // ENT, name, base (from list)
 
-AddEntItem(Base, "test_object", "")
+AddEntItem(Base, "test_object")

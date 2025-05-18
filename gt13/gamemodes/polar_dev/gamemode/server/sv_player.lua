@@ -110,12 +110,13 @@ end
 
 function GM:PlayerCanPickupWeapon()
 	//return false
+	return true
 end
 
 function GM:PlayerDeathSound() 
 	return true 
 end
-
+--[[
 function GM:PlayerDeath( victim, inflictor, attacker )
 	if !victim.ClassDead then
 		player_manager.RunClass( victim, "Death" )
@@ -126,11 +127,13 @@ function GM:PlayerDeath( victim, inflictor, attacker )
 	self:PlayerSilentDeath(victim)
 	PlayerSpawnAsSpectator(victim)
 end
-
+--]]
+--[[
 function GM:PlayerDeathThink( ply )
 	//return false
     //return true -- can't respawn
 end 
+--]]
 
 function GM:PlayerSpawnAsSpectator( ply )
 	debug.Trace()

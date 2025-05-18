@@ -40,10 +40,11 @@ end
 
 function ENT:ItemRecover(pos)
     self:SetParent(nil)
-    self:SetPos(pos)
     self:SetMoveType(self.HideData.MT)
     self:SetSolid(self.HideData.SD)
     self:SetNoDraw(false)
+    self:SetPos(pos)
+    self:SetAngles(Angle())
     self:PhysWake()
     self.HideData = nil
     self.Hided = false
@@ -55,3 +56,8 @@ function ENT:MoveItemInContainer(cont) // strange name but ok
     end
     self:SetParentContainer(cont)
 end
+
+
+hook.Add( "AllowPlayerPickup", "physpickup", function( ply, ent )
+    return true
+end )
