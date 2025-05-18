@@ -27,13 +27,7 @@ SWEP.RecoilUp   = 15
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
 
-SWEP.LastBullet = nil
-SWEP.Active     = false
-SWEP.Use2Hand   = false
-
-SWEP.ViewModel  = "" //models/kali/weapons/daewoo/daewoo k7.mdl
 SWEP.WorldModel = "models/kali/weapons/black_ops/pm-63 rak.mdl"
-//SWEP.WorldModel = "models/kali/weapons/daewoo/daewoo k7.mdl"
 
 SWEP.WorldModelCustom     = true
 SWEP.WorldModelBonemerge  = true

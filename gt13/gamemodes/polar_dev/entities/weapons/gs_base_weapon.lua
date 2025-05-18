@@ -1,20 +1,3 @@
-//
-//  the problems
-//  из-за того что у нас нстандартная система патронов, магазинов, возможны проблемсы
-//  с предиктишионом выстрела на клиенте. Есть варианты как сообщить сколько патронов у нас есть
-//      При перезарядке отправлять на клиент сколько у нас патронов. Время во время перезарядки у нас хватит, чтобы понять сколько
-//      у нас сейчас патронов
-//
-//  с заменой модели оружия на без магазина пока повременим
-//  нужно побольше посмотреть на замену модели оружия в руках
-//  с помощью нативных функций без создавания новой клиентсайд модели
-//
-//  кстати, упор идёт на first person view как на хомиграде
-//
-//  это база для магазиных ружей
-//
-//  нужно проверить клиентсайд модели парентить к костям ent:FollowBone
-
 SWEP.Author			    = "Devil right hand"
 SWEP.Contact			= "Poeli"
 SWEP.Purpose			= "KILL!"
@@ -44,8 +27,6 @@ SWEP.ShellPos       = nil
 
 SWEP.HoldType       = "pistol"  // basic holdtype
 
-SWEP.NeedTwoHand    = false
-
 SWEP.Recoil     = 10
 SWEP.RecoilUp   = 15
 SWEP.ShotSpeed  = 0.5
@@ -55,26 +36,15 @@ SWEP.LastBullet = nil
 SWEP.Active     = false
 SWEP.Use2Hand   = false
 
+SWEP.GMSWEP = true
+
 SWEP.ViewModel  = ""
 SWEP.WorldModel = ""
 
 SWEP.WorldModelCustom     = false
 SWEP.WorldModelBonemerge  = true
 SWEP.WorldModelBodyGroups = {}
-SWEP.WorldModelOffsets    = {
-//    pos = Vector(),
-//    vector = Angle(0,0,90)
-}
-
---[[
-bodygroups can chang in some situation
-SWEP.WorldModelCustom   = true
-SWEP.WorldModelBodygroups = {
-    base   = {} // setup in init
-    reload = {} // ply start reload proces
-    reload_end   = {} // or you can set base
-}
---]]
+SWEP.WorldModelOffsets    = {}
 
 if SERVER then
     util.AddNetworkString("gs_swep_update_wm")
@@ -96,10 +66,6 @@ function SWEP:UpdateHoldType()
     --end
 
     self:SetHoldType(holdtype)
-end
-
-function SWEP:GetWMOpt()
-    // function, thats generating table of bg
 end
 
 function SWEP:UpdateWModelBodyGroups(toset)
@@ -140,7 +106,6 @@ function SWEP:Equip()
     self:UpdateHoldType()
 end
 
-
 function SWEP:PrimaryAttack()
 end
 
@@ -165,9 +130,7 @@ function SWEP:InitializeWM()
     end
 end
 
-
 function SWEP:ChangeBodyGroup(bodygroups_set)
-    print("Change bgs", bodygroups_set, self.WMGun)
     if SERVER then return end
     local gun = self.WMGun
     if !IsValid(gun) then return end
@@ -198,7 +161,6 @@ function SWEP:ChangeBodyGroup(bodygroups_set)
                 end
             end
         end
-
     end
 end
 
@@ -213,38 +175,25 @@ function SWEP:UpdateWMState(holster)
     if !gun then return end
     local owner = self:GetOwner()
     if owner then
-        // weapon in hands (active)
-        // need to bonemerge to him
-
         if !holster then
-            print("parent")
-            //local offset_pos = self.WorldModel
-            //gun:SetPos(owner:GetPos())
-            //gun:SetParent(owner, owner:LookupBone("ValveBiped.Bip01_R_Hand"))
-            
+            print("EQUIP")
+            gun:FollowBone()
+
             gun:FollowBone(owner, owner:LookupBone("ValveBiped.Bip01_R_Hand"))
             gun:SetAngles(owner:LocalToWorldAngles(self.WorldModelOffsets.ang))
             gun:SetPos(owner:LocalToWorld(self.WorldModelOffsets.pos))
-            //gun:SetParent(self)
             gun:SetNoDraw(false)
         else
-            // i want delegate PlayerUpdateWorldModelsSWEP() draw wm
-            gun:SetNoDraw(true)
+            // the drawing of wep in another hand in plyhanddraw
         end
     else
         gun:SetParent(self)
         gun:SetNoDraw(false)
     end
-
-    print(gun:GetPos(), owner:GetPos(), self:GetPos())
-
-    debugoverlay.Cross( owner:GetPos() ,10, 5, Color(0,0,255), true)
-    debugoverlay.Cross( self:GetPos() ,10, 5, Color(255,0,0), true)
-    debugoverlay.Cross( gun:GetPos(), 10,  5, Color(0,255,0), true)
-
 end
 
 function SWEP:OnRemove()
+    if self:GetOwner() then hook.Run("PlayerDroppedWeapon", self:GetOwner(), self) end
     if IsValid(self.WMGun) then self.WMGun:Remove() end
 end
 
@@ -255,26 +204,3 @@ net.Receive("gs_swep_update_wm", function(_, ply)
     self:ChangeBodyGroup(set)
 end)
 
-local mdl = "models/kali/weapons/black_ops/pm-63 rak.mdl"
-
-function PrintBones( entity )
-    for i = 0, entity:GetBoneCount() - 1 do
-        print( i, entity:GetBoneName( i ) )
-    end
-end
-
-concommand.Add("getbg", function()
-    local prop = ents.Create("prop_physics")
-    prop:SetModel(mdl)
-    prop:Spawn()
-    
-    PrintTable(prop:GetBodyGroups())
-    PrintTable(prop:GetAttachments())
-    //print(prop:FindBodygroupByName( "Stock" ))
-    
-    //SetBodyGroup(prop, bgs)
-
-    PrintBones(prop)
-
-    prop:Remove()
-end)
