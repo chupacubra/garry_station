@@ -23,11 +23,9 @@ function GM:PlayerSpawn( ply )
 
 	ply:SetNoCollideWithTeammates( false )
     self:PlayerLoadout( ply )
-
 end
 
 function GM:PlayerSetModel( ply )
-	//ply:SetModel(PlayerModel())
 	player_manager.RunClass( ply, "SetModel" )
 end
 
@@ -44,29 +42,77 @@ function GM:PlayerSetHandsModel( ply, ent )
 		ent:SetSkin( info.skin )
 		ent:SetBodyGroups( info.body )
 	end
-
 end
 
 function GM:PlayerLoadout( ply )
 	player_manager.RunClass( ply, "Loadout" )
-
-	print("give player hands")
 end
 
-function PickupSWEP(ply, swep)
+hook.Add("PlayerDroppedWeapon", "GameDropWeapon" , function(ply, swep)
+	// give hands, if drop some wep
+	// weapon already dropped after this
+	if !(ply:IsValid() or ply:IsActive()) or !IsValid(swep) then return end
+	if !swep.GMSWEP or swep.isHands then 
+		return
+	end
+
+	local weps = ply:GetWeapons()
+	
+	for k, v in pairs(weps) do
+		if v.IsHands or v.GMSWEP then continue end
+		table.remove(weps, k)
+	end
+
+	if #weps >= 2 then return end
+
+	local hands = {
+		"gs_hands_l",
+		"gs_hands_r",
+	}
+
+	for k, v in pairs(hands) do
+		if ply:GetWeapon(v) == nil then ply:PickupWeapon(v) end		
+	end
+end)
+
+hook.Add("WeaponEquip", "GameWeaponPickup", function(swep, ply)
+	// drop active hand if pickup wep
+
+	if !(ply:IsValid() or ply:IsActive())  then return end
+	if !swep.GMSWEP then 
+		return
+	end
+
+	--local hands = {
+	--	ply:GetWeapon("gs_hands_l"),
+	--	ply:GetWeapon("gs_hands_r")
+	--}
+
+	local active = ply:GetActiveWeapon()
+	
+	if !IsValid(active) then return end
+
+	if !active.IsHands then 
+		return // active swep is not hand
+	end
+
+	if active:HaveItem() then
+		return // active hand is not empty
+	end
+	
+	active:Remove()
+end)
+
+--[[
+function OnPickupSWEP(ply, swep)
 	debug.Trace()
-	// we have 2 hands
-	// for BIG weapons (shotguns, automats, miniguns etc) need 2 hands to USING
-	// for small arms (pistols, smg) and non-weapons swep need 1 free hand
-	// 
-	// in future:
-	// 		small arms - if you have item in hand, when you have a gun - 
-	//		holdtype = pistol and some more recoil (depends of power of gun)
-	//		if another hands are free:
-	//		holdtype = depends of gun(SWEP.DoubleHandedHT, for pistol its a revolver)
-	//			and dont have recoil penalty
-	if !(ply:IsValid() or ply:IsActive()) then return end
-	if !IsValid(swep) then return end
+
+	if !(ply:IsValid() or ply:IsActive()) or !IsValid(swep) then return end
+	if !swep.GMSWEP then 
+		//ply:PickupWeapon( ent, false )
+		return end
+	end
+
 	local hands = {
 		ply:GetWeapon("gs_hands_l"),
 		ply:GetWeapon("gs_hands_r")
@@ -77,22 +123,21 @@ function PickupSWEP(ply, swep)
 		print("watafak, where you hands, dummy?")	
 		return
 	end
+
 	if !active.IsHands then 
-		// active swep is not hand
-		return
+		print("ACTIVE SWEP MUST BE HANBDS")
+		return // active swep is not hand
 	end
+
 	if active:HaveItem() then
-		// active hand is not empty
-		return
+		return // active hand is not empty
 	end
-	// check size gun
-	if swep.Size > ITEM_BIG then
-		// if swep is BIG
-		// check all
-	else
-		ply:PickupWeapon( ent, false )
-	end
+	
+	active:Remove()
+	//ply:PickupWeapon( ent, false )
 end
+--]]
+
 
 function GM:PlayerSwitchFlashlight()
 	-- make item flashlight
@@ -110,12 +155,13 @@ end
 
 function GM:PlayerCanPickupWeapon()
 	//return false
+	return true
 end
 
 function GM:PlayerDeathSound() 
 	return true 
 end
-
+--[[
 function GM:PlayerDeath( victim, inflictor, attacker )
 	if !victim.ClassDead then
 		player_manager.RunClass( victim, "Death" )
@@ -126,11 +172,13 @@ function GM:PlayerDeath( victim, inflictor, attacker )
 	self:PlayerSilentDeath(victim)
 	PlayerSpawnAsSpectator(victim)
 end
-
+--]]
+--[[
 function GM:PlayerDeathThink( ply )
 	//return false
     //return true -- can't respawn
 end 
+--]]
 
 function GM:PlayerSpawnAsSpectator( ply )
 	debug.Trace()

@@ -47,17 +47,25 @@ util.AddNetworkString("gs_hand_draw_model")
 util.AddNetworkString("gs_hand_vm")
 util.AddNetworkString("gs_hand_item_make_action")
 
+util.AddNetworkString("gs_hands_model_update")
+
+
 --some equip
 util.AddNetworkString("gs_equip_functions")
 util.AddNetworkString("gs_eq_med_glasses_sensors")
 
 --weapon
+--[[
 util.AddNetworkString("gs_weapon_base_comp_dataent")
 util.AddNetworkString("gs_weapon_base_effect")
 util.AddNetworkString("gs_weapon_base_strip_magazine")
 util.AddNetworkString("gs_weapon_base_set_magazine_model")
 util.AddNetworkString("gs_weapon_base_weapon_dropped")
 --util.AddNetworkString("gs_hands_punch_anim")
+--]]
+
+//util.AddNetworkString("gs_swep_update_wm")
+
 --subsystems
 util.AddNetworkString("gs_sys_chem_list")
 
@@ -86,16 +94,10 @@ util.AddNetworkString("gs_cl_derma_open")
 util.AddNetworkString("gs_cl_show_notify")
 
 
---craft
-util.AddNetworkString("gs_cl_craft_request")
-
---map
-util.AddNetworkString("gs_map_entity_get_type")
-util.AddNetworkString("gs_map_ent_action")
-util.AddNetworkString("gs_zones_draw")
-
 
 // new strings
 util.AddNetworkString("gs_ent_run_callback")
+
+
 
 

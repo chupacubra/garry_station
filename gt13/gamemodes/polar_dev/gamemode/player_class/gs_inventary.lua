@@ -8,9 +8,9 @@ PLAYER_INVENTARY = {}
 function PLAYER_INVENTARY:SetupInventary()
 	self.Player.Equipment = {
 		BELT      = NULL,
-		EYES      = NULL,
+		//EYES      = NULL,
 		KEYCARD   = NULL,
-		PDA       = NULL,
+		//PDA       = NULL,
 		BACKPACK  = NULL,
 		VEST      = NULL,
 		HEAD      = NULL,

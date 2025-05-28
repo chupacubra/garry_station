@@ -26,7 +26,7 @@ Base.TestPrimary = function(self, ply)
 end
 
 Base.ItemPrimary = function(self, hands, ply)
-    self:TestPrimary()
+    self:TestPrimary(ply)
 end
 
 Base.SecondaryPrimary = function(self, hands, ply)
@@ -34,12 +34,27 @@ Base.SecondaryPrimary = function(self, hands, ply)
 end
 
 --  Buttons from context menu
-
 Base.GetButtons = function(self)
     return
 end
 
+// need more "standarted" action
+// some GetActions()
+//  some array of all actions we can make
+
+
 // Add item in list,
 // ENT, name, base (from list)
 
-AddEntItem(Base, "test_object", "")
+AddEntItem(Base, "test_object")
+
+local Base = table.Copy(Base)
+Base.Name  = "test object2"
+Base.Desc  = "skibidi"
+Base.Model = "models/props_lab/cactus.mdl"
+Base.Size  = ITEM_SMALL
+
+Base.Spawnable = true
+Base.Category = "Developing 2"
+
+AddEntItem(Base, "test_object_2")

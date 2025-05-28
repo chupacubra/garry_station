@@ -12,9 +12,13 @@ SWEP.ViewModel = ""
 SWEP.WorldModel = "models/weapons/w_pist_p228.mdl"
 SWEP.HoldType = "pistol"
 
+
+SWEP.GMSWEP = true
+
+
 SWEP.Primary.Automatic = false
 SWEP.PrimarySound = "Weapon_Crowbar"
-
+--[[
 SWEP.Entity_Data = {}
 SWEP.Entity_Data.Name = "tool"
 SWEP.Entity_Data.Desc = "desc"
@@ -22,7 +26,7 @@ SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
 SWEP.Entity_Data.Type = "toolname"
 
 SWEP.Private_Data = {}
-
+--]]
 game.AddParticles( "particles/hunter_flechette.pcf" )
 game.AddParticles( "particles/hunter_projectile.pcf" )
 

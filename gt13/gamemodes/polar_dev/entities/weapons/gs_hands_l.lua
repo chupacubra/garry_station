@@ -208,12 +208,10 @@ function SWEP:Holster( wep )
 end
 
 function SWEP:IsBlocking()
-
     return self.Blocking == true
 end
 
 function SWEP:UpdateHoldType()
-
     if self:IsCombat() then
         self:SetHoldType("fist")
     else
@@ -272,9 +270,6 @@ function SWEP:ChangeMode()
     else
         self:SetHoldType("fist")
         GS_ChatPrint(self:GetOwner(), "You prepared FISTS", Color(255,50,50))
-    
-        //local VModel = self:GetOwner():GetViewModel()
-        //VModel:SendViewModelMatchingSequence( 2 )
         self:GetOwner():SetNWBool("CombatMode", true)
     end
 end
@@ -287,7 +282,6 @@ function SWEP:Reload()
     if not IsFirstTimePredicted() then return end
     if self.NextR > CurTime() then return end
     if IsValid(self:GetItem()) then
-        print("123")
         self:DropItem()
         return
     end
@@ -296,7 +290,7 @@ function SWEP:Reload()
         self:ChangeMode()
         self:UpdateHoldType()
     end
-    print(self.NextR)
+
     self.NextR = CurTime() + 1
 end
 
@@ -304,50 +298,56 @@ function SWEP:IsCombat()
     return self:GetOwner():GetNWBool("CombatMode")
 end
 
-function SWEP:PickupItem(itm)
+function SWEP:UpdateCSModels()
+    if CLIENT then
+        PlayerUpdateWorldModelsSWEP(self:GetOwner(), self:GetOwner():GetWeapons(), self)
+    else
+        net.Start("gs_hands_model_update")
+        net.WritePlayer(self:GetOwner())
+        net.WriteEntity(self:GetItem())
+        net.Broadcast()
+    end
+end
+
+function SWEP:PickupItem(item)
     if CLIENT then return end
-    if !itm then
+
+    if !item then
         local trace = self:MakeTrace()
-    
         if !trace.Entity:IsValid() then
             return
         end
+        item = trace.Entity
+    end
+
     
-        itm = trace.Entity
+    
+    if item:IsPlayerHolding() then return end
+
+    local can = hook.Run("HandCanPickup", self:GetOwner(), self, item)
+
+    if can == false then
+        return
     end
 
+    item:MoveItemInContainer(self)
 
-
-    if itm.Size > ITEM_V_MEDIUM then
-        print("ITEM IS BIG!")
-        return false
-    end
-
-    itm:MoveItemInContainer(self)
-
-    self:SetItem(itm)
-    print("Ent pickip", itm)
+    self:SetItem(item)
+    self:UpdateCSModels()
+    print("Ent pickip", item)
+    
     return true
 end
 
-local punch_force = 30
+local punch_force = 100
 function SWEP:Punch()
-    //if CLIENT then return end
-
-    //local VModel = self:GetOwner():GetViewModel()
-    //VModel:SendViewModelMatchingSequence( math.random(3, 5) )
-    
     local own = self:GetOwner()
 	own:SetAnimation( PLAYER_ATTACK1 )
-    self:SetNextPrimaryFire(CurTime() + 0.8)
-
-    if CLIENT then return end
-    
-
 
     self:EmitSound(SwingSound)
 
-    
+    if CLIENT then return end
+
     timer.Simple(0.2, function()
         if !IsValid(self) then return end
 
@@ -359,46 +359,39 @@ function SWEP:Punch()
         local ent = trace.Entity
 
         if IsValid(ent) then
-            if ent:IsPlayer() then
-                local part = HitGroupPart[trace.HitGroup]
-                local dmg = DamageInfo()
-                dmg:SetAttacker(self:GetOwner())
-                dmg:SetInflictor(self)
-                local dmgnum;
-                if math.Rand() < self.CritRand then // CRIT!
-                    dmgnum = math.random(self.MinDMG*2, self.MaxDMG*2)
-                    // HERE need cartoon sound of punch
-                else
-                    dmgnum = math.random(self.MinDMG, self.MaxDMG)
-                end
-                dmg:SetDamage(dmgnum)
-                ent:SetLastHitGroup(trace.HitGroup)
-                ent:TakeDamageInfo(dmg)
+            local part = HitGroupPart[trace.HitGroup]
+            local dmg = DamageInfo()
 
-                ent:SetVelocity(trace.Normal * punch_force, trace.HitPos)
+            dmg:SetAttacker(self:GetOwner())
+            dmg:SetInflictor(self)
 
+            if math.random() < self.CritRand then // CRIT!
+                dmg:SetDamage( math.random(self.MinDMG*2, self.MaxDMG*2) )
             else
-                // dont apply damage to entity
-                // need it?
-                local phys = ent:GetPhysicsObject()
-                if phys:IsValid() then
-                    phys:ApplyForceOffset( trace.Normal * punch_force, trace.HitPos )
-                end
+                dmg:SetDamage( math.random(self.MinDMG, self.MaxDMG) ) 
+            end
+
+            if ent:IsPlayer() then
+                ent:SetLastHitGroup(trace.HitGroup)
+            end
+
+            ent:TakeDamageInfo(dmg)
+
+            if ent:IsPlayer() or ent:IsNPC() then
+                ent:SetVelocity(trace.Normal * punch_force, trace.HitPos)
+            else
+                ent:GetPhysicsObject():AddVelocity(trace.Normal * punch_force)
             end
         end
     end)
+
+    self:SetNextPrimaryFire(CurTime() + 0.8)
 end
 
 local block_time = 1
 local block_cooldown = 0.1
 
 function SWEP:Block()
-    // блок удара 
-    // блокируем удары ближнего боя у головы и верхней части туловища
-    // урон, который наносит удар, уменьшаем (0.5x) и переносим на руки
-    // в viewmodel мы поднимаем руки чуть выше
-    // для окружающих мы ставим holdtype camera
-    // время блока - 0.5 sec
     if CurTime() < self.BlockCD then return end
 
     self.StartB = CurTime()
@@ -416,6 +409,18 @@ end
 
 function SWEP:ItemPrimary()
     print("PRIMARY ACTION", self:GetItem())
+    local ent = self:GetItem()
+    if ent.ItemPrimary then
+        ent:ItemPrimary(self, self:GetOwner())
+    end
+end
+
+function SWEP:ItemSecondary()
+    print("SECONDARY ACTION", self:GetItem())
+    local ent = self:GetItem()
+    if ent.ItemSecondary then
+        ent:ItemSecondary(self, self:GetOwner())
+    end
 end
 
 function SWEP:PrimaryAttack()
@@ -427,7 +432,7 @@ function SWEP:PrimaryAttack()
     else
         if self:HaveItem() then
             self:ItemPrimary()
-        else
+        elseif self:GetOwner():KeyDown(IN_WALK) then
             self:PickupItem()
         end
     end
@@ -447,7 +452,8 @@ function SWEP:SecondaryAttack()
         self:Block()
     else
         if self:HaveItem() then
-            self:ItemSecondary()
+            
+            
         end
     end 
 end
@@ -506,18 +512,21 @@ function SWEP:DropItem()
         
         local trace = {
             start = start,
-            endpos = start + vector:Forward() * 200,
+            endpos = start + vector:Forward() * 100,
             filter =  function( ent ) return ( ent != self:GetOwner() ) end
         }
         
-        trace = util.TraceLine(trace)
+        trace = util.TraceEntityHull(trace, ent)
         
-        debugoverlay.Line( self:GetOwner():EyePos(), trace.HitPos)
+        //debugoverlay.Line( self:GetOwner():EyePos(), trace.HitPos)
+        debugoverlay.Cross(trace.HitPos, 5)
         ent:ItemRecover(trace.HitPos )
     end
 
     self:SetItem(nil)
     self:UpdateHoldType()
+
+    self:UpdateCSModels()
     
     hook.Run("HandDropItem", self:GetOwner(), self, ent)
 end

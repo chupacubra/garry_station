@@ -15,7 +15,7 @@ ENT.CanPickup   = true
 
 ENT.Name  = "NAME"
 ENT.Desc  = "DESC"
-ENT.Model = ""
+//ENT.Model = ""
 ENT.Size  = ITEM_SMALL
 ENT.Color = nil
 ENT.CarryAng = Angle(0,0,0)
@@ -33,12 +33,12 @@ end
 
 function ENT:Initialize()
     self:PreInit()
-
+    print(self.Name, self.Desc, self.Category)
+    PrintTable(self.BaseClass)
     self:SetModel(self.Model or "models/props_junk/cardboard_box004a_gib01.mdl")
     self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-    self:SetUseType(SIMPLE_USE)
     
     local phys = self:GetPhysicsObject()
     if (phys:IsValid()) then
@@ -52,7 +52,9 @@ function ENT:Initialize()
     end
 
     if SERVER then
+        self:SetUseType(SIMPLE_USE)
         self:CallOnRemove("ItemDeleting", function(ent)
+            if !ent.Container then return end 
             if ent.Container:IsPlayer() then
                 player_manager.RunClass(ent.Container, "RemoveFromInventary", ent)
             end
@@ -161,8 +163,10 @@ end
 
 function ENT:Think()
     //if #self.ThinkLine == 0 then return end
-    for _, func in pairs(self.ThikLine) do
-        func(self)
+    if SERVER then
+        for _, func in pairs(self.ThinkLine) do
+            func(self)
+        end
     end
 end
 

@@ -8,5 +8,5 @@ local hide = {
 }
 
 hook.Add( "HUDShouldDraw", "HideHUD", function( name )
-	//return hide[name] != true
+	return hide[name] != true
 end)

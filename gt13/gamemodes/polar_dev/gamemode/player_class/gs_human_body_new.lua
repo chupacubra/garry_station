@@ -442,20 +442,22 @@ function PLAYER_HP:Death()
 		spawn a ragdoll, ragdoll of death person
 		set him equipments and other
 	]]
+		--[[
 	debug.Trace()
 
 	if self.Ragdolled then
 		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
 	else
 		--[[ create ragdoll]]
-		self:Ragdollize()
-		GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
-	end
+		--self:Ragdollize()
+		--GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
+	--end
 
 	self:StopThink()
-	self:CloseHudClient()
-	self.Player.ClassDead = true
-	self.Player:Kill()
+
+	--self:CloseHudClient()
+	--self.Player.ClassDead = true
+	//self.Player:Kill()
 end
 
 function PLAYER_HP:CritParalyze(delay,hard)
