@@ -1,3 +1,5 @@
+print("123")
+
 local ContextMenu = {}
 
 local function ClearContextMenu()
@@ -11,6 +13,7 @@ local function ClearContextMenu()
 end
 
 function OpenMenu()
+    print("123")
     ContextMenu.Items = {}
     local w, h = ScrW(), ScrH()
 
@@ -44,15 +47,16 @@ function OpenMenu()
 end
 
 function ContextMenuKey(open)
+    print("123")
     gui.EnableScreenClicker(open)
     if open then
-        //OpenMenu()
+        OpenMenu()
     else
         // close gui
-        //ClearContextMenu()
+        ClearContextMenu()
         return
     end
 end
 
-hook.Add("OnContextMenuOpen", "GameContextMenu", function() ContextMenuKey(true) end)
+hook.Add("OnContextMenuOpen", "GameContextMenu", function() print(123); ContextMenuKey(true) end)
 hook.Add("OnContextMenuClose", "GameContextMenu", function() ContextMenuKey(false) end)

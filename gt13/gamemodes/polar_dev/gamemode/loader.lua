@@ -21,10 +21,12 @@ local folder_ignore = {
 
 function loadfiles(path, files) 
     for _, fil in ipairs(files) do
+        if string.Left(fil, 1) == "!" then continue end
         subs = string.Left(fil, 3)
         fn = path.."/"..fil
         print(fn)
         if file_ignore[fn] then continue end
+        
         if subs == "sh_" then
             if SERVER then
                 AddCSLuaFile(fn)

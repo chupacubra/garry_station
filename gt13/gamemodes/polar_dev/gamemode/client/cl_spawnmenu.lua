@@ -13,7 +13,7 @@ local function GetSpawnEntTable()
         })
     end
 
-    PrintTable(arr)
+    //PrintTable(arr)
     return arr
 end
 

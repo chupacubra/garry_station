@@ -46,9 +46,76 @@ SWEP.WorldModelBonemerge  = true
 SWEP.WorldModelBodyGroups = {}
 SWEP.WorldModelOffsets    = {}
 
+SWEP.Zoom = false
+SWEP.SightPos = Vector()
+SWEP.SightAng = Angle()
+
+//SWEP.addPos = Vector()
+//SWEP.addAng = Angle()
+
 if SERVER then
     util.AddNetworkString("gs_swep_update_wm")
 end
+
+local defaultBulletPosAng = {
+	default = {Vector(7.7, 0.4, 3.95), Angle(-3, 5.5, 0)},
+	revolver = {Vector(7.7, 0.4, 3.95), Angle(-3, 5.5, 0)},
+	ar2 = {Vector(20, -0.8, 11.2), Angle(-9.5, 0, 0)},
+	smg = {Vector(14, -0.8, 6.8), Angle(-9.5, 0, 0)},
+}
+
+function SWEP:GetDefaultLocalMuzzlePos()
+	local pos, ang = unpack(defaultBulletPosAng[self:GetHoldType()] or defaultBulletPosAng.default)
+
+	return pos, ang
+end
+
+function SWEP:GetDefaultMuzzlePos()
+	local owner = self:GetOwner()
+	if not IsValid(owner) then return end
+	local att = owner:GetAttachment(owner:LookupAttachment('anim_attachment_rh'))
+	if not att then return end
+	local lpos, lang = self:GetDefaultLocalMuzzlePos()
+	local pos, ang = LocalToWorld(lpos, lang, att.Pos, att.Ang)
+
+	return pos, ang
+end
+
+function SWEP:GetBulletSourcePos()
+	if self.addPos or self.addAng then
+		local owner = self:GetOwner()
+		if not IsValid(owner) then return end
+		local att = owner:GetAttachment(owner:LookupAttachment('anim_attachment_rh'))
+		if att then
+			local defaultlpos, defaultlang = self:GetDefaultLocalMuzzlePos()
+			local pos, ang = LocalToWorld(self.addPos or defaultlpos, self.addAng or defaultlang or angle_zero, att.Pos, att.Ang)
+
+			return pos, ang
+		end
+
+    end
+
+	local pos, ang = self:GetDefaultMuzzlePos()
+
+
+	return pos, ang
+end
+
+function SWEP:BulletCallbackFunc(dmgAmt, ply, tr, dmg, tracer, hard, multi)
+	if tr.MatType == MAT_FLESH then
+		util.Decal("Blood", tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal)
+		local vPoint = tr.HitPos
+		local effectdata = EffectData()
+		effectdata:SetOrigin(vPoint)
+		util.Effect("BloodImpact", effectdata)
+	end
+
+	if tr.HitSky then return end
+	if hard then
+
+	end
+end
+
 
 function SWEP:UpdateHoldType()
     local holdtype = self.HoldType
@@ -58,12 +125,8 @@ function SWEP:UpdateHoldType()
     elseif holdtype == "shotgun" then
         if self.Zoom then holdtype = "ar2" end
     elseif holdtype == "ar2" or holdtype == "smg" then
-        if self.Zoom then holdtype = "rpg" end
+        //if self.Zoom then holdtype = "rpg" end
     end
-
-   -- if self.NeedTwoHand and !HandsFree(self:GetOwner()) then
-    --    holdtype = "passive"
-    --end
 
     self:SetHoldType(holdtype)
 end
@@ -197,6 +260,41 @@ function SWEP:OnRemove()
     if IsValid(self.WMGun) then self.WMGun:Remove() end
 end
 
+function SWEP:DevShoot()
+    if not IsValid(self) then return nil end
+
+	if self:GetOwner():IsPlayer() then
+		self:GetOwner():LagCompensation(true)
+	end
+
+	local shootOrigin, shootAngles = self:GetBulletSourcePos()
+	local shootDir = shootAngles:Forward()
+
+    debugoverlay.Line(shootOrigin, shootOrigin + shootDir*1000,1,nil, true)
+
+	local ply = self:GetOwner()
+	local bullet = {}
+	local cone = self.Primary.Cone
+	bullet.Num = self.NumBullet or 1
+	bullet.Src = shootOrigin
+	bullet.Dir = shootDir
+	bullet.Spread = Vector(cone, cone, 0)
+	bullet.Tracer = 1
+	bullet.TracerName = 4
+	bullet.Force = 100 / 20
+	bullet.Damage = dmg or 25
+	//bullet.AmmoType = self.Primary.Ammo
+	bullet.Attacker = ply
+
+	self:FireBullets(bullet)
+	if self:GetOwner():IsPlayer() then
+		self:GetOwner():LagCompensation(false)
+	end
+
+    self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    ply:SetAnimation(PLAYER_ATTACK1)
+end
+
 net.Receive("gs_swep_update_wm", function(_, ply)
     local self = net.ReadEntity()
     local set  = net.ReadString()
@@ -204,3 +302,47 @@ net.Receive("gs_swep_update_wm", function(_, ply)
     self:ChangeBodyGroup(set)
 end)
 
+
+local vecZero = vector_origin
+local angZero = angle_zero
+local hg_show_hitposmuzzle = CreateClientConVar("hg_show_hitposmuzzle", 0, false, false, "Shows debug weapon hitpos", 0, 2)
+local x = Vector(1, 0.025, 0.025)
+hook.Add(
+	"HUDPaint",
+	"admin_hitpos",
+	function()
+		if hg_show_hitposmuzzle:GetInt() <= 0 then return end
+		if not LocalPlayer():IsAdmin() then return end
+		local wep = LocalPlayer():GetActiveWeapon()
+		if not IsValid(wep) or wep.Base ~= "salat_base" then return end
+		local att = wep:LookupAttachment("muzzle")
+		if not att then return end
+		local att = wep:GetAttachment(att)
+		if not att then return end
+		local shootOrigin, shootAngles = wep:GetBulletSourcePos()
+		local tr = util.QuickTrace(shootOrigin, shootAngles:Forward() * 1000, LocalPlayer())
+		local hit = tr.HitPos:ToScreen()
+		surface.SetDrawColor(color_white)
+		surface.DrawRect(hit.x - 2.5, hit.y - 2.5, 5, 5)
+	end
+)
+
+hook.Add(
+	"PostDrawTranslucentRenderables",
+	"Boxxie",
+	function()
+		if hg_show_hitposmuzzle:GetInt() <= 1 then return end
+		if not LocalPlayer():IsAdmin() then return end
+		local wep = LocalPlayer():GetActiveWeapon()
+		if not IsValid(wep) or wep.Base ~= "salat_base" then return end
+		local att = wep:LookupAttachment("muzzle")
+		if not att then return end
+		local att = wep:GetAttachment(att)
+		if not att then return end
+		local shootOrigin, shootAngles = wep:GetBulletSourcePos()
+		render.SetColorMaterial() -- white material for easy coloring
+		cam.IgnoreZ(true) -- makes next draw calls ignore depth and draw on top
+		render.DrawBox(shootOrigin, shootAngles, x, -x, color_white) -- draws the box 
+		cam.IgnoreZ(false) -- disables previous call
+	end
+)

@@ -2,6 +2,9 @@ if CLIENT and LocalPlayer ~= nil then
     local nearz
 	local plymodel
 	local shrunkbones = {}
+    local timeSight = 0.5
+    local mins, maxs = Vector( -5, -5, -5 ), Vector( 5, 5, 5 )
+
     local function init()
         hook.Remove("CalcView", "FPCalcView")
         hook.Remove("ShouldDrawLocalPlayer", "FPShouldDrawLocalPlayer")
@@ -9,12 +12,19 @@ if CLIENT and LocalPlayer ~= nil then
         CreateClientConVar("fp", Entity(0):GetNWInt("fp_enabledbydefault", -1), false)
         CreateClientConVar("fp_complexity", 0, true)
         CreateClientConVar("fp_nearz", 1, true)
-        chat.AddText("Ott's Full Body First Person loaded! Run \"fp 1\" in the console to enable.")
+        //chat.AddText("Ott's Full Body First Person loaded! Run \"fp 1\" in the console to enable.")
+
         local realang = LocalPlayer():EyeAngles()
         local prevang = realang
         local viewpos = LocalPlayer():GetShootPos()
         local complexity = tonumber(GetConVarNumber("fp_complexity"))
+        local sightStart = false
+        local timeToSight  = 0
+        local sighting = false
+        local timeSightStart = 0
+
         nearz = GetConVarNumber("fp_nearz")
+
         local function GetRealEyeTrace(pos)
             local td = {}
             td.start = viewpos
@@ -22,7 +32,7 @@ if CLIENT and LocalPlayer ~= nil then
             td.filter = {LocalPlayer(), LocalPlayer():GetVehicle()}
             local tr = util.TraceLine(td)
             return tr
-        end
+        end 
 
 		local function shrinkbones(bone)
 			for k, v in pairs(LocalPlayer():GetChildBones(bone)) do
@@ -33,12 +43,14 @@ if CLIENT and LocalPlayer ~= nil then
 			end
 			LocalPlayer():ManipulateBoneScale(bone, Vector(0, 0, 0))
 		end
+
 		local function restorebones()
 			for bone, vec in pairs(shrunkbones) do
 				LocalPlayer():ManipulateBoneScale(bone, vec)
 				shrunkbones[bone] = nil
 			end
 		end
+
         local function MyCalcView( ply, pos, angles, fov )
 			if plymodel ~= ply:GetModel() then
 				plymodel = ply:GetModel()
@@ -50,16 +62,72 @@ if CLIENT and LocalPlayer ~= nil then
                 hatpos, hatang = ply:GetBonePosition(hat)
                 hatpos = hatpos or LocalPlayer():GetShootPos()
 				shrinkbones(hat)
-                view.origin = LocalToWorld(Vector(5,0,0), Angle(0,0,0), hatpos, angles)  + angles:Up() * 1
+
+                campos = hatpos  + angles:Up() * 5
+
+                local weap = ply:GetActiveWeapon()
+
+                if weap then
+                    if weap.Zoom and !sightStart then
+                        sightStart = true
+                        timeSightStart = SysTime()
+                        //print("Time to Sight")
+                    elseif !weap.Zoom and sightStart then
+                        timeSightStart = SysTime()
+                        sightStart = false
+                        //print("Time to unsight")
+                    end
+                end
+
+                local hand = ply:LookupBone("ValveBiped.Bip01_R_Hand")
+                local handPos, handAng = ply:GetBonePosition(hand)
+                //campos = LocalToWorld( weap.SightPos, weap.SightAng, handPos, handAng)
+
+                if weap.Zoom then
+                    campos = LocalToWorld( weap.SightPos, weap.SightAng, handPos, handAng)
+                    //print(timeSightStart, timeSightStart + timeSight,timeSight < CurTime())
+                    if timeSightStart + timeSight > SysTime()  then
+                        campos = Lerp( ( SysTime() - timeSightStart ) / timeSight, viewpos, campos )
+                    end
+                    //realang = realang + weap.SightAng
+                
+                    local gunang = handAng
+
+                    local trace = util.TraceLine({
+                        start = handPos + weap.WorldModelOffsets.pos,
+                        endpos = handPos + gunang:Forward()*10000
+                    })
+                    //debugoverlay.Line( handPos + weap.WorldModelOffsets.pos, trace.HitPos, 1, nil , true)
+                else
+                    if timeSightStart + timeSight > SysTime()  then
+                        campos = Lerp( ( SysTime() - timeSightStart ) / timeSight, viewpos, campos )
+                    end
+                end
+                //local realang = LocalPlayer():EyeAngles()
+                view.origin = campos
                 viewpos = view.origin
-                view.angles = realang
+
+                handAng = handAng + Angle(0,0,180)
+
+                if weap.Zoom then
+                    view.angles = realang//realang + weap.SightAng 
+                else
+                    view.angles = realang
+                end
                 view.znear = nearz
-                //view.fov = 100
+                
+                local trace = util.TraceLine({
+                    start = view.origin,
+                    endpos = view.origin + view.angles:Forward()*10000
+                })
+                //debugoverlay.Line( view.origin, trace.HitPos, 1, nil )
                 return view
             else
 				restorebones()
             end
         end
+
+
         local function MyCreateMove(cmd)
             realang = realang + cmd:GetViewAngles() - prevang
             realang:Normalize()
@@ -86,9 +154,13 @@ if CLIENT and LocalPlayer ~= nil then
             end
             prevang = cmd:GetViewAngles()
         end
+
+
         local function MyDrawPlayer( ply )
             return true
         end
+
+
         local function MyCamera(ply)
             if ply:GetViewEntity() == ply then
                 ply:SetNoDraw(true)
@@ -106,6 +178,7 @@ if CLIENT and LocalPlayer ~= nil then
             hook.Add("CameraTakePicture", "FPCam", MyCamera)
             chat.AddText("Full Body First Person enabled! To disable, run \"fp 0\".\nIf FBFP is laggy, then change fp_complexity to a lower value.\n\nfp_complexity 0 is the simplest mode but offers no aim correction.\nfp_complexity 1 corrects the aim, but introduces a feedback loop if you look down while using certain weapons.\nfp_complexity 2 corrects the aim and prevents feedback loops.")
         end
+
         cvars.AddChangeCallback("fp", function()
             local new = tonumber(GetConVarNumber("fp"))
             if new ~= 0 then
@@ -123,6 +196,7 @@ if CLIENT and LocalPlayer ~= nil then
                 LocalPlayer():ManipulateBoneScale(LocalPlayer():LookupBone("ValveBiped.Bip01_Head1") or 6, Vector(1, 1, 1))
             end
         end)
+
         cvars.AddChangeCallback("fp_complexity", function()
             local c = tonumber(GetConVarNumber("fp_complexity"))
             c = tonumber(c)
@@ -130,6 +204,7 @@ if CLIENT and LocalPlayer ~= nil then
             c = c <= 2 and c or 2
             complexity = tonumber(c)
         end)
+
         cvars.AddChangeCallback("fp_nearz", function()
             nearz = GetConVarNumber("fp_nearz")
             if nearz > 25 then
@@ -142,8 +217,8 @@ if CLIENT and LocalPlayer ~= nil then
             end
         end)
 
-
     end
+
     local function retry()
         if LocalPlayer() == NULL then
             timer.Simple(1, retry)
@@ -151,7 +226,9 @@ if CLIENT and LocalPlayer ~= nil then
             init()
         end
     end
+
     retry()
+
     local function populate()
         spawnmenu.AddToolMenuOption("Options", "Player", "fbfp_control", "Full Body First Person", "", "", function(panel)
             panel:AddControl("Header", {Text = "Full Body First Person", Description = "Gives you a lower body"})
@@ -160,6 +237,7 @@ if CLIENT and LocalPlayer ~= nil then
             panel:AddControl("Slider", {Label = "NearZ", Type = "Float", Min = 1, Max = 25, Command = "fp_nearz"})
         end)
     end
+
     hook.Add("PopulateToolMenu", "fbfp_tm", populate)
 end
 if SERVER then
@@ -169,3 +247,4 @@ if SERVER then
     //    Entity(0):SetNWInt("fp_enabledbydefault", GetConVarNumber("fp_enabledbydefault"))
     //end)
 end
+

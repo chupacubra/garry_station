@@ -6,7 +6,8 @@ SWEP.Purpose			= ""
 SWEP.Instructions		= ""
 
 SWEP.Primary.ClipSize       = -1
-SWEP.Primary.Automatic      = false
+SWEP.Primary.Automatic      = true
+SWEP.Primary.Sound = "weapons/p90/p90-1.wav"
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
@@ -42,7 +43,20 @@ SWEP.WorldModelBodyGroups = {
     }
 }
 SWEP.WorldModelOffsets    = {
-    pos = Vector(4,-2,-2),
-    ang = Angle(0,90,180)
+    pos = Vector(4,-1.5,-3),
+    ang = Angle(0,85,185)
 }
 SWEP.Spawnable = true
+
+SWEP.addPos = Vector(5, 0.1, 4)
+SWEP.addAng = Angle(-2.5, 5.05, 0)
+SWEP.sightPos = Vector(4.2, 11, 1.3) --Vector(3.7, 15, 1.55)
+SWEP.sightAng = Angle(4, 8, 0)
+SWEP.fakeHandRight = Vector(3.5, -1.5, 2)
+
+function SWEP:PrimaryAttack()
+    self:DevShoot()
+    self:SetNextPrimaryFire(CurTime()+0.1)
+    self:EmitSound(self.Primary.Sound)
+end
+
