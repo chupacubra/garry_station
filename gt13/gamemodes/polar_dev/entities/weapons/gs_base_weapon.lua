@@ -22,7 +22,10 @@ SWEP.SoundShot   = ""
 SWEP.SoundReload = ""
 SWEP.Silenced    = false
 
-SWEP.MuzzlePos      = nil
+SWEP.MuzzlePos      = Vector(50, -0.8, 20)
+SWEP.MuzzleAng      = Angle(-9.5, 0, 0)
+
+
 SWEP.ShellPos       = nil
 
 SWEP.HoldType       = "pistol"  // basic holdtype
@@ -50,7 +53,12 @@ SWEP.Zoom = false
 SWEP.SightPos = Vector()
 SWEP.SightAng = Angle()
 
-//SWEP.addPos = Vector()
+SWEP.HandOffsetVec = Vector(2,10, 0)
+SWEP.HandOffsetAng = Angle(90, 0, 0)
+
+
+
+//SWEP.addPos = Vector(0,0,100)
 //SWEP.addAng = Angle()
 
 if SERVER then
@@ -65,8 +73,12 @@ local defaultBulletPosAng = {
 }
 
 function SWEP:GetDefaultLocalMuzzlePos()
-	local pos, ang = unpack(defaultBulletPosAng[self:GetHoldType()] or defaultBulletPosAng.default)
-
+    local pos, ang
+    if self.MuzzlePos and self.MuzzleAng then
+        pos, ang = self.MuzzlePos, self.MuzzleAng
+    else
+	    pos, ang = unpack(defaultBulletPosAng[self:GetHoldType()] or defaultBulletPosAng.default)
+    end
 	return pos, ang
 end
 
@@ -77,7 +89,7 @@ function SWEP:GetDefaultMuzzlePos()
 	if not att then return end
 	local lpos, lang = self:GetDefaultLocalMuzzlePos()
 	local pos, ang = LocalToWorld(lpos, lang, att.Pos, att.Ang)
-
+    //print("1213")
 	return pos, ang
 end
 
@@ -128,6 +140,7 @@ function SWEP:UpdateHoldType()
         //if self.Zoom then holdtype = "rpg" end
     end
 
+    print(self.HoldType, holdtype)
     self:SetHoldType(holdtype)
 end
 
@@ -185,7 +198,7 @@ function SWEP:InitializeWM()
     if !self.WorldModelCustom then return end
 
     self.WMGun = ClientsideModel(self.WorldModel)
-    print(self, self.WMGun, self.WorldModel)
+
     self:UpdateWMState()
 
     if self.WorldModelBodyGroups["base"] then
@@ -226,25 +239,22 @@ function SWEP:ChangeBodyGroup(bodygroups_set)
         end
     end
 end
-
+/*
 function SWEP:DrawWorldModel()
     if !self.WorldModelCustom then self:DrawModel() end
 end
-
+*/
 function SWEP:UpdateWMState(holster)
+    /*
     print("Update wm state",self.WMGun, holster)
     local gun = self.WMGun
     
-    if !gun then return end
+    if !IsValid(gun) then 
+        return
+    end
     local owner = self:GetOwner()
     if owner then
         if !holster then
-            print("EQUIP")
-            gun:FollowBone()
-
-            gun:FollowBone(owner, owner:LookupBone("ValveBiped.Bip01_R_Hand"))
-            gun:SetAngles(owner:LocalToWorldAngles(self.WorldModelOffsets.ang))
-            gun:SetPos(owner:LocalToWorld(self.WorldModelOffsets.pos))
             gun:SetNoDraw(false)
         else
             // the drawing of wep in another hand in plyhanddraw
@@ -253,13 +263,59 @@ function SWEP:UpdateWMState(holster)
         gun:SetParent(self)
         gun:SetNoDraw(false)
     end
+    */
+end
+
+function SWEP:DrawWorldModel()
+    local ply = self:GetOwner()
+
+    //local _Owner = self:GetOwner()
+
+    local gun = self.WMGun
+
+    if (IsValid(ply)) then
+        -- Specify a good position
+        local offsetVec = self.WorldModelOffsets.pos
+        local offsetAng = self.WorldModelOffsets.ang
+        
+        local boneid = ply:LookupBone("ValveBiped.Bip01_R_Hand") -- Right Hand
+        if !boneid then return end
+
+        local matrix = ply:GetBoneMatrix(boneid)
+        if !matrix then return end
+
+        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
+
+        gun:SetRenderOrigin(newPos)
+        gun:SetRenderAngles(newAng)
+
+        gun:SetupBones()
+	    gun:DrawModel()
+        //print("123")
+    else
+        //self:SetPos(self:GetPos())
+        gun:SetRenderOrigin(self:GetPos())
+        gun:SetRenderAngles(self:GetAngles())
+	    gun:DrawModel()
+    end
+
 end
 
 function SWEP:OnRemove()
     if self:GetOwner() then hook.Run("PlayerDroppedWeapon", self:GetOwner(), self) end
     if IsValid(self.WMGun) then self.WMGun:Remove() end
 end
+/*
+function SWEP:MuzzleFlash()
+    local pos, ang = self:GetBulletSourcePos()
 
+    local effect = EffectData()
+    effect:SetOrigin(pos)
+    effect:SetAngles(ang)
+    effect:SetScale(1)
+    util.Effect("MuzzleEffect", effect)
+end
+*/
 function SWEP:DevShoot()
     if not IsValid(self) then return nil end
 
@@ -268,8 +324,14 @@ function SWEP:DevShoot()
 	end
 
 	local shootOrigin, shootAngles = self:GetBulletSourcePos()
-	local shootDir = shootAngles:Forward()
+    //print(shootOrigin, shootAngles)
+    local shootDir = shootAngles:Forward()
+    if SERVER then
+        debugoverlay.Cross(shootOrigin, 5, 1, Color(255,0,0), true)
+    else
+        debugoverlay.Cross(shootOrigin, 5, 1, Color(34,0,255), true)
 
+    end
     debugoverlay.Line(shootOrigin, shootOrigin + shootDir*1000,1,nil, true)
 
 	local ply = self:GetOwner()
@@ -282,16 +344,35 @@ function SWEP:DevShoot()
 	bullet.Tracer = 1
 	bullet.TracerName = 4
 	bullet.Force = 100 / 20
-	bullet.Damage = dmg or 25
+	bullet.Damage = 50//dmg or 25
 	//bullet.AmmoType = self.Primary.Ammo
 	bullet.Attacker = ply
 
 	self:FireBullets(bullet)
+
 	if self:GetOwner():IsPlayer() then
 		self:GetOwner():LagCompensation(false)
 	end
 
-    self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    if CLIENT then
+        PrintTable(self.WMGun:GetAttachments())
+    end
+
+    local ef = EffectData()
+    ef:SetEntity(self.WMGun)
+    ef:SetAttachment(1) -- self:LookupAttachment( "muzzle" )
+    ef:SetFlags(1) -- Sets the Combine AR2 Muzzle flash
+    ef:SetOrigin(shootOrigin)
+    ef:SetAngles(shootAngles)
+    ef:SetScale(1)
+    util.Effect("CS_MuzzleFlash_X", ef)
+    //util.Effect("CS_MuzzleFlash_X", effect)
+
+    //self:GetOwner():MuzzleFlash()
+    //self:MuzzleFlash()
+    //self:ShootEffects()
+    //self:SendWeaponAnim(ACT_VM_PRIMARYATTACK)
+    //print("123")
     ply:SetAnimation(PLAYER_ATTACK1)
 end
 

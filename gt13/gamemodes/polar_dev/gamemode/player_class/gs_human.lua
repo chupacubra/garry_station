@@ -1,4 +1,6 @@
 if SERVER then
+	AddCSLuaFile("gs_inventary.lua")
+
 	include("gs_inventary.lua")
 	include("gs_human_body_new.lua")
 	include("gs_human_body_organs.lua")
@@ -7,6 +9,7 @@ if SERVER then
 
 	//AddCSLuaFile("gs_cl_equipment.lua")
 else
+	include("gs_inventary.lua")
 	//include("gs_cl_equipment.lua")
 end
 
@@ -61,8 +64,23 @@ else
 	//for k,v in pairs(PLAYER_CL_EQ) do
 	//	PLAYER[k] = v
 	//end
-
+	for k,v in pairs(PLAYER_INVENTARY) do
+		PLAYER[k] = v
+	end
 end
+
+local function RunOnClient(ply, fun, broad)
+	net.Start("gs_cl_runOnClient")
+	net.WritePlayer(ply)
+	net.WriteString(fun)
+	
+	if broad then
+		net.Broadcast()
+	else
+		net.Send(ply)
+	end
+end
+
 
 function PLAYER:GetHandsModel()
 	local playermodel = player_manager.TranslateToPlayerModelName( self.Player:GetModel() )
@@ -76,7 +94,7 @@ function PLAYER:StopThink()
 	timer.Destroy("gs_hunger_"..i)
 	timer.Destroy("gs_organs_think_"..i)
 end
-
+--[[
 function PLAYER:InitHudClient()
 	net.Start("gs_cl_init_stat")
 	net.WriteBool(true)
@@ -88,15 +106,36 @@ function PLAYER:CloseHudClient()
 	net.WriteBool(false)
 	net.Send(self.Player)
 end
+--]]
+
+function PLAYER:InitClientState()
+	if SERVER then
+		net.Start("gs_cl_init_stat")
+		net.WritePlayer(self.Player)
+		net.WriteBool(true)
+		net.Broadcast()
+	else
+		self:SetupInventary()
+	end
+end
 
 function PLAYER:SetupSystems()
 	self:SetupInventary()
 	self:SetupHPSystem()
-	self:InitHudClient()
+	//self:InitClientState()
 end
 
 function PLAYER:Spawn()
 	self:SetupSystems()
+	if !self.FirstSpawn then
+		timer.Simple(1, function()
+			self:InitClientState()
+		end)
+	else
+		self:InitClientState()
+	end
+
+	self.FirstSpawn = true
 end
 
 function GS_EquipWeapon(ply, weapon) -- for start loadout
@@ -112,17 +151,11 @@ end
 function PLAYER:Loadout()
     self.Player:StripAmmo()
     self.Player:StripWeapons()
-	//print(123)
-	//
-	//self.Player:PickupWeapon("gs_hand_l")
-	//self.Player:PickupWeapon("gs_hand_r")
-	//
 
 	GS_EquipWeapon(self.Player, "gs_hands_l")
 	GS_EquipWeapon(self.Player, "gs_hands_r")
 
-	//self:SetupHandsMode()
-	//self.Player.Hands = self.Player:GetWeapon("gs_swep_hand")
+
 end
 
 local dev = GetConVar( "developer")
@@ -214,6 +247,23 @@ function PLAYER:BodyDebugPrint()
 end
 
 
+net.Receive("gs_cl_runOnClient", function()
+	local ply = net.ReadPlayer()
+	local fun = net.ReadString()
+
+	if ply then
+		player_manager.RunClass( ply, fun )
+	end
+end)
+
+net.Receive("gs_cl_init_stat", function()
+	local ply = net.ReadPlayer()
+
+	if ply then
+		player_manager.RunClass( ply, "InitClientState" )
+	end
+end)
+
 player_manager.RegisterClass( "gs_human", PLAYER, "player_default" )
 
 net.Receive("gs_cl_inventary_request_backpack",function(_, ply) 
@@ -244,7 +294,7 @@ net.Receive("gs_cl_inventary_examine_item", function(_, ply)
 	player_manager.RunClass( ply, "ExamineItemFromInventory", keyitem, from)
 end)
 
-
+--[[
 net.Receive("gs_cl_contex_item_action", function(len, ply)
 	local receiver = {}
 	local drop     = {}
@@ -267,7 +317,7 @@ end)
 net.Receive("gs_ent_container_close",function(_,ply)
 	player_manager.RunClass( ply, "CloseEntContainer", true)
 end)
-
+--]]
 net.Receive("gs_cl_actions_human", function(_, ply)
 	local target = net.ReadEntity()
 	local act    = net.ReadUInt(3)
@@ -278,7 +328,7 @@ end)
 net.Receive("gs_equipment_update", function(_, ply)
 	local key = net.ReadUInt(5)
 
-	player_manager.RunClass(ply, "RemoveEquip", FAST_EQ_TYPE[key] )
+	player_manager.RunClass(ply, "RemoveEquip", EQUIP_NAMES[key] )
 end)
 
 print("SKIBIDI")

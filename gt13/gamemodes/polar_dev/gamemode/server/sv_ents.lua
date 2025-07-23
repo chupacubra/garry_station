@@ -1,6 +1,7 @@
 hook.Add("PlayerSpawnedProp", "PGSpawn" , function( ply, model, entity )
     entity.Size = ITEM_SMALL
     entity.IsContainer = false
+    entity.Name = "Prop"
 end)
 
 hook.Add( "AllowPlayerPickup", "physpickup", function( ply, ent )
@@ -28,6 +29,12 @@ function ENT:ItemHide()
 end
 
 function ENT:SetParentContainer(parent)
+    if IsValid(self.Container) then
+        if self.Container.IsHands then
+            self.Container:SetItem(nil)
+        end
+    end
+
     if !parent:IsValid() then
         return
     end

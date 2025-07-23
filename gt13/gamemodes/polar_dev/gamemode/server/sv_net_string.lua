@@ -97,7 +97,12 @@ util.AddNetworkString("gs_cl_show_notify")
 
 // new strings
 util.AddNetworkString("gs_ent_run_callback")
+util.AddNetworkString("gs_cl_runOnClient")
 
+util.AddNetworkString("gs_cl_contex_item_action")
 
+util.AddNetworkString("gs_equip_item")
+util.AddNetworkString("gs_equip_sync")
+util.AddNetworkString("gs_equip_on")
 
-
+util.AddNetworkString("gs_sync_pockets")

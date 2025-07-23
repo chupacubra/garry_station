@@ -17,7 +17,7 @@ function AddEntItem(data, name, base)
     end 
 
     GS_EntityList[name] = data
-    PrintTable(GS_EntityList)
+    //PrintTable(GS_EntityList)
 end
 
 function RegisterEnts()

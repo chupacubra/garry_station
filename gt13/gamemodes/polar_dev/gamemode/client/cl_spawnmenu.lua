@@ -20,7 +20,10 @@ end
 spawnmenu.AddCreationTab( "Polar Entities", function(content)
     local main =  vgui.Create("DPanel")
     main:Dock(FILL)
-    function main:Paint() end
+    
+    function main:Paint()
+    end
+
     local grid = vgui.Create( "DGrid", main )
     grid:SetColWide( 105 )
     grid:SetRowHeight( 105 )

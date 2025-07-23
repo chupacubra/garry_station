@@ -1,8 +1,9 @@
 AddCSLuaFile()
 
-if SERVER then
-    include("pickup.lua")
-end
+
+//include("pickup.lua")
+include("container.lua")
+
 
 ENT.Type = "anim"
 
@@ -33,8 +34,7 @@ end
 
 function ENT:Initialize()
     self:PreInit()
-    print(self.Name, self.Desc, self.Category)
-    PrintTable(self.BaseClass)
+
     self:SetModel(self.Model or "models/props_junk/cardboard_box004a_gib01.mdl")
     self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -48,7 +48,7 @@ function ENT:Initialize()
     self:SetCollisionGroup(COLLISION_GROUP_WEAPON) -- for no collide with ply, for items only, big structures will be collided
 
     if self.Color then
-        self:SetColor(self.ENT_Color)
+        self:SetColor(self.Color)
     end
 
     if SERVER then
@@ -75,6 +75,9 @@ function ENT:Initialize()
     self.ThinkLine = {}
     self.ContextCallback = {}
 
+    self:SetupBaseContextCallbacks()
+    self:SetupContextCallbacks()
+
     self:PostInit()
 end
 
@@ -83,21 +86,30 @@ function ENT:CarryAng()
 end
 
 // UseItem()?
+function ENT:UseItem(ply)
+    print("ply used item")
+end
+
 function ENT:Use(ply)
     if ply:KeyPressed(IN_WALK) then
-        self:UseItem()
+        self:UseItem(ply)
         return
     end
 
-    if !self:IsPlayerHolding() and CanPickup(self) then ply:PickupObject(self) end
+    //if !self:IsPlayerHolding() and CanPickup(self) then ply:PickupObject(self) end
 end
 
-function ENT:PostInit()
-
-end
+// dont know, needed the pickupObject in game
 
 function ENT:PreInit()
 
+end
+
+function ENT:PostInit()
+    -- here or in preinit you can set custom initialize functions for your items
+    if self.IsContainer then
+        self:ContainerInit()
+    end
 end
 
 function ENT:ItemPrimary(hands, ply)
@@ -107,16 +119,17 @@ end
 function ENT:ItemSecondary(hands, ply)
     -- using item in hands RMB
 end
- 
-function ENT:GetButtons(self)
+/*
+function ENT:GetButtons()
     -- buttons for context menu
 end
-
+*/
 function ENT:ItemInteraction(drop, ply)
     // custom func to interact item with item (drop -> receiver)
     // if true then delete item from last cont
     // false - dont delete
     // return false
+    return false
 end
 
 /* "Use", sharedFunc, icon
@@ -127,34 +140,67 @@ AddContextCallback("Examine",
     end,
 "icon")
 */
-function ENT:AddContextCallback(name, func, icon)
+
+function ENT:SetupBaseContextCallbacks()
+    self:AddContextCallback("Examine",
+        function()
+            RichTextPrint("It's a {255 0 0}".. self.Name)
+            RichTextPrint(self.Desc)
+        end,
+    "icon16/eye.png")
+
+    if self.IsContainer then
+        self:AddContextCallback("Open",
+        function(btn)
+            if ispanel(btn) then
+                ContextMenuRequestContainer(btn, self)
+            end
+            self:OpenContainer()
+        end,
+        "icon16/briefcase.png")
+    end
+end
+
+function ENT:SetupContextCallbacks()
+    -- here you can edit custom context callbacks
+end
+
+-- 
+--
+function ENT:AddContextCallback(name, func, icon, server)
     self.ContextCallback[name] = {
         name = name,
         func = func,
         icon = icon,
+        needServer = server or false,
     }
 end
 
-function ENT:GetContextButtons()
+function ENT:GetContextButtons(args)
+    // local buttons = table.Copy(self.ContextCallback)
+    // эту функцию можно переделать, чтобы она выдавала кнопки,
+    // которые бы появлялись только при опред состоянии (к примеру одеть\снять что нить)
+    
+
     return self.ContextCallback
 end
 
 function ENT:RunContext(name, ply)
     if self.ContextCallback[name] == nil then return end
-    if self.ContextCallback[name]["func"] == nil then return end
+    if self.ContextCallback[name].func == nil then return end
 
-    if CLIENT then
+    if CLIENT and self.ContextCallback[name].needServer then
         net.Start("gs_ent_run_callback")
         net.WriteEntity(self)
         net.WriteString(name)
         net.SendToServer()
     end
 
-    self.ContextCallback[name][func](self, ply)
+    self.ContextCallback[name].func(self, ply)
 end
 
 function ENT:AddToThink(key, func)
-    self.ThinkLine[func] = func
+    self.ThinkLine[key] = func
 end
 
 function ENT:RemoveFromThink(key)
@@ -162,7 +208,6 @@ function ENT:RemoveFromThink(key)
 end
 
 function ENT:Think()
-    //if #self.ThinkLine == 0 then return end
     if SERVER then
         for _, func in pairs(self.ThinkLine) do
             func(self)

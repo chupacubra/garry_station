@@ -33,64 +33,11 @@ SWEP.CritRand = 0.2
 SWEP.BlockCD = 0
 SWEP.NextR = 0
 
+//SWEP.GMSWEP = true
 local SwingSound = Sound( "WeaponFrag.Throw" )
 local HitSound = Sound( "Flesh.ImpactHard" )
 
-/*
-need make some hard work
 
-this is base for 2 hands - gs_hand_l, gs_hand_r
-need making this to work together(?)
-
-for small arms (pistols) need 1 hand
-
-always drawn item in hand
-
-need SHARED version for 2 hands of combat mode or smthng
-
-the "broker" will be a player
-*/
-/*
-local function WMHandsModelUpdate(ply)
-    local cl_model = ClientsideModel(item:GetModel())
-    cl_model:SetColor(item:GetColor())
-
-    local h1 = ply:GetWeapon( "gs_hand_l" )
-    local h2 = ply:GetWeapon( "gs_hand_r" )
-
-    local a = ply:GetActiveWeapon()
-
-    if a != h1 and a != h2 then return end
-
-    local h = {
-        [h1] = ply:GetActiveWeapon() == h1,
-        [h2] = ply:GetActiveWeapon() == h2
-    }
-    
-    for hand, isActive in pairs(h) do
-        local item = hand:GetItem()
-        if !item then continue
-
-        local offsetVec = Vector(3, -3, -1)
-        local offsetAng = Angle(0, 0, 180)
-        
-        local boneid = ply:LookupBone( "ValveBiped.Bip01_R_Hand" and isActive or "ValveBiped.Bip01_L_Hand" )
-        if !boneid then return end
-
-        local matrix = ply:GetBoneMatrix(boneid)
-        if !matrix then return end
-
-        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
-
-        cl_model:SetPos(newPos)
-        cl_model:SetAngles(newAng)
-        cl_model:SetupBones()
-        cl_model:FollowBone( ply, boneid )
-
-        hand.WModel = cl_model
-    end
-end
-*/
 if SERVER then
     concommand.Add( "gs_manipcontrol_down", function(ply, str, arg)
         if ply:IsValid() and ply:Team() == TEAM_PLY then
@@ -157,22 +104,13 @@ function SWEP:SetupDataTables()
 		self:SetItem( NULL )
     else
         self:NetworkVarNotify( "Item", function(self, _, old, new)
-            /*
-            cl_plyhanddraw handle this
-
-            if new:IsValid() then
-                if !self.iwm:IsValid() then
-                    self.iwm = ClientsideModel(new:GetModel())
-                else
-                    self.iwm:SetModel(new:GetModel())
+            timer.Simple(0, function()
+                PlayerUpdateWorldModelsSWEP(self:GetOwner())
+                if ContextMenu.Open then
+                    ContextMenuUpdateButtonsHands()
                 end
-                
-            else
-                if self.iwm:IsValid() then
-                    self.iwm:Remove()
-                end
-            end
-            */
+                //print(self, _, old, new, self:GetItem())
+            end)
         end)
     end
 end
@@ -224,7 +162,7 @@ function SWEP:UpdateHoldType()
 end
 
 function SWEP:ItemInteraction(itm)
-    if self:GetItem():IsValid() then return end
+    if self:GetItem():IsValid() then return false end
     // put item in hand
     self:PickupItem(itm)
     return true
@@ -234,6 +172,8 @@ function SWEP:RemoveItem()
     if self:GetItem():IsValid() then return end
 
     self:SetItem(NULL)
+    self:UpdateCSModels()
+    self:UpdateHoldType()
     return true
 end
  
@@ -319,8 +259,6 @@ function SWEP:PickupItem(item)
         end
         item = trace.Entity
     end
-
-    
     
     if item:IsPlayerHolding() then return end
 
@@ -334,6 +272,7 @@ function SWEP:PickupItem(item)
 
     self:SetItem(item)
     self:UpdateCSModels()
+    self:UpdateHoldType()
     print("Ent pickip", item)
     
     return true

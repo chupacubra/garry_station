@@ -75,17 +75,17 @@ function typeRet(item)
     return nil, item
 end
 
-function ItemType(item)
+function ItemType(item) // obsolet
     return item.Entity_Data.ENUM_Type
 end
 
-function ItemSubType(item)
-    return item.Entity_Data.ENUM_Subtype
-end
+//function ItemSubType(item)
+//    return item.Entity_Data.ENUM_Subtype
+//end
 
-function FQT(item)
-    return FAST_EQ_TYPE[item.Entity_Data.ENUM_Subtype]
-end
+//function FQT(item)
+//    return EQUIP_NAMES[item.Entity_Data.ENUM_Subtype]
+//end
 
 function FitInContainer(maxsize, drp )
     if drp.ENUM_Type == GS_ITEM_CONTAINER  or (drp.ENUM_Type == GS_ITEM_EQUIP and drp.ENUM_Type == GS_EQUIP_BACKPACK) then
@@ -288,4 +288,53 @@ function getGameTimeStamp()
     -- 2052-10-31 18:00:00
     local t = os.date("!*t")
     return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
+end
+
+
+/*
+need function for convert string to args for richprint chat text
+    in:
+        "It's a {100 100 100}skibidi toilet"
+    out:
+        tbl = {"It's a ", Color(100,100,100), "skibidi toilet"}
+
+function RichPrint(arg_text)
+    chat.AddText(  )
+end
+*/
+
+local function parseRichText(str)
+    local result = {}
+    local pattern = "([^{]*){(.-)}"
+    local pos = 1
+
+    while true do
+        local text, content = str:match(pattern, pos)
+        if not text and not content then
+
+            local remaining = str:sub(pos)
+            if remaining ~= "" then
+                table.insert(result, remaining)
+            end
+            break
+        end
+
+        if text ~= "" then
+            table.insert(result, text)
+        end
+
+        local clr = {}
+        for num in content:gmatch("%d+") do
+            table.insert(clr, tonumber(num))
+        end
+
+        table.insert(result, Color(clr[1], clr[2], clr[3]))
+        pos = pos + #text + #content + 2
+    end
+
+    return result
+end
+function RichTextPrint(richText)
+    local args = parseRichText(richText)
+    chat.AddText(unpack(args))
 end

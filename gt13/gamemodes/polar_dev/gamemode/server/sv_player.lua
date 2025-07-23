@@ -141,7 +141,9 @@ end
 
 function GM:PlayerSwitchFlashlight()
 	-- make item flashlight
-	return false
+	//return false
+	return true
+
 end
 
 function GM:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
