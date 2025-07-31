@@ -56,4 +56,12 @@ function SWEP:PrimaryAttack()
     self:DevShoot()
     self:SetNextPrimaryFire(CurTime()+0.1)
     self:EmitSound(self.Primary.Sound)
+    self:MuzzleFlash()
+    self:ShootEffects()
+    local ef = EffectData()
+		ef:SetEntity(self.WMGun)
+		ef:SetAttachment(2) -- self:LookupAttachment( "muzzle" )
+		ef:SetFlags(1) -- Sets the Combine AR2 Muzzle flash
+		util.Effect("CS_MuzzleFlash", ef)
+    
 end

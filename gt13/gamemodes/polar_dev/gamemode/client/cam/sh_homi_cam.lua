@@ -56,6 +56,7 @@ surface.CreateFont(
 )
 
 local weps = {
+	["gs_mp5"]	= true,
 	["glock18"] = true,
 	["glock"] = true,
 	["ak74"] = true,
@@ -213,10 +214,11 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 			if scopeAiming() then
 				MyLerp = Lerp(4 * FrameTime(), MyLerp, 1)
 			else
+				
 				MyLerp = Lerp(6 * FrameTime(), MyLerp, 0.1)
 			end
-
-			podkid = Lerp(0.1, podkid, math.Clamp((guninfo.HoldType ~= "revolver" and ply:GetActiveWeapon():GetNWFloat("VisualRecoil") / 4) or ply:GetActiveWeapon():GetNWFloat("VisualRecoil") / 1, 0, 10))
+			
+			podkid = Lerp(0.1, podkid, math.Clamp((wep:GetHoldType() ~= "revolver" and ply:GetActiveWeapon():GetNWFloat("VisualRecoil") / 4) or ply:GetActiveWeapon():GetNWFloat("VisualRecoil") / 1, 0, 10))
 			org = hand.Pos + hand.Ang:Up() * guninfo.sightPos.x - hand.Ang:Forward() * guninfo.sightPos.y + hand.Ang:Right() * guninfo.sightPos.z + hand.Ang:Up() * podkid
 			ang = hand.Ang + guninfo.sightAng + Angle(podkid * 10, 0, 0)
 		end

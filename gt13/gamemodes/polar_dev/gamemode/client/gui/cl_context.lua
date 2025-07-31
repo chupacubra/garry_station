@@ -272,8 +272,11 @@ local function MakeButtonsHands()
             item = swep
             local menu = swep:GetContextButtons()
             if menu then bhand:SetContextMenu(menu) end
-        end
 
+        end
+        if IsValid(item) then
+            bhand:SetItem(item)
+        end
         bhand.cont = nil
         bhand.item = item
         bhand.type = CONTEXT_SWEP

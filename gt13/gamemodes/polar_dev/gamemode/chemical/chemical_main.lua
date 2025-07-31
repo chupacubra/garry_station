@@ -23,6 +23,10 @@ function CHEMIC_CONTAINER:GetAll()
 	return self.content
 end
 
+function CHEMIC_CONTAINER:GetSum()
+	return tblsum(self.content)
+end
+
 function CHEMIC_CONTAINER:HaveComp(name)
 	if self.content[name] then
 		return true, self.content[name]

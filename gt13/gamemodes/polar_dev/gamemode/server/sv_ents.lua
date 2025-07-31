@@ -13,7 +13,7 @@ local ENT = FindMetaTable("Entity")
 function ENT:ItemHide()
     // hide item - make invinsible, without physic, hide in client, parent to owner
     if self.Hided then
-        LogColor("w", "whou, item already hided, but need moore!? - "..tostring(self))
+        //LogColor("w", "whou, item already hided, but need moore!? - "..tostring(self))
         return
     end
 

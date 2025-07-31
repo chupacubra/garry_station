@@ -2,8 +2,8 @@
 // suitable for materials
 
 ENT.Stackable   = false
-ENT.MaxStack    = 5
-ENT.Stack       = 1
+ENT.MaxStack    = 20
+ENT.Stack       = 1 // NWInt?
 
 function ENT:SetStack(amount)
     if !self.Stackable then return end

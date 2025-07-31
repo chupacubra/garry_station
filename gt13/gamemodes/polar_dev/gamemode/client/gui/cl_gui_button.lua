@@ -90,14 +90,16 @@ function PANEL:Paint(w, h)
 end
 
 function PANEL:PaintOver( w, h ) end
-/*
+
 function PANEL:SetItem(item, cont)
-        self.container = btn
-        self.type = CONTEXT_CONTAINER_ITEM
-        self.id = i
-        self.item = item
+    self.Item = item
+    
+
+    //self:SetTooltipPanel(panel)
+    
+    self:SetTooltipPanelOverride("GUITooltip")
 end
-*/
+
 
 function PANEL:ClearItem()
 end

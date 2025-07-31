@@ -1,3 +1,4 @@
+if true then return end
 if CLIENT and LocalPlayer ~= nil then
     local nearz
 	local plymodel
