@@ -25,48 +25,17 @@ PLAYER.BaseRunSpeed  = PLAYER.RunSpeed
 PLAYER.UseVMHands = true
 PLAYER.PLYModel  = "models/player/Group01/male_07.mdl"
 
-function PLAYER:SetModel(name)
-	local modelname = name or PlayerModel()
-	
-	util.PrecacheModel( modelname )
-	self.Player:SetModel( modelname )
-
-	self.Player:SetupHands()
-end
 
 if SERVER then
-	--INCLUDE INVENTARY FUNCTION
-	for k,v in pairs(PLAYER_INVENTARY) do
-		PLAYER[k] = v
-	end
-
-	--INCLUDE BODY AND HP FUNCTION
-	for k,v in pairs(PLAYER_HP) do
-		PLAYER[k] = v
-	end
-
-	for k,v in pairs(PLAYER_ORGANS) do
-		PLAYER[k] = v
-	end
-
-	--INCLUDE EFFECTS
-	for k,v in pairs(PLAYER_EFFECT) do
-		PLAYER[k] = v
-	end
-
-	--INCLUDE CHAR
-	for k,v in pairs(PLAYER_CHAR) do
-		PLAYER[k] = v
-	end
-
+	table.Merge(PLAYER, PLAYER_INVENTARY)
+	table.Merge(PLAYER, PLAYER_HP)
+	table.Merge(PLAYER, PLAYER_ORGANS)
+	table.Merge(PLAYER, PLAYER_EFFECT)
+	table.Merge(PLAYER, PLAYER_CHAR)
 else
-	--INCLUDE CLIENT VIEW EQUIP FUNCTION
-	//for k,v in pairs(PLAYER_CL_EQ) do
-	//	PLAYER[k] = v
-	//end
-	for k,v in pairs(PLAYER_INVENTARY) do
-		PLAYER[k] = v
-	end
+
+	table.Merge(PLAYER, PLAYER_INVENTARY)
+
 end
 
 local function RunOnClient(ply, fun, broad)
@@ -79,6 +48,15 @@ local function RunOnClient(ply, fun, broad)
 	else
 		net.Send(ply)
 	end
+end
+
+function PLAYER:SetModel(name)
+	local modelname = name or PlayerModel()
+	
+	util.PrecacheModel( modelname )
+	self.Player:SetModel( modelname )
+
+	self.Player:SetupHands()
 end
 
 
@@ -94,19 +72,7 @@ function PLAYER:StopThink()
 	timer.Destroy("gs_hunger_"..i)
 	timer.Destroy("gs_organs_think_"..i)
 end
---[[
-function PLAYER:InitHudClient()
-	net.Start("gs_cl_init_stat")
-	net.WriteBool(true)
-	net.Send(self.Player)
-end
 
-function PLAYER:CloseHudClient()
-	net.Start("gs_cl_init_stat")
-	net.WriteBool(false)
-	net.Send(self.Player)
-end
---]]
 
 function PLAYER:InitClientState()
 	if SERVER then
@@ -154,14 +120,13 @@ function PLAYER:Loadout()
 
 	GS_EquipWeapon(self.Player, "gs_hands_l")
 	GS_EquipWeapon(self.Player, "gs_hands_r")
-
-
 end
 
 local dev = GetConVar( "developer")
 
 function PLAYER:BodyDebugPrint()
 	if !dev:GetBool() then return end
+
 	if true then return end
 	-- show debug with body status
 	-- need show:

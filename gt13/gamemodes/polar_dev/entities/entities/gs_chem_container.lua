@@ -81,9 +81,17 @@ NWVars:
     TranserCount 
 */
 
+//local transfer = CreateClientConVar( "gs_chem_trans", string default, boolean shouldsave = true, boolean userinfo = false, string helptext = "", number min = nil, number max = nil )
+
+if SERVER then
+    util.AddNetworkString("gs_chem_transfer")
+end
+
 function ENT:ChemContainerInit()
     local tbl = self.ChemContainer.Chems
     self.ChemContainer = CHEMIC_CONTAINER:New_Container(self, self.ChemContainerInit.Max)
+    self:SetNWInt("Chems", 0)
+
 end
 
 function ENT:PostInit()
@@ -93,22 +101,88 @@ function ENT:PostInit()
 
     if CLIENT and self.RenderChem then
         self:InitRenderChem()
+        self:SetNWVarProxy("Chems", function(_,_,_, new)
+            //self:ChemContainerUpdate()
+            self:UpdateMesh(self.ChemContainerInit.Max / new )
+        end)
+
+        self:SetNWVarProxy("ChemColor", function()
+            self:ChemContainerUpdate()
+        end)
     end
+
+    self:SetNWInt("Transfer", 5)
+end
+
+function ENT:SetTransfer(amount)
+    if CLIENT then
+        net.Start("gs_chem_transfer")
+        net.WriteEntity(self)
+        net.WriteUInt(amount, 8)
+        net.SendToServer()
+    else
+        self:SetNWInt("Transfer", amount)
+    end
+end
+
+local transfer_units = {1,2,5,10,15,20,30,40,50}
+
+function ENT:SetupContextCallbacks()
+    self:AddCustomContextCallback("transfer", function(btn, menu)
+        local subMenu, opt = menu:AddSubMenu("Transfer amount...")
+        subMenu:SetIcon("icon16/arrow_right.png")
+        for k, v in ipairs(transfer_units) do
+            local btn = subMenu:AddOption( v, function()
+                self:SetTransfer(v)
+            end)
+        end
+    end)
 end
 
 function ENT:ItemInteraction(item)
     // лить сюда ваду, мы ресивер
-    // item:TransferChems(item)
+    item:TransferChems(self)
+    return false
 end
 
 function ENT:ChemContainerUpdate()
     // обновление вады
     // её стало больше, смена цвета
-
-    self:SetNWInt("Chems", self.ChemContainer:GetSum())
-    self:SetNWColor("ChemColor", self.ChemContainer:GetColor())
+    //if SERVER then 
+        self:SetNWInt("Chems", self.ChemContainer:GetSum())
+        self:SetNWColor("ChemColor", self.ChemContainer:GetColor())
+    //else
+    //    self:InitRenderChemColor() // can also update
+    //    self:UpdateMesh(self.ChemContainerInit.Max / self:GetNWInt("Chems") )
+    //end
 end
 
+function ENT:TransferChems(receiver)
+    local rec_chem_cont = receiver.ChemContainer
+
+    local transfer = self:GetNWInt("Transfer")
+    
+    local rec_amount = rec_chem_cont:GetSum()
+    if transfer + rec_amount > rec_chem_cont.limit then
+        transfer = transfer + (limit - rec_amount)
+    end
+    if transfer <= 0 then return end
+
+    local drop_chems = FormContent(self.ChemContainer)
+    
+    local pour = PourLiquid(drop_chems, transfer)
+
+    self.ChemContainer.content = drop_chems
+    
+    for chem, unit in pairs(pour) do
+        rec_chem_cont:AddUnit(chem, unit)
+    end
+
+    self:ChemContainerUpdate()
+    rec_chem_cont:ChemContainerUpdate()
+
+    rec_chem_cont:MixComp()
+end
 
 local cache_verts = {}
 
@@ -121,8 +195,8 @@ local function FastGenVerts(ent)
     local origin = data.origin or vector_origin
     local seg = 20
     local cir = {}
-    local cir2 = {}
-    local radius = data.rad_max
+    //local cir2 = {}
+    //local radius = data.rad_max
     local radius2 = data.rad_min
     local min, max = data.height_min, data.height_max
 
@@ -203,8 +277,6 @@ function ENT:InitRenderChem()
     self.RenderChem_Mesh = obj
 end
 
-
-
 function ENT:UpdateMesh(level) // 0-1
     local data = self.RenderChem_Data
 
@@ -223,7 +295,6 @@ function ENT:UpdateMesh(level) // 0-1
     self.RenderChem_Height = Vector(0, 0, h)
 end
 
-
 function ENT:Draw()
     self:DrawModel()
     if !IsValid(self.RenderChem_Mesh) then return end
@@ -233,11 +304,18 @@ function ENT:Draw()
     local height = self.RenderChem_Height
 
     local m = Matrix()
-    m:SetTranslation(ent:LocalToWorld(height))
+    m:SetTranslation(self:LocalToWorld(height))
     m:SetScale(self.RenderChem_Size)
-    m:Rotate(ent:GetAngles())
+    m:Rotate(self:GetAngles())
 
     cam.PushModelMatrix( m, true )
         msh:Draw()
     cam.PopModelMatrix()
 end
+
+net.Receive("gs_chem_transfer", function()
+    local ent = net.ReadEntity()
+    local amnt = net.ReadUInt(8)
+
+    ent:SetTransfer(amnt)
+end)

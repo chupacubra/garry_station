@@ -16,20 +16,23 @@ ENT.CanPickup   = true
 
 ENT.Name  = "NAME"
 ENT.Desc  = "DESC"
-//ENT.Model = ""
+
 ENT.Size  = ITEM_SMALL
 ENT.Color = nil
 ENT.CarryAng = Angle(0,0,0)
 
-/*
-ENT.IsEquip = false
-ENT.TypeEquip = EQUIP_BACKPACK  
-*/
 
 local function CanPickup(ent)
     local phys = ent:GetPhysicsObject(ent)
     if !phys then return end
     return phys:GetMass() < 40
+end
+
+function ENT:SetupNWVars()
+end
+
+function ENT:SetupDataTables()
+    self:SetupNWVars()
 end
 
 function ENT:Initialize()
@@ -119,11 +122,7 @@ end
 function ENT:ItemSecondary(hands, ply)
     -- using item in hands RMB
 end
-/*
-function ENT:GetButtons()
-    -- buttons for context menu
-end
-*/
+
 function ENT:ItemInteraction(drop, ply)
     // custom func to interact item with item (drop -> receiver)
     // if true then delete item from last cont
@@ -141,11 +140,15 @@ AddContextCallback("Examine",
 "icon")
 */
 
+function ENT:Examine()
+    RichTextPrint("It's a {255 255 255}".. self.Name)
+    RichTextPrint("{255 255 255}"..self.Desc)
+end
+
 function ENT:SetupBaseContextCallbacks()
     self:AddContextCallback("Examine",
         function()
-            RichTextPrint("It's a {255 0 0}".. self.Name)
-            RichTextPrint(self.Desc)
+            self:Examine()
         end,
     "icon16/eye.png")
 
@@ -166,13 +169,23 @@ function ENT:SetupContextCallbacks()
 end
 
 -- 
+--  need add submenu
+--  submenu only 1 level deep
 --
-function ENT:AddContextCallback(name, func, icon, server)
+--
+function ENT:AddContextCallback(name, func, icon, sub, server)
     self.ContextCallback[name] = {
         name = name,
         func = func,
         icon = icon,
+        sub  = sub,
         needServer = server or false,
+    }
+end
+
+function ENT:AddCustomContextCallback(name, func)
+    self.ContextCallback[name] = {
+        custom = func
     }
 end
 

@@ -109,6 +109,8 @@ end
 
 function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and i dont want to do ths
 	local finalcomp = {}
+	//local content = table.Copy(self.content)
+	//content["temp"] = self.temp or 1
 	for k, v in pairs(self.content) do
 		if FAST_REC[k] then
 			for kk,vv in pairs(FAST_REC[k]) do
@@ -143,13 +145,14 @@ function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and 
 end
 
 
-function CHEMIC_CONTAINER:New_Container(ent_container, _limit) -- ent_container can be a bucket or player
+function CHEMIC_CONTAINER:New_Container(ent_container, limit) -- ent_container can be a bucket or player
 	local obj = {}
 
 	obj = {
-		limit = _limit or 100,
+		limit = limit or 100,
 		content = {},
 		ent = ent_container,
+		temp = 1;
 	}
 
 	table.Merge( obj, self ) -- fak setmetatable
@@ -210,4 +213,38 @@ function FormContent(bucket)
 		arr[k] = v:getUnits()
 	end
 	return arr
+end
+
+//shitgpt
+function PourLiquid(container, amount)
+    local poured = {}
+    local totalVolume = 0
+    
+    for substance, volume in pairs(container) do
+        totalVolume = totalVolume + volume
+    end
+    
+    if totalVolume <= 0 or amount <= 0 then
+        return poured
+    end
+    
+    if amount > totalVolume then
+        amount = totalVolume
+    end
+    
+    for substance, volume in pairs(container) do
+        local proportion = volume / totalVolume
+        local pouredVolume = proportion * amount
+        
+
+        poured[substance] = pouredVolume
+        
+        container[substance] = volume - pouredVolume
+        
+        if container[substance] < 0.001 then
+            container[substance] = nil
+        end
+    end
+    
+    return poured
 end

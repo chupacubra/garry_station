@@ -274,6 +274,7 @@ MAP_DMG = {
     [DMG_RADIATION]      = D_TOXIN,
 }
 
+
 ARMORY_PART = {
     head   = {"HEAD", "MASK"},
     hand_l = {"SUIT"},

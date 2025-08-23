@@ -78,7 +78,7 @@ end
 function SWEP:ItemHide()
     // hide item - make invinsible, without physic, hide in client, parent to owner
     if self.Hided then
-        LogColor("w", "whou, item already hided, but need moore!? - "..tostring(self))
+        GS_MSG( "whou, item already hided, but need moore!? - "..tostring(self), "w")
         return
     end
 

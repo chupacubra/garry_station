@@ -151,7 +151,9 @@ local oldFakeAng = Angle(0, 0, 0)
 local oldOrigin = Vector(0, 0, 0)
 local oldAng = Angle(0, 0, 0)
 local lerping = 1
+
 hook.Add("HUDDrawTargetID", "HidePlayerInfo", function() return false end)
+
 function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	local hand = ply:GetAttachment(ply:LookupAttachment("anim_attachment_rh"))
 	local eye = ply:GetAttachment(ply:LookupAttachment("eyes"))

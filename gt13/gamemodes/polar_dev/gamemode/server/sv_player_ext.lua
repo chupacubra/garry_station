@@ -38,7 +38,7 @@ end
 function PLAYER:IsActive()
     // can player use something, pickup something
     // if player is sleep or in ragdoll
-    return true
+    return ply:Team() == TEAM_PLY
 end
 
 function PLAYER:CreateRagdoll()

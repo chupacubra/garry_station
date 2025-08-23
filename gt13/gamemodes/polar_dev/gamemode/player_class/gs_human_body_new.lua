@@ -122,7 +122,7 @@ function PLAYER_HP:SetupOrganismThink()
 		end
 		--PrintTable(self.Player.Organism_Value)
 		--PrintTable(self.Player.Spec_Damage)
-		self:BodyDebugPrint()
+		//self:BodyDebugPrint()
 	end)
 end
 
@@ -394,7 +394,7 @@ function PLAYER_HP:PainThink()
 
 	if self:GetPain() >= 0.5 then
 		if flipcoin() then
-			GS_ChatPrint(ply, "You feel pain in body...", Color(10,200,10))
+			GS_ChatPrint(ply, "You feel pain in body...", Color(200,10,10))
 		end
 	end
 end

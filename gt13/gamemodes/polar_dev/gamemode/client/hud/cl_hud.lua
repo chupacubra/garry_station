@@ -3,10 +3,13 @@ local hide = {
 	["CHudBattery"] = true,
     ["CHudAmmo"]    = true,
     ["CHudCrosshair"] = true,
-    //["CHudWeaponSelection"] = true,
+    ["CHudWeaponSelection"] = true,
     ["CHudHistoryResource"] = true
 }
 
+
 hook.Add( "HUDShouldDraw", "HideHUD", function( name )
-	return hide[name] != true
+    local ply = LocalPlayer()
+	return player_manager.GetPlayerClass( ply ) != "gs_human" or hide[name] != true
 end)
+

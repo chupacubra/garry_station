@@ -7,9 +7,11 @@ ContextMenu.EquipButtons = {}
 ContextMenu.PocketButtons = {}
 //ContextMenu.EquipButtons = {}
 ContextMenu.HandButtons = {}
-
+ContextMenu.NextThink = 0
 local DIR_UP = 0
 local DIR_LEFT = 1
+
+local BUTTON_SIZE = 150
 
 local function ButtonContainerClose()
     for k, v in pairs(ContextMenu.OpenedContainer.items) do
@@ -50,13 +52,13 @@ local function ButtonContainerOpen(ent, tbl, btn)
     for k, item in pairs(tbl) do
         local x, y = btn_x, btn_y
         if dir == DIR_UP then
-            y = y-(150 + 10) * i-1
+            y = y-(BUTTON_SIZE + 10) * i-1
         elseif dir == DIR_LEFT then
-            x = x + (150 + 10) * i-1
+            x = x + (BUTTON_SIZE + 10) * i-1
         end
 
         local bitem = vgui.Create("GUIButton")
-        bitem:SetSize(150,150)
+        bitem:SetSize(BUTTON_SIZE,BUTTON_SIZE)
         bitem:SetPos(x, y)
         bitem:MakePopup()
         bitem:SetText(item.Name or "nil name")
@@ -134,11 +136,13 @@ local function ClearContextMenu()
             v:Remove()
         end
     end
+    ContextMenu.ScanPanel:Remove()
 
     ContextMenu.OpenedContainer = {}
     ContextMenu.EquipButtons = {}
     ContextMenu.PocketButtons = {}
     ContextMenu.HandButtons = {}
+
     ContextMenu.Open = false
 end
 
@@ -156,7 +160,7 @@ local function MakeButtonsPocket()
 
         local x = (155) * math.cos( math.pi * i ) + (1-i) * (145)
         local bpocket = vgui.Create("GUIButton")
-        bpocket:SetSize(150,150)
+        bpocket:SetSize(BUTTON_SIZE, BUTTON_SIZE)
         bpocket:SetPos(w/2 + x + 600, h - 160)
         bpocket:MakePopup()
         bpocket:SetText(name)
@@ -172,23 +176,15 @@ local function MakeButtonsPocket()
 end
 
 local function ContextMenuPocketsUpdate()
-    //local w, h = ScrW(), ScrH()
-    
     for i = 1, 2 do
         local name = "Pocket"
         local item = LocalPlayer().Pocket[i]
         
-        //PrintTableI
-
         if IsValid(item) then
             name = item.Name
         end
 
-        //local x = (155) * math.cos( math.pi * i ) + (1-i) * (145)
         local bpocket = ContextMenu.PocketButtons[i]
-        //bpocket:SetSize(150,150)
-        //bpocket:SetPos(w/2 + x + 600, h - 160)
-        //bpocket:MakePopup()
         bpocket:SetText(name)
 
         bpocket.cont = LocalPlayer()
@@ -216,7 +212,7 @@ local function MakeButtonsKeyBelt()
         
         local x = (155) * math.cos( math.pi * i ) + (1-i) * (145) // нет причин использовать эту формулу. она нужна только для рук
         local bkb = vgui.Create("GUIButton")
-        bkb:SetSize(150,150)
+        bkb:SetSize(BUTTON_SIZE,BUTTON_SIZE)
         bkb:SetPos(w/2 + x - 600, h - 160)
         bkb:MakePopup()
         bkb:SetText(name)
@@ -252,7 +248,7 @@ local function MakeButtonsHands()
 
         local x = (155) * math.cos( math.pi * i ) + (1-i) * (145)
         local bhand = vgui.Create("GUIButton")
-        bhand:SetSize(150,150)
+        bhand:SetSize(BUTTON_SIZE,BUTTON_SIZE)
         bhand:SetPos(w/2 + x, h - 160)
         bhand:MakePopup()
         bhand:SetText(name)
@@ -300,9 +296,6 @@ function ContextMenuUpdateButtonsHands()
         local name = swep.Name or swep.PrintName
 
         local bhand = ContextMenu.HandButtons[i]
-        //bhand:SetSize(150,150)
-        //bhand:SetPos(w/2 + x, h - 160)
-        //bhand:MakePopup()
         bhand:SetText(name)
         
         bhand.IsWepSelected = activeWep == swep
@@ -347,7 +340,7 @@ local function MakeButtonsEquip()
     local ply = LocalPlayer()
 
     local bShowEquip = vgui.Create("GUIButton")
-    bShowEquip:SetSize(150, 150)
+    bShowEquip:SetSize(BUTTON_SIZE, BUTTON_SIZE)
     bShowEquip:SetPos(10, h - 160)
     bShowEquip:MakePopup()
     bShowEquip:SetText("Show equip")
@@ -364,8 +357,8 @@ local function MakeButtonsEquip()
             end
 
             local bEquip = vgui.Create("GUIButton")
-            bEquip:SetSize(150, 150)
-            bEquip:SetPos(-150, (h - 160) - (150 + 10) * i)
+            bEquip:SetSize(BUTTON_SIZE, BUTTON_SIZE)
+            bEquip:SetPos(-BUTTON_SIZE, (h - 160) - (BUTTON_SIZE + 10) * i)
             bEquip:MoveBy(160, 0, 0.2,0, 0.5)
             
             bEquip.cont = nil
@@ -382,7 +375,7 @@ local function MakeButtonsEquip()
             end
 
             table.insert(ContextMenu.Items, bEquip)
-            //table.insert(ContextMenu.EquipButtons,  bEquip)
+
             ContextMenu.EquipButtons[key] = bEquip
         end
 
@@ -412,6 +405,59 @@ local function MakeButtonsEquip()
     end
 end
 
+local function InitScannerPanel()
+    // слишком сильно привязались DPropertySheet панелькам 
+    // было хорошо бы если бы можно нарисовать напрямую саму панель
+
+    local panel = vgui.Create("DPanel")
+    panel:SetPaintedManually(true)
+
+    function panel:GetActiveTab() return nil end
+    function panel:Paint(w, h)
+        derma.SkinHook( "Paint", "PropertySheet", self, w, h )
+    end
+
+    panel.Ent = nil
+    panel.Draw = fasle
+    ContextMenu.ScanPanel = panel
+    
+end
+
+local function UpdateScannerPanelPos()
+    local scanPanel = ContextMenu.ScanPanel
+    if !scanPanel.Ent then return end
+    
+    local pos = scanPanel.Ent:WorldSpaceCenter():ToScreen()
+
+    scanPanel:SetPos(pos.x - scanPanel:GetWide() / 2, pos.y - scanPanel:GetTall() / 2 )
+end
+
+local function UpdateScannerEnt(ent)
+    local scanPanel = ContextMenu.ScanPanel
+
+    if scanPanel.Ent == ent then return end
+
+    if !IsValid(ent) then
+        scanPanel:AlphaTo( 0, 0.2, nil, function() 
+            scanPanel.Draw = false
+        end)
+    else
+        scanPanel:SetAlpha(0)
+        scanPanel:SetSize(150, 150)
+        scanPanel:AlphaTo(200, 0.2)
+
+        scanPanel.Draw = true
+    end
+
+    scanPanel.Ent = ent
+    
+    if IsValid(ent) then
+        UpdateScannerPanelPos()
+    end
+end
+
+
+
 local function OpenMenu()
     ContextMenu.Items = {}
 
@@ -420,6 +466,7 @@ local function OpenMenu()
     MakeButtonsPocket()
     MakeButtonsKeyBelt()
     
+    InitScannerPanel()
     ContextMenu.Open = true
 
 end
@@ -432,6 +479,51 @@ function ContextMenuKey(open)
         ClearContextMenu()
     end
 end
+
+local cam_fov = 110
+
+local function MakeScreenTrace(radius)
+    local ply = LocalPlayer()
+    local origin = EyePos()
+    local dir = util.AimVector( EyeAngles(), cam_fov, gui.MouseX(), gui.MouseY(), ScrW(), ScrH() )
+
+    return util.TraceLine({
+        startpos = origin,
+        endpos = origin + dir * radius,
+        filter = ply,
+    })
+end
+
+local THINK_CD = 0.1
+// make trace for "scaning" ents and people - show his id or examine
+local function ContextMenuThink()
+    if !ContextMenu.Open then return end
+    if ContextMenu.NextThink <= CurTime() then
+        local ply = LocalPlayer()
+        local tr = MakeScreenTrace(100)
+
+        local target = tr.Entity
+
+        if !IsValid(target) then target = nil end
+        
+        UpdateScannerEnt(target)
+
+        ContextMenu.NextThink = ContextMenu.NextThink + THINK_CD
+    end
+end
+
+
+hook.Add("Think", "ContextMenuThink", ContextMenuThink)
+
+hook.Add("HUDPaint", "ScanPanelDraw", function()
+    local scanPanel = ContextMenu.ScanPanel
+    if !scanPanel then return end
+    if !scanPanel.Draw then return end
+
+    UpdateScannerPanelPos()
+    scanPanel:PaintManual()
+
+end)
 
 hook.Add("ContextMenuEnabled", "block", function()
     return false

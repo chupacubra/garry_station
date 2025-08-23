@@ -74,10 +74,26 @@ function PANEL:DoRightClick()
 
     local menu = DermaMenu()
     for k, v in pairs(self.ContextButtons) do
-        local btn = menu:AddOption( v.name, function()
-            v.func(self)
-        end)
-        btn:SetIcon( v.icon )
+        if v.custom then
+            //
+            //
+            //
+            v.custom(self, menu)
+        elseif !v.sub then
+            local btn = menu:AddOption( v.name, function()
+                v.func(self)
+            end)
+            btn:SetIcon( v.icon )
+        else
+            local subMenu, opt = menu:AddSubMenu(v.name)
+            subMenu:SetIcon(v.icon)
+            for kk, vv in pairs(v.sub) do
+                local btn = subMenu:AddOption( v.name, function()
+                    vv.func(self)
+                end)
+                btn:SetIcon( v.icon )
+            end
+        end
     end
     menu:Open()
 end

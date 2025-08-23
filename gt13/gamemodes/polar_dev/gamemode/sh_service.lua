@@ -60,14 +60,22 @@ local LogColor = {
     e = MSG_ERROR,
 }
 
-function GS_MSG(text)
-    MsgC(MSG_INFO, "[GS] "..text.."\n")
+
+// testing annotations
+//
+//
+
+---@param text string logging in console
+---@param typeColor string if want to color, <br>i = MSG_INFO<br> w = MSG_WARNING <br> e = MSG_ERROR,
+function GS_MSG(text, color)
+    MsgC(MSG_INFO or LogColor[color], "[GS] "..text.."\n")
 end
 
+/*
 function GS_Log(c, text)
     MsgC(c, "[GS] "..text.."\n")
 end
-
+*/
 function typeRet(item)
     if type(item) == "number" then
         return item, nil
@@ -79,15 +87,7 @@ function ItemType(item) // obsolet
     return item.Entity_Data.ENUM_Type
 end
 
-//function ItemSubType(item)
-//    return item.Entity_Data.ENUM_Subtype
-//end
-
-//function FQT(item)
-//    return EQUIP_NAMES[item.Entity_Data.ENUM_Subtype]
-//end
-
-function FitInContainer(maxsize, drp )
+function FitInContainer(maxsize, drp)
     if drp.ENUM_Type == GS_ITEM_CONTAINER  or (drp.ENUM_Type == GS_ITEM_EQUIP and drp.ENUM_Type == GS_EQUIP_BACKPACK) then
         return maxsize > drp.Size
     else
@@ -188,7 +188,7 @@ else
         net.Send(ply)
     end
 end
-
+/*
 function ClGetWeaponsSlot(needEntity, ply)
     local arr = {}
     local allWeapons = ply:GetWeapons()
@@ -219,7 +219,7 @@ function GetSWEPFromID(id, ply)
     --local curwep = LocalPlayer():GetActiveWeapon()
     return allwep[id]
 end
-
+*/
 function FromPhysicsBoneToPart(bone)
     local bone = self.Player:TranslatePhysBoneToBone(bone)
 	while true do
@@ -282,13 +282,6 @@ function HandsFree(ply)
     return true
 end
 
-function getGameTimeStamp()
-    -- ril lafe 2024
-    -- gs13 teme 2024+28
-    -- 2052-10-31 18:00:00
-    local t = os.date("!*t")
-    return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
-end
 
 
 /*
@@ -334,7 +327,22 @@ local function parseRichText(str)
 
     return result
 end
-function RichTextPrint(richText)
-    local args = parseRichText(richText)
-    chat.AddText(unpack(args))
+
+function RichTextPrint(richText, ply)
+    if SERVER then
+        net.Start("gs_rich_print")
+        net.WriteString(RichText)
+        if ply then
+            net.Send(ply)
+        else
+            net.Broadcast()
+        end
+    else
+        local args = parseRichText(richText)
+        chat.AddText(unpack(args))
+    end
 end
+
+net.Receive("gs_rich_print", function()
+    RichTextPrint(net.ReadString())
+end)

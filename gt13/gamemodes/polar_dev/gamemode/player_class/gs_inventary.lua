@@ -462,14 +462,16 @@ end)
 
 if CLIENT then
 	concommand.Add("clear_equip", function(ply)
-		player_manager.RunClass(ply, "EquipSyncClient", {		BELT      = NULL,
+		player_manager.RunClass(ply, "EquipSyncClient", {		
+		BELT      = NULL,
 		KEYCARD   = NULL,
 		BACKPACK  = NULL,
 		VEST      = NULL,
 		HEAD      = NULL,
 		MASK      = NULL,
 		EAR       = NULL,
-		SUIT	  = NULL,})
+		SUIT	  = NULL,
+	})
 	end)
 
 	concommand.Add("reset_equip", function(ply)

@@ -100,7 +100,7 @@ function PLAYER_ORGANS:SetupThinkOrgans()
         self:LungsThink()
         self:StomachThink()
         --PrintTable(self.Player.Organs)
-        self:BodyDebugPrint()
+        //self:BodyDebugPrint()
     end)
 end
 
@@ -117,14 +117,20 @@ function PLAYER_ORGANS:SetupBones()
 end
 
 function PLAYER_ORGANS:BoneBroken(bone)
-    if self.Player_Bones == true then
-        self.Player.Bones[bone] = false
-    end
+    return !self.Player.Bones[bone] or false
 end
 
 function PLAYER_ORGANS:BreakBone(bone)
-    if self.Player.Bones[bone] == true then
-        self.Player.Bones[bone] = false
+    if self.Player.Bones[bone] != true then return end
+    
+    self.Player.Bones[bone] = false
+    
+    if bone == "l_leg" or bone == "r_leg" then
+        self:EffectSpeedAdd("leg_broken", -50, -100)
+        if self:BoneBroken("l_leg") and self:BoneBroken("r_leg") then
+            self:EffectSpeedAdd("leg_broken_x2", -50, -100)
+            
+        end
     end
 end
 

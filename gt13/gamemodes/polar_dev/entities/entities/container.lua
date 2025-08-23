@@ -171,10 +171,14 @@ function ENT:CloseContainer(ply, closeByPly)
 end
 
 function ENT:DropFromInventary(dropEnt)
-    // force drop from cont
-    // it can be a ply or item container
+    --- force drop from cont
+    --- it can be a ply or item container
 end
 
+
+---@alias userID integer The ID of a user
+
+print(userID)
 
 if CLIENT then return end
 net.Receive("gs_ent_container_open", function(_, ply)

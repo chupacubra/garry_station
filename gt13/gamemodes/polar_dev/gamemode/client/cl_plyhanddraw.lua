@@ -202,6 +202,25 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
         mdl:SetupBones()
         mdl:DrawModel()
 
+        // next we render chem cont with rendering liquid
+        
+        if mdlData.item.IsChemContainer then return end
+        if !IsValid(mdlData.item.RenderChem_Mesh) then return end
+
+        local item = mdlData.item
+
+        local msh = item.RenderChem_Mesh
+        local size = item.RenderChem_Size
+        local height = item.RenderChem_Height
+
+        local m = Matrix()
+        m:SetTranslation(item:LocalToWorld(height))
+        m:SetScale(item.RenderChem_Size)
+        m:Rotate(item:GetAngles())
+
+        cam.PushModelMatrix( m, true )
+            msh:Draw()
+        cam.PopModelMatrix()
     end
 
 end)

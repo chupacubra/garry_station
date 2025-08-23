@@ -1,5 +1,5 @@
 
-CHEMIC:New("Oxygen",{
+--[[CHEMIC:New("Oxygen",{
 	simpleName = "oxygen",
 	callbackInPly = function() end,
 	callBackInMix = function() end,
@@ -32,6 +32,14 @@ CHEMIC:New("Hydrogen",{
 })
 
 CHEMIC:New("Phosphorus",{
+	simpleName = "phosphorus",
+	callbackInPly = function() end,
+	callBackInMix = function() end,
+	activeid = -1,
+	active = function() end,
+})
+
+CHEMIC:New("Sulfur",{
 	simpleName = "phosphorus",
 	callbackInPly = function() end,
 	callBackInMix = function() end,
@@ -74,7 +82,7 @@ CHEMIC:New("Water",{
 	  }
 	}
 })
-
+--[[
 CHEMIC:New("Tea",{
 	simpleName = "tea",
 	normalName = "Tea",
@@ -126,4 +134,13 @@ CHEMIC:New("Toxin",{
 	callBackInMix = function() end,
 	activeid = -1,
 	active = function() end,
+})
+	--]]
+
+CHEMIC:New("Oxygen",{
+	simpleName = "oxygen",
+	callbackInPly = function() end,
+	callBackInMix = function() end,
+	active = function() end,
+
 })

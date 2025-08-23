@@ -2,8 +2,8 @@ SWEP.Base = "gs_base_weapon"
 
 SWEP.PrintName = "MP5"
 
-SWEP.Author			    = "TEST WEAPON"
-SWEP.Contact			= "TEST"
+SWEP.Author			    = "MP5"
+SWEP.Contact			= "Epic smg"
 SWEP.Purpose			= ""
 SWEP.Instructions		= ""
 

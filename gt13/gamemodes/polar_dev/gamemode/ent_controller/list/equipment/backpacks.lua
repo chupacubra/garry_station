@@ -49,3 +49,5 @@ function ENT:ItemInteraction(ent)
 end
 
 AddEntItem(ENT, "test_dufflebag")
+
+

@@ -1,0 +1,40 @@
+      
+оружие охраны
++ models/kali/weapons/black_ops/pm-63 rak.mdl ПП                                    +++                     +++
++ models/drgordon/weapons/mp443/yargin_mp-443_grach.mdl пистоль                     +++                     +++
+
+оружейный склад
++ models/kali/weapons/daewoo/daewoo k7.mdl большой пп                               +++                     +++
++ models/kali/weapons/daewoo/daewoo k2.mdl карабин с квадратный хендгуардом         +++                     +++
++ models/kali/weapons/m16a1.mdl                                                     +++ ~                   +++
++ models/kali/weapons/black_ops/galil ar.mdl                                        +++                     +++
++ models/kali/weapons/black_ops/ithaca model 37.mdl со стоком                       +++                     +++
++ models/ruswepprops/mp153.mdl с небольшим шансом                                   +++                     +++
+
+людской резерв
++ models/kali/weapons/black_ops/beretta 682.mdl                                     +++                     +++
++ models/bo/weapons/makarov pm.mdl                                                  +++                     +++
++ models/bo/weapons/colt python snub nose.mdl                                       +++                     +++ не ломался
++ models/bo/weapons/colt python.mdl                                                 +++                     +++
++ models/kali/weapons/m14.mdl (спрятан)                                             +++                     +++
+
+
+ГБР
++ models/kali/weapons/mk14 ebr.mdl                                                  +++                     +++
++ models/kali/weapons/black_ops/famas felin.mdl                                     +++
++ models/kali/weapons/black_ops/ithaca model 37.mdl                                 +++
+
+Восточные оперативники
++ models/kali/weapons/ak/ak-74.mdl                                                  +++                     +++
++ models/kali/weapons/black_ops/ks-23.mdl                                           +++
++ models/kali/weapons/black_ops/china lake grenade launcher.mdl                     --- так как гранатомёт
++ models/codmwr/weapons/degtyaryov rpd (empty).mdl                                  +++
++ models/bo/weapons/makarov pm.mdl                                                  +++
++ models/pubg/weapons/kbp ots-14-1a-02 groza.mdl                                    +++ с/без глушителя
+
+западные оперативники
++ models/ratdock/weapons/swmp9v1/swmp9v1.mdl                                        ++
++ models/ratdock/weapons/g17gen5/g17gen5.mdl                                        ++
++ models/ruswepprops/ash12.mdl                                                      ++
++ models/kali/weapons/m16a1.mdl                                                     +++
++ models/kali/weapons/black_ops/famas felin.mdl                                     +++

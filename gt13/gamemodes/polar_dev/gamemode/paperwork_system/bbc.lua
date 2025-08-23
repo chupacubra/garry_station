@@ -138,7 +138,7 @@ BBCodeTags = {
 
 -- Process select tags
 function BBCProccesing(text, tags, ply)
-	print(text, tags, ply)
+	//print(text, tags, ply)
 	for category, tag in pairs(BBCodeTags[tags]) do
 		replf = bbcode[tag]
 		if ply then

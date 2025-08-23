@@ -253,7 +253,7 @@ function SWEP:PickupItem(item)
     if CLIENT then return end
 
     if !item then
-        local trace = self:MakeTrace()
+        local trace = self:GetOwner():MakeViewTrace()//self:MakeTrace()
         if !trace.Entity:IsValid() then
             return
         end
@@ -290,7 +290,7 @@ function SWEP:Punch()
     timer.Simple(0.2, function()
         if !IsValid(self) then return end
 
-        local trace = self:MakeTrace()
+        local trace = self:GetOwner():MakeViewTrace()//self:MakeTrace()
         if !trace.Hit then return end
 
         self:EmitSound(HitSound)
