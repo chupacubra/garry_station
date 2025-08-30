@@ -108,3 +108,4 @@ util.AddNetworkString("gs_equip_on")
 util.AddNetworkString("gs_sync_pockets")
 
 util.AddNetworkString("gs_rich_print")
+util.AddNetworkString("gs_ply_task")

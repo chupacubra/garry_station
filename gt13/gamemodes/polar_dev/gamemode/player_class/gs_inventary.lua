@@ -282,7 +282,7 @@ function PLAYER_INVENTARY:HandleContextAction(rec, drp)
 	if IsValid(slot_rec.item) and IsValid(slot_drp.item) then
 		if slot_drp.item.IsHands then return end
 		print("try put item in another", slot_rec.item, slot_drp.item)
-		if slot_rec.item:ItemInteraction(slot_drp.item) then
+		if slot_rec.item:ItemInteraction(slot_drp.item, self.Player) then
 			deleteItem(slot_drp)
 		end
 	elseif slot_rec.empty and IsValid(slot_drp.item) then

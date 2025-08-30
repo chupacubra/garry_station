@@ -23,35 +23,97 @@ ENT.AcceptCalibr = {
 
 ENT.MaxAmmo = 5
 
-function ENT:ItemInteraction(item)
-    // interaction with ammo boxes
+//ENT.HandOffsetAng = Angle()
+//ENT.HandOffsetVec = Vector(3,-10,0)
+
+function ENT:PostInit()
+    self.Magazine = {}
+    //self.Magazine.Ammo = {}
+    print(self.HandOffsetVec)
 end
 
-function ENT:InsertBullet()
-    if !self.AcceptCalibr[bullet] then 
-        return false
+local sounds = {
+    Sound("weapons/357/357_reload1.wav"),
+    Sound("weapons/357/357_reload1.wav")
+}
+
+function ENT:ItemInteraction(item, ply)
+    // interaction with ammo boxes
+    if !item.AmmoPile then return end
+
+    if !self.AcceptCalibr[item.Calibr] then 
+        RichTextPrint("{255 255 255}Mag dont accept this bullet...")
+        return
     end
 
-    if table.Count(self.Magazine.Ammo) + 1 > self.Magazine.MaxAmmo then
-        return false
+    if item:GetNWInt("Stack") < 1 then
+        RichTextPrint("{255 255 255}its over...")
+        return
+    end
+
+    local task = {}
+    task.time = 0.8
+    task.func = function()
+        // зарядить в магазин
+        // убрать из стека аммопила пулю
+        // по новой до остановки или когда кончились пули
+        if !IsValid(item) or !IsValid(self) or !IsValid(ply) then return end
+
+        print(item)
+        local ammo_stack = item:GetStack()
+
+        if ammo_stack < 1 then
+            RichTextPrint("{255 255 255}its over...", ply)
+            return
+        end
+
+        local success, rtext = self:InsertBullet(item.Calibr)
+
+        if rtext then
+            RichTextPrint(rtext, ply)
+        end
+        if !success then return end
+
+        ammo_stack = ammo_stack - 1
+
+        item:SetStack(ammo_stack)
+
+        sound.Play( table.Random(sounds), self:GetPos(), 75, math.random( 100 - 10, 100 + 10 ))
+
+        if ammo_stack < 1 then return end
+        if self:GetNWInt("Bullets") >= self.MaxAmmo then return end
+        timer.Simple(0, function()ply:DoTask(task) end)
+    end
+
+    ply:DoTask(task)
+end
+
+function ENT:InsertBullet(bullet)
+    //print(bullet)
+    if !self.AcceptCalibr[bullet] then 
+        return false, "{255 255 255}Mag dont accepts this calibr"
+    end
+
+    if table.Count(self.Magazine) + 1 > self.MaxAmmo then
+        return false, "{255 255 255}Mag full!"
     end
     
-    table.insert(self.Magazine.Ammo, bullet) 
+    table.insert(self.Magazine, bullet)
 
+    self:SetNWInt("Bullets", #self.Magazine)
+    return true//, "{255 255 255} loaded some bullet"
+end
+
+
+function ENT:PopBullet()
+    if #self.Magazine < 1 then return end
+    local bul = table.remove(#self.Magazine)
+    self:SetNWInt("Bullets", #self.Magazine)
+    return bul
 end
 
 AddEntItem(ENT, "base_magazine")
 
-
-/*
-mag_data = {
-    accept = {
-        ["9mm"] = true
-    }
-    max = 30,
-    model = "smg_mp5_mag.mdl"
-}
-*/
 local function GenerateMagazine(weap_class, mag_data)
     local ENT = {}
 
@@ -61,9 +123,14 @@ local function GenerateMagazine(weap_class, mag_data)
     ENT.MagWeaponType = weap_class
 
     ENT.Name = mag_data.name
-    ENT.Desk = mag_data.desk
+    ENT.Desc = mag_data.desc
 
+    ENT.HandOffsetVec = mag_data.hand_vec
+    ENT.HandOffsetAng = mag_data.hand_ang
+
+    ENT.PrintName = ENT.Name or "magazine"
     ENT.Spawnable = true
+
     AddEntItem(ENT, "mag_"..weap_class, "base_magazine")
 end
 
@@ -74,5 +141,9 @@ GenerateMagazine("gs_mp5", {
     max = 25,
     model = "models/weapons/unloaded/smg_mp5_mag.mdl",
     name = "MP5 Magazine",
-    desk = "Weapon magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
 })
+
+

@@ -65,6 +65,7 @@ function PLAYER_HP:SetupOrganismValues()
 		hypoxia = 0,
 	}
 
+	// всё что сдесь стоит внести в отдельную таблицу
     if !self.Ragdolled then
         self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 200)
         self.Player.HealthStatus = GS_HS_OK
@@ -114,12 +115,13 @@ function PLAYER_HP:SetupOrganismThink()
 
 		self:HungerThink()
 		self:HealthPartClientUpdate(mainpart)
-
+		/*
 		if self:RagdollThink() then
 			self:Ragdollize()
 		else
 			self:Unragdollize()
 		end
+		*/
 		--PrintTable(self.Player.Organism_Value)
 		--PrintTable(self.Player.Spec_Damage)
 		//self:BodyDebugPrint()

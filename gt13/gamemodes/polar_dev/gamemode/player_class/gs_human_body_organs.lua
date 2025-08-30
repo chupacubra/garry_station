@@ -100,7 +100,7 @@ function PLAYER_ORGANS:SetupThinkOrgans()
         self:LungsThink()
         self:StomachThink()
         --PrintTable(self.Player.Organs)
-        //self:BodyDebugPrint()
+        self:BodyDebugPrint()
     end)
 end
 

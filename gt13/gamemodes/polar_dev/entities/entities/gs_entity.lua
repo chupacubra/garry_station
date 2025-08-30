@@ -3,7 +3,7 @@ AddCSLuaFile()
 
 //include("pickup.lua")
 include("container.lua")
-
+include("stacking.lua")
 
 ENT.Type = "anim"
 
@@ -21,6 +21,8 @@ ENT.Size  = ITEM_SMALL
 ENT.Color = nil
 ENT.CarryAng = Angle(0,0,0)
 
+ENT.HandOffsetVec = Vector()
+ENT.HandOffsetAng = Angle()
 
 local function CanPickup(ent)
     local phys = ent:GetPhysicsObject(ent)
@@ -113,6 +115,17 @@ function ENT:PostInit()
     if self.IsContainer then
         self:ContainerInit()
     end
+
+    if self.Stackable then
+        if self.RemoveAfterOver then
+            self:SetNWVarProxy( "RemoveAfterOver", function(_, _, old, new)
+                print("STACK UPDATA, ", old, new)
+                if new < 1 then
+                    self:Remove()
+                end
+            end)
+        end
+    end
 end
 
 function ENT:ItemPrimary(hands, ply)
@@ -140,9 +153,11 @@ AddContextCallback("Examine",
 "icon")
 */
 
-function ENT:Examine()
-    RichTextPrint("It's a {255 255 255}".. self.Name)
-    RichTextPrint("{255 255 255}"..self.Desc)
+// can be called on server and on client
+function ENT:Examine(ply)
+    if SERVER and !ply then GS_MSG("try ent exam on server but no ply") return end
+    RichTextPrint("It's a {255 255 255}".. self.Name, ply)
+    RichTextPrint("{255 255 255}"..self.Desc, ply)
 end
 
 function ENT:SetupBaseContextCallbacks()

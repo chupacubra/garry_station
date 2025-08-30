@@ -1,28 +1,34 @@
 // Stacking item in 1 stack
 // suitable for materials
+AddCSLuaFile()
+
 
 ENT.Stackable   = false
 ENT.MaxStack    = 20
-ENT.Stack       = 1 // NWInt?
+ENT.SpawnStack  = 0
+//ENT.Stack       = 1 // NWInt? YES
+ENT.RemoveAfterOver = true
 
 function ENT:SetStack(amount)
     if !self.Stackable then return end
     if amount < 1 then
         self:Remove()
     end
-    self.Stack = math.Clamp(amount, 1, self.MaxStack)
+
+    self:SetNWInt("Stack", math.Clamp(amount, 1, self.MaxStack))
 end
 
 function ENT:GetStack()
-    return self.Stack
+    return self:GetNWInt("Stack")
 end
 
 function ENT:AddToStack(amount)
-    local remains = 0;
+    local remains = 0
+    local stack = self:GetStack()
     if amount > 0 then
-        remains = (self.MaxStack - self.Stack) - amount
+        remains = (self.MaxStack - stack) - amount
     end
-    self:SetStack(math.Clamp(self.Stack + amount, 0, self.MaxStack))
+    self:SetStack(math.Clamp(stack + amount, 0, self.MaxStack))
     return remains
 end
 

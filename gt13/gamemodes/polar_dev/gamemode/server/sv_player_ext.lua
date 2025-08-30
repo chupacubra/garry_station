@@ -17,11 +17,6 @@ function PLAYER:GetCharacter()
     return self.Character_ID or false
 end
 
-function PLAYER:IsGhost()
-    -- check team
-    -- and some check
-    return self:Team() == TEAM_GHOST
-end
 --[[
 function PLAYER:IsAlive()
     if ply:Team() == TEAM_PLY then
@@ -35,11 +30,6 @@ function PLAYER:IsDead()
 end
 --]]
 
-function PLAYER:IsActive()
-    // can player use something, pickup something
-    // if player is sleep or in ragdoll
-    return ply:Team() == TEAM_PLY
-end
 
 function PLAYER:CreateRagdoll()
     // NEED here to spawn a regdoll

@@ -331,7 +331,7 @@ end
 function RichTextPrint(richText, ply)
     if SERVER then
         net.Start("gs_rich_print")
-        net.WriteString(RichText)
+        net.WriteString(richText)
         if ply then
             net.Send(ply)
         else

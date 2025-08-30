@@ -65,6 +65,7 @@ if SERVER then
     util.AddNetworkString("gs_swep_update_wm")
     util.AddNetworkString("gs_shoot")
     util.AddNetworkString("gs_wep_detach")
+    util.AddNetworkString("gs_wep_drop")
 end
 
 local defaultBulletPosAng = {
@@ -233,7 +234,7 @@ function SWEP:InsertMagazine(item)
     item:SetParentContainer(self)
 
     self.Magazine = item
-    self:SetNWInt("MagAmmo", 30) 
+
     self:SetNWEntity("Magazine", self.Magazine)
     self:SetNextPrimaryFire(CurTime()+0.1)
     self:GetOwner():DoReloadEvent()
@@ -374,6 +375,17 @@ function SWEP:DrawWorldModel()
 
 end
 
+function SWEP:Drop()
+    if CLIENT then
+        net.Start("gs_wep_drop")
+        net.WriteEntity(self)
+        net.SendToServer()
+    else
+        self:GetOwner():DropWeapon(self)
+    end
+end
+
+
 function SWEP:GetContextButtons()
     local buttons = table.Copy(self.ContextCallback or {})
 
@@ -399,6 +411,14 @@ function SWEP:GetContextButtons()
         }
     end
     */
+
+    buttons["drop"] = {
+        name = "Drop",
+        func = function()
+            self:Drop()
+        end,
+        icon = "icon16/arrow_down.png",
+    }
     return buttons
 end
 
@@ -456,11 +476,34 @@ function SWEP:DevShoot()
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
 end
 
+function SWEP:GetMagAmmo()
+    local mag = self:GetNWEntity("Magazine")
+    //print(mag, mag:GetNWInt("Bullets"))
+    if mag then
+        return mag:GetNWInt("Bullets")
+    else
+        return 0
+    end
+end
+
+function SWEP:SubBullet()
+    local mag = self:GetNWEntity("Magazine")
+    local ammo = mag:GetNWInt("Bullets")
+    if ammo < 1 then return end
+    if mag then
+        mag:SetNWInt("Bullets", ammo - 1)
+    end
+
+    if SERVER then
+
+    end
+end
+
 function SWEP:ShootBullet()
     if not IsValid(self) then return nil end
-    
-    local ammo = self:GetNWInt("MagAmmo")
-    
+     
+    local ammo = self:GetMagAmmo()
+
     if ammo < 1 then 
         self:EmitSound("Weapon_AR2.Empty")
         self:SetNextPrimaryFire(CurTime()+1)
@@ -509,7 +552,9 @@ function SWEP:ShootBullet()
 		util.Effect("MuzzleFlash", ef)
     end
     self:EmitSound(self.Primary.Sound)
-    self:SetNWInt("MagAmmo", ammo - 1)
+    //self:SetNWInt("MagAmmo", ammo - 1)
+    self:SubBullet()
+
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
     self:SetNextPrimaryFire(CurTime()+0.1)
 end
@@ -585,4 +630,9 @@ net.Receive("gs_wep_detach", function(_, ply)
     ent:EjectMag()
     // rwgkmrgu
     //if !IsValid(self)
+end)
+
+net.Receive("gs_wep_drop", function(_, ply)
+    local wep = net.ReadEntity()
+    wep:Drop()
 end)

@@ -2,13 +2,15 @@
 // this for hands with items and SWEP
 
 function PlayerHandsModelClear(ply)
-    for i = 1, #ply.HandItemModels do
-        print(ply.HandItemModels[i].item, ply.HandItemModels[i].item:IsWeapon() )
-        if !ply.HandItemModels[i].item:IsWeapon() then
-            ply.HandItemModels[i].model:Remove()
-            ply.HandItemModels[i] = nil
+
+    local hand_items = ply.HandItemModels
+
+    for k, v in pairs(hand_items) do
+        if !v.item:IsWeapon() then
+            v.model:Remove()
+            v = nil
         else
-            ply.HandItemModels[i] = nil
+            v = nil
         end
     end
     ply.HandItemModels = {}
@@ -21,80 +23,6 @@ local function CopyBodyGroups(from, to)
             to:SetBodygroup(id, from:GetBodygroup(id))
         end
     end
-end
-
-function PlayerUpdateWorldModelsSWEP(ply)
-    /*
-    local sweps = ply:GetWeapons()
-    local active = ply:GetActiveWeapon()
-
-    if !ply.HandItemModels then
-        ply.HandItemModels = {}
-    else
-        PlayerHandsModelClear(ply)
-    end
-
-    for i = 1, #sweps <= 2 and #sweps or 2 do
-        local swep = sweps[i]
-        local isActive = active == swep
-        local item = swep
-        local haveModel = IsValid(swep.WMGun)
-
-        if swep.IsHands then
-            item = swep:GetItem()
-            
-            if !IsValid(item) then 
-                continue
-            end
-        
-        elseif isActive then
-            continue
-        end 
-
-        local model
-        if item.WMGun then
-            //continue
-            model = item.WMGun
-            //model:SetNoDraw(false)
-        else
-            model = ClientsideModel(item:GetModel())
-            model:SetColor(item:GetColor())
-            model:SetSkin(item:GetSkin())
-            CopyBodyGroups(item, model)
-        end
-
-        local offsetVec, offsetAng
-        
-        offsetVec = item.HandOffsetVec or Vector(3, 0, 0)
-        offsetAng = item.HandOffsetAng or Angle(90, 0, 90)
-
-        
-        if item:IsWeapon() and item.WorldModelOffsets then
-            offsetVec = item.WorldModelOffsets.pos or offsetVec
-            offsetAng = item.WorldModelOffsets.ang or offsetAng
-            //print("123213s")
-        end
-
-        table.insert(ply.HandItemModels, {
-            model = model,
-            isActive = isActive,
-            offsetVec = offsetVec,
-            offsetAng = offsetAng,
-            item = item,
-        })
-
-        print("hands models")
-        PrintTable(ply.HandItemModels)
-        
-    end
-    
-
-    //local sweps = ply:GetWeapons()
-    //local active = ply:GetActiveWeapon()
-
-//    if !ply.HandItemModels then
-//        ply.HandItemModels = {}
-    */
 end
 
 function PlayerUpdateWorldModelsSWEP(ply)
@@ -143,8 +71,8 @@ function PlayerUpdateWorldModelsSWEP(ply)
 
         local offsetVec, offsetAng
         
-        offsetVec = item.HandOffsetVec or Vector(0 ,0, 0)
-        offsetAng = item.HandOffsetAng or Angle(0, 0, 0)
+        offsetVec = item.HandOffsetVec or Vector()
+        offsetAng = item.HandOffsetAng or Angle()
 
         table.insert(ply.HandItemModels, {
             model = model,
@@ -153,10 +81,6 @@ function PlayerUpdateWorldModelsSWEP(ply)
             offsetAng = offsetAng,
             item = item,
         })
-
-        //print("hands models")
-        //PrintTable(ply.HandItemModels)
-        
     end
 
 end
@@ -164,28 +88,27 @@ end
 
 hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
     if !ply:IsValid() then return end
-    if !ply.HandItemModels then return end
+    local hand_items = ply.HandItemModels 
+    if !hand_items then return end
 
-    for i = 1, 2 do
-        local mdlData = ply.HandItemModels[i]
-        
-        if !mdlData then continue end
-        
+    for _, mdlData in ipairs(hand_items) do
         local mdl       = mdlData.model
         local active    = mdlData.isActive
         local pos_offset = mdlData.offsetVec
         local ang_offset = mdlData.offsetAng
 
+
         local boneid = ply:LookupBone( Either(active, "ValveBiped.Bip01_R_Hand" , "ValveBiped.Bip01_L_Hand" ) )
             
         if not boneid then
-            return
+            continue
         end
-        
+
+
         local matrix = ply:GetBoneMatrix( boneid )
         
         if not matrix then 
-            return 
+            continue
         end
 
         local pos, ang = matrix:GetTranslation(), matrix:GetAngles()
@@ -203,9 +126,8 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
         mdl:DrawModel()
 
         // next we render chem cont with rendering liquid
-        
-        if mdlData.item.IsChemContainer then return end
-        if !IsValid(mdlData.item.RenderChem_Mesh) then return end
+        if mdlData.item.IsChemContainer then continue end
+        if !IsValid(mdlData.item.RenderChem_Mesh) then continue end
 
         local item = mdlData.item
 
@@ -223,12 +145,13 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
         cam.PopModelMatrix()
     end
 
-end)
+end) 
 
 
 hook.Add("PlayerSwitchWeapon", "UpdateDrawWeapon", function( ply, oldWeapon, newWeapon)
-    timer.Simple(0, function() PlayerUpdateWorldModelsSWEP(ply) end)
-    //PlayerUpdateWorldModelsSWEP(ply)
+    timer.Simple(0, function()
+        PlayerUpdateWorldModelsSWEP(ply)
+    end)
 end)
 
 net.Receive("gs_hands_model_update", function()

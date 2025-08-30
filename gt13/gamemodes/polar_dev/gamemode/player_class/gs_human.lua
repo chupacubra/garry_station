@@ -124,91 +124,80 @@ end
 
 local dev = GetConVar( "developer")
 
+
+local DEBUG_CD = 1
+local Next_DebugPrint = 0
+local start_y = 500
+
+local w, h = 2560, 1600
+local text_size = 15
+local start_x = text_size
+local start_y = 500
+
+local pos_x = start_x
+local pos_y = start_y
+
+local color = Color(255,255,255)
+local debug_colors = {
+	default = Color(255,255,255),
+	table_label = Color(251,222,0),
+	bool = {
+		["true"] = Color(76,223,43),
+		["false"] = Color(83,74,249),
+	},
+	zero_int = Color(200, 200, 200),
+}
+
+local function RecursDebugScreenText(tbl, str_x, str_y)
+	local pos_x, pos_y
+	for k, v in pairs(tbl) do
+		pos_y = start_y + (str_y * text_size)
+		pos_x = start_x + (str_x * 20)
+		local typ = type(v) 
+		if typ == "table" then
+			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": " .. "#"..tostring(table.Count(v)), DEBUG_CD, debug_colors.table_label )
+			_, str_y = RecursDebugScreenText(v, str_x+1, str_y+1)
+			str_y = str_y - 1
+		elseif typ == "boolean" then
+			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": "..tostring(v), DEBUG_CD, debug_colors.bool[tostring(v)] )
+		elseif v == 0 then
+			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": "..tostring(v), DEBUG_CD, debug_colors.zero_int )
+			
+		else
+			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": "..tostring(v), DEBUG_CD, debug_colors.default )
+		end
+		str_y = str_y + 1
+	end
+
+	return str_x, str_y
+end
+
 function PLAYER:BodyDebugPrint()
+	
 	if !dev:GetBool() then return end
-
-	if true then return end
-	-- show debug with body status
-	-- need show:
-	-- Organism_Value
-	-- organs hp
-	-- body parts hp
-
-	// NASRALI
-
-	local debug_print = {"--------------DEBUG----------------"}
-
-	for i=2, 20 do
-		debug_print[i] = "|"
-	end
-
-	table.insert(debug_print,"--------------DEBUG----------------")
-
-	local i = 2
-
-	for k, v in pairs(self.Player.Organism_Value) do
-		if type(v) == "table" then
-			debug_print[i] = debug_print[i]..stringspacer("", 20)
-			i = i + 1
-			for kk, vv in pairs(v) do
-				local vv = tostring(vv)
-				debug_print[i] = debug_print[i]..stringspacer(" "..k.."."..kk..": "..vv, 20)
-				i = i + 1
-			end
-			debug_print[i] = debug_print[i]..stringspacer("", 20)
-			i = i + 1
-			continue
-		end
-		local v = tostring(v)
-		debug_print[i] = debug_print[i]..stringspacer(" "..k..": "..v, 20)
-
-		i = i + 1
-	end
 	
-	i = 2
+	local debug_table = self.Player.Organism_Value // start
 
-	for k, v in pairs(self.Player.Organs) do
-		if type(v) == "table" then
-			i = i + 1
-			for kk, vv in pairs(v) do
-				local vv = tostring(vv)
-				debug_print[i] = debug_print[i]..stringspacer("| "..k.."."..kk..": "..vv, 20)
-				i = i + 1
-			end
-			debug_print[i] = debug_print[i]..stringspacer("|", 20)
-			i = i + 1
-			continue
-		end
-		local v = tostring(v)
-		debug_print[i] =  debug_print[i]..stringspacer("| "..k..": "..v, 20)
+	debug_table["HealthStatus"] = self.Player.HealthStatus
+	debug_table["Ragdolled"] = self.Ragdolled
+	debug_table["CritParalyzeDelay"] = self.CritParalyzeDelay
+	debug_table["EffectSpeed"] = self.EffectSpeed
+	debug_table["RagdollTime"] = self.RagdollTime
 
-		i = i + 1
-	end
-	debug_print[i] = debug_print[i]..stringspacer("|", 20)
-	i = i + 1
+	//self.Player.Body_Parts
 
-	for k, v in pairs(self.Player.Bones) do
-		if type(v) == "table" then
-			i = i + 1
-			for kk, vv in pairs(v) do
-				local vv = tostring(vv)
-				debug_print[i] = debug_print[i]..stringspacer("| "..k.."."..kk..": "..vv, 20)
-				i = i + 1
-			end
-			debug_print[i] = debug_print[i]..stringspacer("|", 20)
-			i = i + 1
-			continue
-		end
-		local v = tostring(v)
-		debug_print[i] =  debug_print[i]..stringspacer("| "..k..": "..v, 20)
-
-		i = i + 1
-	end
-
-	for k,v in pairs(debug_print) do
-		print(v)
-	end
+	debug_table["Body_Parts"] = self.Player.Body_Parts 
+	RecursDebugScreenText(debug_table, 0, 0)
+	/*
+	    self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 200)
+        self.Player.HealthStatus = GS_HS_OK
+        self.Ragdolled = false
+        self.CritParalyzeDelay = 0
+		self.EffectSpeed  = {}
+		self.RagdollTime  = 0
+	*/
 	
+
 end
 
 

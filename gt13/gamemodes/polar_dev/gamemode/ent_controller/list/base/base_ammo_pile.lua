@@ -11,25 +11,46 @@ ENT.Size  = ITEM_SMALL
 ENT.Stackable   = true
 ENT.MaxStack    = 20
 
+
 ENT.Spawnable = false
 ENT.Category = "Developing"
 
 ENT.Calibr = "9mm"
+ENT.AmmoPile = true
 
+function ENT:PostInit() 
+    self:SetStack(self.MaxStack)
+end
 
 AddEntItem(ENT, "base_ammopile")
 
-local function GenerateAmmoPile(weap_class, mag_data)
+function ENT:Examine(ply)
+    self.BaseClass.Examine(self, ply)
+    RichTextPrint("{255 255 255}Have "..tostring(self:GetStack()).." bullets left")
+end
+
+local function GenerateAmmoPile(mag_data)
     local ENT = {}
 
-    ENT.AcceptCalibr = mag_data.accept
-    ENT.MaxAmmo = mag_data.max
-    ENT.Model = mag_data.model
-    ENT.MagWeaponType = weap_class
+    ENT.Calibr = mag_data.Calibr
+    ENT.Model = mag_data.Model
 
-    ENT.Name = mag_data.name
-    ENT.Desk = mag_data.desk
+    ENT.Name = mag_data.Name
+    ENT.Desc = mag_data.Desc
+    ENT.MaxStack = mag_data.MaxStack
 
+    ENT.PrintName = ENT.Name
     ENT.Spawnable = true
-    AddEntItem(ENT, "mag_"..weap_class, "base_magazine")
+
+    AddEntItem(ENT, "ammopile_"..ENT.Calibr, "base_ammopile")
 end
+
+
+GenerateAmmoPile({
+    Name = "Ammo 9MM",
+    Desc = "Maslini",
+    Model = "models/Items/357ammo.mdl",
+    MaxStack = 40,
+
+    Calibr = "9mm",
+})

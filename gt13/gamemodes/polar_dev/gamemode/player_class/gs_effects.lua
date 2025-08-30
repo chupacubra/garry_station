@@ -54,7 +54,7 @@ function PLAYER_EFFECT:EffectSpeedAdd(effect, walk, run)
 	local rez_walk = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,1), self.WalkSpeed)
 	local rez_run  = SpeedRegulator(tbl_get_from_index(self.EffectSpeed,2), self.RunSpeed)
 
-	print(rez_walk, rez_run)
+	//print(rez_walk, rez_run)
 
 
 	self.CurSpeedWalk = rez_walk
@@ -86,7 +86,7 @@ function PLAYER_EFFECT:EffectSpeedHave(effect)
 	return self.EffectSpeed[effect] != nil
 end
 
-
+/*
 -- need remake this shit, because we can only freeze ply and dont strip weapons
 function PLAYER_EFFECT:Ragdollize() -- from ragmod
 	--debug.Trace()
@@ -122,6 +122,8 @@ function PLAYER_EFFECT:Ragdollize() -- from ragmod
 
 	self.Player:SetNWBool("Ragdolled", true)
 end
+*/
+
 
 function PLAYER_EFFECT:Unragdollize()
 	--debug.Trace()

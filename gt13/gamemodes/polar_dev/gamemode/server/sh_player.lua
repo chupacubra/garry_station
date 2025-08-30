@@ -17,6 +17,18 @@ function InHandsItem(ply, class)
 	return false
 end
 
+function PLAYER:IsGhost()
+    -- check team
+    -- and some check
+    return self:Team() == TEAM_GHOST
+end
+
+function PLAYER:IsActive()
+    // can player use something, pickup something
+    // if player is sleep or in ragdoll
+    return self:Team() == TEAM_PLY
+end
+
 
 function PLAYER:GetEquip(id)
 	return player_managery.RunClass(self, "GetEquip", id)

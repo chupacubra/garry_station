@@ -16,7 +16,6 @@ SWEP.Primary.Cone = 0.04
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
-//SWEP.UseHands           = true
 SWEP.m_bPlayPickupSound = false
 SWEP.DrawAmmo           = false
 SWEP.DrawCrosshair      = false
@@ -26,14 +25,14 @@ SWEP.AutoSwitchFrom     = false
 SWEP.Name = "MP5"
 SWEP.Desc = "SMG weapon"
 
-SWEP.HoldType       = "smg"  // basic holdtype
+SWEP.HoldType       = "smg" 
 
 SWEP.Recoil     = 1
 SWEP.RecoilUp   = 5
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
 
-SWEP.WorldModel = "models/weapons/w_smg_mp5.mdl"//"models/weapons/polar_w_smg_mp5.mdl"
+SWEP.WorldModel = "models/weapons/w_smg_mp5.mdl"
 SWEP.WModel = "models/weapons/polar_w_smg_mp5.mdl"
 
 SWEP.WorldModelCustom     = true
