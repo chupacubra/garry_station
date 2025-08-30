@@ -41,10 +41,10 @@ function GameConfig:Apply()
 end
 
 local loading_map_files = {
-    spawnpoints = "spawns.json",
-    keypads = "keypads.json",
-    entities = "entities.json",
-    buttons = "buttons.json",
+    SpawnPoints = "spawns.json",
+    Keypads = "keypads.json",
+    Entities = "entities.json",
+    Buttons = "buttons.json",
 }
 
 function GameConfig:LoadConfig()

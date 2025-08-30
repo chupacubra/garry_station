@@ -41,8 +41,19 @@ end
 
 function PLAYER:GetAccess()
 	local key = self:KeyCard()
-	if !key then return 0 end // no access
-	return key:GetAccess()
+	//if !key then return 0 end // no access
+	if key then
+		return key:GetAccess()
+	end
+
+	local swep = ply:GetActiveWeapon()
+	if swep.IsHands then
+		local item = item:GetItem()
+		if item.IsKeycard then
+			return item:GetAccess()
+		end
+	end
+	return 0
 end
 
 function PLAYER:HaveAccess(pad)

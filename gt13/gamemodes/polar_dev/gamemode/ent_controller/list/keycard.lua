@@ -9,7 +9,7 @@ Base.Size  = ITEM_SMALL
 
 Base.Spawnable = true
 Base.Category = "Developing"
-
+Base.IsKeycard = true
 
 function Base:Examine()
     RichTextPrint("It's a {255 255 255}"..self.Name)

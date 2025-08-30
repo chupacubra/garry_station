@@ -124,12 +124,33 @@ end
 // 
 //  startround
 //  and other
+function GameMap:UseKeypad(func, ply)
+    // local key ply:GetAccess()
+    local ply_access = ply:GetAccess()
+    local pad_access = self.Keypads[func:MapCreationID()].access
+    
+    local success = Access.Can(pad_access, ply_access)
+    
+    // if success then smthg
+    // else red pib sound
+
+    return success
+end
+
 function GameMap:GetSpawnPoint(type, job)
 end
 
-function GameMap:UseMapObject(ply, ent, data)
-    //if ply:IsActive()
-    return
+function GameMap:UseMapObject(ent, name, activator, caller, data)
+    
+    if name == "Use" then
+        if self.Keypads[ent:MapCreationID()] then
+            // using a keypads
+            if activator:IsPlayer() then
+                return self:UseKeypad(ent, activator)
+            end
+        end
+    end
+
 end
 
 /*
@@ -140,5 +161,6 @@ end)
 */
 
 hook.Add( "AcceptInput", "UseMapObject", function( ent, name, activator, caller, data )
-    return GameMap:UseMapObject(activator, ent, data)
+
+    return GameMap:UseMapObject(ent, activator, caller, name, data)
 end)

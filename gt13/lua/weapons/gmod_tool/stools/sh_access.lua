@@ -27,6 +27,8 @@ for i = 1, #Access_list do
     invert_flag[flag] = id
 end
 
+Access.List = Access_list
+
 function Access.Can(pad, key)
     return bit.band(pad, key) == pad
 end
@@ -39,7 +41,7 @@ function Access.Remove(key, flag)
     return bit.bxor(key, flag)
 end
 
--- Access.New({"interior_0", "interior_1", "interior_2", "service"})
+-- Access.New({"interior_0", "interior_1", "interior_2",  "service"})
 function Access.Set(access_list)
     local key = 0
     for _, id in ipairs(access_list) do
@@ -52,10 +54,12 @@ end
 function Access.GetList(key)
     local access_list = {}
     for flag, id in pairs(invert_flag) do
-        if bit.band(flag, key) == pad then
+        //print(flag,id,)
+        if bit.band(flag, key) == flag then
             table.insert(access_list, id)
         end
     end
+    return access_list
 end
 
 function Access.Have(key, id)
@@ -63,3 +67,4 @@ function Access.Have(key, id)
     if !flag then return false end
     return Access.Can(flag, key)
 end
+
