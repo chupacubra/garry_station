@@ -64,6 +64,7 @@ ORGANS:
 ]]--
 
 function PLAYER_ORGANS:SetupOrgans()
+    /*
     self.Player.Organs = {
         heart = {
             hp = 100,
@@ -91,14 +92,22 @@ function PLAYER_ORGANS:SetupOrgans()
             hp = 100
         },
     }
+        */
 end
 
+// органы придут потом 
+//
+//
 function PLAYER_ORGANS:SetupThinkOrgans()
     timer.Create("gs_organs_think_"..self.Player:EntIndex(), 1, 0, function()
-        self:BrainThink()
-        self:HeartThink()
-        self:LungsThink()
-        self:StomachThink()
+        //self:BrainThink()
+        //self:HeartThink()
+        self:Metabolize()
+        self:AddOxygenInBlood(0.15)
+        self:HeartMoveBlood()
+
+        //self:LungsThink()
+        //self:StomachThink()
         --PrintTable(self.Player.Organs)
         self:BodyDebugPrint()
     end)
@@ -120,6 +129,7 @@ function PLAYER_ORGANS:BoneBroken(bone)
     return !self.Player.Bones[bone] or false
 end
 
+// need syncronization of bones
 function PLAYER_ORGANS:BreakBone(bone)
     if self.Player.Bones[bone] != true then return end
     
@@ -138,6 +148,7 @@ function PLAYER_ORGANS:FixBone(bone)
     self.Player.Bones[bone] = false
 end
 
+/*
 function PLAYER_ORGANS:BrainThink()
     if self.Player.Organs.brain == nil then
         -- no brain - no life
@@ -256,6 +267,12 @@ function PLAYER_ORGANS:StomachThink()
     end
 end
 
+*/
+//
+// rewrite this
+// 
+// liver/kidneys absorb some toxin damage
+/*
 
 function PLAYER_ORGANS:OrgansDamageToxin(target, dmg)
     -- for chemicals poison
@@ -280,6 +297,9 @@ function PLAYER_ORGANS:OrgansDamageToxin(target, dmg)
         end
     end
 end
+*/
+
+// выпил яда - урон распределяется среди чистым и по органам
 
 function PLAYER_ORGANS:BodyUseEnergy() -- in saturation timer
     -- waste of energy in body 
@@ -302,7 +322,7 @@ end
 
 function PLAYER_ORGANS:HeartMoveBlood()
     local blood = self:BloodLevel()
-    local oxygen = math.Round( 0.15 * (blood/100) * (self.Player.Organs.heart.hp / 100), 2)
+    local oxygen = math.Round( 0.15 * (blood/100), 2)
     self:SubOxygenInBlood(0.13)
     self:AddOxygen(oxygen)
 end

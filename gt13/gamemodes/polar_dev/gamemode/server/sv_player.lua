@@ -384,38 +384,9 @@ function GM:EntityTakeDamage( target, dmg )
 	end
 end
 
-/*
-hook.Add("GS_PlyTakeDamage", "Main", function(victim, attacker, part, dmg)
-	-- check, have the ply armor (vest, helmet, armor suit)
 
-	for _, eq in pairs(ARMORY_PART[part]) do
-		-- get itemData
-		local itemData = player_manager.RunClass( victim, "GetEquipItem", eq)
-		if !itemData then continue end
 
-		if eq == "SUIT" then
-			-- then itemData == simple string-name of suit
-			itemData = GS_EntityList["suit"][itemData]
-		end
 
-		if !itemData.Private_Data.Armor_Setting then
-			continue -- equip is not armory!
-		end
-
-		dmg = dmg - itemData.Private_Data.Armor_Setting.Protection
-		if dmg <= 0 then
-			-- the armory is facking save yo!
-			-- need to notify for this!
-			-- HOW?
-			-- ChatPrint("The armory softened impact") dont matching, because it's can go to SPAM
-			-- need use the some SOUND if metalick or another impact
-			-- victim:EmitSound(table.Random(ArmoryImpact))
-			return
-		end
-	end
-	player_manager.RunClass( victim, "HurtPart", part, dmg)
-end)
-*/
 concommand.Add("gs_open", function(ply,cmd, arg)
 	local id = arg[1]
 

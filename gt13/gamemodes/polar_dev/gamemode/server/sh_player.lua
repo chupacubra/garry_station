@@ -17,6 +17,10 @@ function InHandsItem(ply, class)
 	return false
 end
 
+function PLAYER:RunClass(...)
+	return player_manager.RunClass(ply, unpack(args))
+end
+
 function PLAYER:IsGhost()
     -- check team
     -- and some check
@@ -26,10 +30,14 @@ end
 function PLAYER:IsActive()
     // can player use something, pickup something
     // if player is sleep or in ragdoll
-    return self:Team() == TEAM_PLY
+    return self:Team() == TEAM_PLY and player_manager.GetPlayerClass( self ) == "gs_human"
 end
-
-
+/*
+function PLAYER:Think()
+	print("123")
+	ply:RunClass("Think")
+end
+*/
 function PLAYER:GetEquip(id)
 	return player_managery.RunClass(self, "GetEquip", id)
 end
@@ -73,7 +81,6 @@ function PLAYER:MakeViewTrace(len)
 	local eye = self:GetAttachment(self:LookupAttachment("eyes"))
 	local pos = eye.Pos
 
-
 	debugoverlay.Line(pos, pos + self:EyeAngles():Forward() * (len or 120))
 
 	return util.TraceLine({
@@ -82,3 +89,32 @@ function PLAYER:MakeViewTrace(len)
 		filter = self,
 	})
 end
+
+local stamina_to_run = 50
+
+hook.Add("Move", "PlayerMove", function(ply, mv)
+	if !ply:IsActive() then return end
+	
+	local origSpeed = mv:GetMaxSpeed()
+	local origClientSpeed = mv:GetMaxClientSpeed()
+	
+	local stamina = ply:GetLocalNWVar("Stamina")
+	if !stamina then return end
+
+	if stamina < stamina_to_run then
+		mv:SetMaxSpeed(origSpeed * 0.5)
+		mv:SetMaxClientSpeed(origClientSpeed * 0.5)
+	end
+
+	if mv:KeyDown(IN_SPEED) then
+		if stamina > stamina_to_run then
+			stamina = stamina - FrameTime() * 5
+			if SERVER then
+				ply.Organism_Value.stamina = stamina
+			end
+			ply:SetLocalNWVar("Stamina", stamina)
+		end
+		ply.LastInSpeed = CurTime()
+	end
+
+end)

@@ -41,14 +41,22 @@ function PLAYER_HP:SetupParts()
 	}
 end
 
+function PLAYER_HP:UpdateLocalNWVars()
+	self.Player:SetLocalNWVar("Stamina", self.Player.Organism_Value.stamina)
+	self.Player:SetLocalNWVar("Saturation", self.Player.Organism_Value.saturation)
+	self.Player:SetLocalNWVar("Pain", self.Player.Organism_Value.pain)
+	self.Player:SetLocalNWVar("PainShock", self.Player.Organism_Value.pain_shock)
+end
+
 function PLAYER_HP:SetupOrganismValues()
     self.Player.Organism_Value = {
         blood_circulation = 1,
         pain = 0,
         pain_shock = false,
         oxygen = 1,
-        stamina = 50,
-        saturation = 100,
+        stamina = 100,
+		stamina_max = 100,
+        saturation = 100, // hunger
         toxin = 0,
         last_dmg = 0,
         blood = {
@@ -60,24 +68,32 @@ function PLAYER_HP:SetupOrganismValues()
         --organism_status = {}
     }
 
+
+	timer.Simple(0.1, function()
+		self:UpdateLocalNWVars()
+	end)
+
+
+
 	self.Player.Spec_Damage =  {
 		toxin = 0,
 		hypoxia = 0,
 	}
 
 	// всё что сдесь стоит внести в отдельную таблицу
-    if !self.Ragdolled then
+    if !self.Player.Ragdolled then
         self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 200)
+		self.Player.Chemicals.data = {}
+
         self.Player.HealthStatus = GS_HS_OK
-        self.Ragdolled = false
-        self.CritParalyzeDelay = 0
-		self.EffectSpeed  = {}
-		self.RagdollTime  = 0
+        self.Player.Ragdolled = false
+        self.Player.CritParalyzeDelay = 0
+		self.Player.EffectSpeed  = {}
+		self.Player.RagdollTime  = 0
     end
 
-	self.CritRagdoll = 0
-	self.HungerRagdoll = 0
-
+	self.Player.CritRagdoll = 0
+	//self.Player.HungerRagdoll = 0
 end
 
 function PLAYER_HP:SetupOrganismThink()
@@ -85,36 +101,43 @@ function PLAYER_HP:SetupOrganismThink()
     self:StartSaturationTimer()
 
     timer.Create("gs_player_think_"..self.Player:EntIndex(), 1, 0, function()
-        if !self.Player:IsValid() then
+		local ply = self.Player
+		local organism_value = ply.Organism_Value
+
+        if !ply:IsValid() then
 			self:StopThink()
 			return
 		end
 
 		self:SubOxygen(0.12)
 		
-		if self.Player.Organism_Value.oxygen <= 0.1 then
-			self.Player.Spec_Damage.hypoxia = self.Player.Spec_Damage.hypoxia + 1
-		elseif self.Player.Spec_Damage.hypoxia != 0 and self.Player.Organism_Value.oxygen > 0.7 then
-			self.Player.Spec_Damage.hypoxia = self.Player.Spec_Damage.hypoxia - 1
+		if organism_value.oxygen <= 0.1 then
+			ply.Spec_Damage.hypoxia = ply.Spec_Damage.hypoxia + 1
+		elseif ply.Spec_Damage.hypoxia != 0 and organism_value.oxygen > 0.7 then
+			ply.Spec_Damage.hypoxia = ply.Spec_Damage.hypoxia - 1
 		end
 
         local dmg = self:GetSumDMG()
 
         if dmg < 100 then
-            self.Player.HealthStatus = GS_HS_OK
-			self:EffectSpeedRemove("status_crit")
+            ply.HealthStatus = GS_HS_OK
+			//self:EffectSpeedRemove("status_crit")
         elseif dmg > 100 then
-			self:EffectSpeedAdd("status_crit", -150, -250)
+			//self:EffectSpeedAdd("status_crit", -150, -250)
             -- crit status
-            self.Player.HealthStatus = GS_HS_CRIT
-			if self.CritRagdoll == 0 and flipquart() then
-				self.CritRagdoll = 5
+            ply.HealthStatus = GS_HS_CRIT
+			if ply.CritRagdoll == 0 and flipquart() then
+				ply.CritRagdoll = 5
 			end
         end
 
-
+		// check if ply is not running and runed 1 second before
+		if !ply:KeyDown(IN_SPEED) and ply.LastInSpeed + 2 < CurTime() then
+			organism_value.stamina = math.Clamp(organism_value.stamina + 2, 0, organism_value.stamina_max)
+		end
 		self:HungerThink()
 		self:HealthPartClientUpdate(mainpart)
+		self:UpdateLocalNWVars()
 		/*
 		if self:RagdollThink() then
 			self:Ragdollize()
@@ -122,9 +145,6 @@ function PLAYER_HP:SetupOrganismThink()
 			self:Unragdollize()
 		end
 		*/
-		--PrintTable(self.Player.Organism_Value)
-		--PrintTable(self.Player.Spec_Damage)
-		//self:BodyDebugPrint()
 	end)
 end
 
@@ -202,13 +222,17 @@ function PLAYER_HP:SetHP(body)
 	end
 end
 
-function PLAYER_HP:HurtPart(mainpart, dmg)
+function PLAYER_HP:HurtPart(part, typeD, dmg)
 	if god_enable:GetBool() then return end
 	local brutesum = self:GetSumDMGBrute()
 
-	for k,v in pairs(dmg) do
-		if k == D_STAMINA or k == D_TOXIN then
-			continue
+	if type(typeD) == "table" then
+		for k_type, v_dmg in pairs(typdD) do
+			self:HurtPart(part, k_type, v_dmg)
+		end
+	else
+		if typeD == D_STAMINA or typeD == D_TOXIN then
+			//continue
 		elseif k == D_BRUTE then
 			if brutesum >= 50 then
 				if flipcoin() then
@@ -216,35 +240,45 @@ function PLAYER_HP:HurtPart(mainpart, dmg)
 				end
 			end
 		end
-		self:DamageHealth(mainpart, k, v)
+		self:DamageHealth(part, typeD, dmg)
 	end
-
-	--print(mainpart.. " = " ..self:GetHealthPercentPart(mainpart).. "%")
-	--print("HP: "..self:GetHealthPercent())
-	--print(self:GetSumDMG())
-
-	self:HealthPartClientUpdate(mainpart)
 end
 
-function PLAYER_HP:HealHealth(part, typeD, hp)
+function PLAYER_HP:HealPart(part, typeD, hp)
 	if self.Player.Body_Parts[part] == nil then
 		return false
 	end
 
-	if self.Player.Body_Parts[part][typeD] - hp < 0 then
-		self.Player.Body_Parts[part][typeD] = 0
-	else
-		self.Player.Body_Parts[part][typeD] = self.Player.Body_Parts[part][typeD] - hp
-	end
+	self.Player.Body_Parts[part][typeD] = math.max(self.Player.Body_Parts[part][typeD] - hp, 0)
 end
 
+// DamageHealth(nil, "toxin", 1)
 function PLAYER_HP:DamageHealth(part, typeD, dmg)
 	if god_enable:GetBool() then return end
+	if self.Player.Spec_Damage[typeD] then
+		self.Player.Spec_Damage[typeD] = self.Player.Spec_Damage[typeD] + dmg
+		return
+	end
+
 	if self.Player.Body_Parts[part] == nil then
 		return false
 	end
 
 	self.Player.Body_Parts[part][typeD] = self.Player.Body_Parts[part][typeD] + dmg
+end
+
+function PLAYER_HP:HealHealth(part, typeD, dmg)
+	if god_enable:GetBool() then return end
+	if self.Player.Spec_Damage[typeD] then
+		self.Player.Spec_Damage[typeD] = math.max(self.Player.Spec_Damage[typeD] - dmg, 0)
+		return
+	end
+
+	if self.Player.Body_Parts[part] == nil then
+		return false
+	end
+
+	self.Player.Body_Parts[part][typeD] = math.max(self.Player.Body_Parts[part][typeD] - dmg, 0)
 end
 
 function PLAYER_HP:InjectChemical(chem, unit) -- insert in human chem  food, poison etc
@@ -332,27 +366,6 @@ function PLAYER_HP:HealthPartClientUpdate(part)
 	net.Send(self.Player)
 end
 
-function PLAYER_HP:HealHealth(part, typeD, hp)
-	if self.Player.Body_Parts[part] == nil then
-		return false
-	end
-
-	if self.Player.Body_Parts[part][typeD] - hp < 0 then
-		self.Player.Body_Parts[part][typeD] = 0
-	else
-		self.Player.Body_Parts[part][typeD] = self.Player.Body_Parts[part][typeD] - hp
-	end
-end
-
-function PLAYER_HP:DamageHealth(part, typeD, dmg)
-	if god_enable:GetBool() then return end
-	if self.Player.Body_Parts[part] == nil then
-		return false
-	end
-
-	self.Player.Body_Parts[part][typeD] = self.Player.Body_Parts[part][typeD] + dmg
-end
-
 function PLAYER_HP:GetSaturation()
 	return self.Player.Organism_Value.saturation
 end
@@ -379,19 +392,18 @@ function PLAYER_HP:StartSaturationTimer()
 end
 
 
-
-
 -- think func in end
 
 function PLAYER_HP:PainThink()
-    if CurTime() - 8 > self.Player.Organism_Value.last_dmg then
+	local organ_vals = self.Player.Organism_Value
+    if CurTime() - 8 > organ_vals.last_dmg then
         self:DecreasePain(0.05)
     end
 
     if self:GetPain() > 0.7 then
-        self.Player.Organism_Value.pain_shock = true
+        organ_vals.pain_shock = true
 	else
-		self.Player.Organism_Value.pain_shock = false
+		organ_vals.pain_shock = false
 	end
 
 	if self:GetPain() >= 0.5 then
@@ -418,16 +430,27 @@ function PLAYER_HP:HungerThink()
 		return
 	end
 
+	local vals = self.Player.Organism_Value
+
 	local hunger = self:GetSaturation()
 	
 	if hunger < 10 then
-		if self.HungerRagdoll == 0 and flipquart() then
-			self.HungerRagdoll = 5
-		end
+		//if self.Player.HungerRagdoll == 0 and flipquart() then
+		//	self.Player.HungerRagdoll = 5
+		//end
+		vals.stamina_max = 20
+		vals.stamina = math.Clamp(vals.stamina, 0, vals.stamina_max)
 	elseif hunger < 25 then
-		self:EffectSpeedAdd("hunger", -100, -225)
+//		self:EffectSpeedAdd("hunger", -100, -225)
+//		self.Player.Organism_Value.stamina = math.Clamp()
+
+		vals.stamina_max = 70
+		vals.stamina = math.Clamp(vals.stamina, 0, vals.stamina_max)
+
+		//vals.stamina = math.Clamp()
+
 	else
-		self:EffectSpeedRemove("hunger")
+		//self:EffectSpeedRemove("hunger")
 	end
 end
 
@@ -463,7 +486,7 @@ function PLAYER_HP:Death()
 end
 
 function PLAYER_HP:CritParalyze(delay,hard)
-	if self.Ragdolled or self.CritParalyzeDelay > CurTime() then
+	if self.Player.Ragdolled or self.Player.CritParalyzeDelay > CurTime() then
 		return false
 	end
 
@@ -473,7 +496,7 @@ function PLAYER_HP:CritParalyze(delay,hard)
 
 	self:Ragdollize()
 	if !hard then
-		self.CritParalyzeDelay = CurTime() + delay + 7
+		self.Player.CritParalyzeDelay = CurTime() + delay + 7
 		
 		timer.Simple(delay, function()
 			if !IsValid(self.Player) then
@@ -493,8 +516,8 @@ function PLAYER_HP:RagdollThink()
 	-- check hypoxia
 	-- check crit status
 	
-	self.CritRagdoll = math.Clamp(self.CritRagdoll - 1, 0, 15)
-	self.HungerRagdoll = math.Clamp(self.HungerRagdoll - 1, 0, 15)
+	self.Player.CritRagdoll = math.Clamp(self.Player.CritRagdoll - 1, 0, 15)
+	//self.Player.HungerRagdoll = math.Clamp(self.Player.HungerRagdoll - 1, 0, 15)
 	
 	if self.Player.Organism_Value.pain_shock then
 		return true
@@ -504,11 +527,16 @@ function PLAYER_HP:RagdollThink()
 		return true
 	end
 
-	if self.Player.HealthStatus == GS_HS_CRIT and self.CritRagdoll != 0 then
-		return true
-	end
+	//if self.Player.HealthStatus == GS_HS_CRIT and self.Player.CritRagdoll != 0 then
+	//	return true
+	//end
 
-	if self.HungerRagdoll != 0 then
+	// trash
+	//	if self.Player.HungerRagdoll != 0 then
+	//		return true
+	//	end
+
+	if self.Player.Organism_Value.stamina < 1 then
 		return true
 	end
 end

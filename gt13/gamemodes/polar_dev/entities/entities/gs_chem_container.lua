@@ -91,12 +91,10 @@ function ENT:ChemContainerInit()
     local tbl = self.ChemContainer.Chems
     self.ChemContainer = CHEMIC_CONTAINER:New_Container(self, self.ChemContainerInit.Max)
     self:SetNWInt("Chems", 0)
-
 end
 
 function ENT:PostInit()
     //self.BaseClass.PostInit(self)
-    print(self.BaseClass.PostInit())
     self:ChemContainerInit()
 
     if CLIENT and self.RenderChem then
@@ -157,6 +155,7 @@ function ENT:ChemContainerUpdate()
     //end
 end
 
+// льем в другое ведро из нашего, потом смешиваем
 function ENT:TransferChems(receiver)
     local rec_chem_cont = receiver.ChemContainer
 
@@ -223,6 +222,7 @@ function ENT:InitRenderChemColor()
     self.RenderChem_Mat = mat
 end
 
+// генерация водной глади
 function ENT:InitRenderChem()
     if self.RenderChem_Data then return end
     local verts = FastGenVerts(self)
@@ -277,6 +277,7 @@ function ENT:InitRenderChem()
     self.RenderChem_Mesh = obj
 end
 
+// обновление воды (не обновляет меш, только настройки для матрицы)
 function ENT:UpdateMesh(level) // 0-1
     local data = self.RenderChem_Data
 

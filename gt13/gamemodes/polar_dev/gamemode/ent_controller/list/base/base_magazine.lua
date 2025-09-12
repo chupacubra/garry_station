@@ -28,8 +28,6 @@ ENT.MaxAmmo = 5
 
 function ENT:PostInit()
     self.Magazine = {}
-    //self.Magazine.Ammo = {}
-    print(self.HandOffsetVec)
 end
 
 local sounds = {
@@ -59,7 +57,6 @@ function ENT:ItemInteraction(item, ply)
         // по новой до остановки или когда кончились пули
         if !IsValid(item) or !IsValid(self) or !IsValid(ply) then return end
 
-        print(item)
         local ammo_stack = item:GetStack()
 
         if ammo_stack < 1 then
@@ -67,10 +64,10 @@ function ENT:ItemInteraction(item, ply)
             return
         end
 
-        local success, rtext = self:InsertBullet(item.Calibr)
+        local success, rstr_status = self:InsertBullet(item.Calibr)
 
-        if rtext then
-            RichTextPrint(rtext, ply)
+        if rstr_status then
+            RichTextPrint(rstr_status, ply)
         end
         if !success then return end
 
@@ -82,7 +79,7 @@ function ENT:ItemInteraction(item, ply)
 
         if ammo_stack < 1 then return end
         if self:GetNWInt("Bullets") >= self.MaxAmmo then return end
-        timer.Simple(0, function()ply:DoTask(task) end)
+        timer.Simple(0, function() ply:DoTask(task) end)
     end
 
     ply:DoTask(task)
@@ -103,7 +100,6 @@ function ENT:InsertBullet(bullet)
     self:SetNWInt("Bullets", #self.Magazine)
     return true//, "{255 255 255} loaded some bullet"
 end
-
 
 function ENT:PopBullet()
     if #self.Magazine < 1 then return end

@@ -73,22 +73,23 @@ function PLAYER:StopThink()
 	timer.Destroy("gs_organs_think_"..i)
 end
 
-
 function PLAYER:InitClientState()
 	if SERVER then
 		net.Start("gs_cl_init_stat")
 		net.WritePlayer(self.Player)
 		net.WriteBool(true)
 		net.Broadcast()
-	else
-		self:SetupInventary()
-	end
+		return
+	end	
+	
+	self:SetupInventary()
+
+	hook.Run("PlyClassInit", self.Player)
 end
 
 function PLAYER:SetupSystems()
 	self:SetupInventary()
 	self:SetupHPSystem()
-	//self:InitClientState()
 end
 
 function PLAYER:Spawn()
@@ -101,7 +102,13 @@ function PLAYER:Spawn()
 		self:InitClientState()
 	end
 
+	self.Player.LastInSpeed = CurTime()
+
 	self.FirstSpawn = true
+end
+
+function PLAYER:Think()
+	print(self.Player, "thinked")
 end
 
 function GS_EquipWeapon(ply, weapon) -- for start loadout
@@ -172,8 +179,7 @@ local function RecursDebugScreenText(tbl, str_x, str_y)
 	return str_x, str_y
 end
 
-function PLAYER:BodyDebugPrint()
-	
+function PLAYER:BodyDebugPrint()	
 	if !dev:GetBool() then return end
 	
 	local debug_table = self.Player.Organism_Value // start
@@ -184,20 +190,8 @@ function PLAYER:BodyDebugPrint()
 	debug_table["EffectSpeed"] = self.EffectSpeed
 	debug_table["RagdollTime"] = self.RagdollTime
 
-	//self.Player.Body_Parts
-
 	debug_table["Body_Parts"] = self.Player.Body_Parts 
 	RecursDebugScreenText(debug_table, 0, 0)
-	/*
-	    self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 200)
-        self.Player.HealthStatus = GS_HS_OK
-        self.Ragdolled = false
-        self.CritParalyzeDelay = 0
-		self.EffectSpeed  = {}
-		self.RagdollTime  = 0
-	*/
-	
-
 end
 
 

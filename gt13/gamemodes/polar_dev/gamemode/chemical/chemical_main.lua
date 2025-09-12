@@ -63,10 +63,13 @@ end
 
 function CHEMIC_CONTAINER:DecComponent(name, unit)
 	if self.content[name] then
-		self.content[name] = self.content[name] - unit
+		self.content[name] = math.max(self.content[name] - unit, 0)
 
 		if self.content[name] <= 0 then
 			self.content[name] = nil
+			if self.data then
+				self.data[name] = nil
+			end
 		end
 	end
 end
@@ -76,8 +79,17 @@ function CHEMIC_CONTAINER:RemoveComponent(name)
 end
 
 function CHEMIC_CONTAINER:HumanMetabolize(unit) // only for humanclass
-	for chem, _ in pairs(self.content) do
-		CHEMICALS[chem]["callbackInPly"](self.ent)
+	local ply = self.ent
+	local bodychems_data = self.data
+	for chem, unit in pairs(self.content) do
+		// need make a overdose check
+		local chem_data = CHEMICALS[chem]
+		if unit > chem_data.overdose or bodychems_data[chem].overdosed then
+			bodychems_data[chem].overdosed = true
+			chem_data["callbackInPlyOverdose"](self, ply, chem, unit)
+		else
+			chem_data["callbackInPly"](self, ply, chem, unit)
+		end
 		self:DecComponent(chem, unit)
 	end
 end
@@ -110,22 +122,23 @@ end
 function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and i dont want to do ths
 	local finalcomp = {}
 	//local content = table.Copy(self.content)
-	//content["temp"] = self.temp or 1
-	for k, v in pairs(self.content) do
-		if FAST_REC[k] then
-			for kk,vv in pairs(FAST_REC[k]) do
+	content["temp"] = self.temp or 1
+	for chem, unit in pairs(self.content) do
+		local find_rec = FAST_REC[chem]
+		if find_rec then
+			for rec_chem, rec_unit in pairs(find_rec) do
 				local count = 0
-				local recept = RECEIPTS[kk]
+				local recept_inp = RECEIPTS[rec_chem]
 
-				if CanMake(self, recept["inp"]) then
-					while CanMake(self, recept["inp"])do
-						for kkk,vvv in pairs(recept["inp"]) do
+				if CanMake(self, recept_inp) then
+					while CanMake(self, recept_inp)do
+						for kkk, vvv in pairs(recept_inp) do
 							self:DecComponent(kkk, vvv)
 						end
 						count = count + 1
 					end
 					for i = 1, count do
-						for kkk,vvv in pairs(recept["out"]) do
+						for kkk,vvv in pairs(recept_inp) do
 							if !self.content[name] then
 								table.insert(finalcomp, name)
 							end
@@ -142,6 +155,8 @@ function CHEMIC_CONTAINER:MixComp() -- i cant refactor this because is WORK and 
 	for k, v in pairs(finalcomp) do
 		CHEMICALS[v]["callBackInMix"](self, self.ent)
 	end
+
+	content["temp"] = nil
 end
 
 
