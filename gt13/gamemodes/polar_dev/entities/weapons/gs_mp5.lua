@@ -11,8 +11,8 @@ SWEP.Category = "Polar station: Guns"
 
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = true
-SWEP.Primary.Sound = "weapons/mp5navy/mp5-1.wav"
-SWEP.Primary.Cone = 0.04
+SWEP.Primary.Sound          = "weapons/mp5navy/mp5-1.wav"
+SWEP.Primary.Cone           = 0.04
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
@@ -45,17 +45,22 @@ SWEP.WorldModelOffsets    = {
     pos = Vector(8, -1, 2),
     ang = Angle(0,-90-2, 180-10)
 }
+
+SWEP.WorldModelDrawOffset = {
+    ang = Angle(0, -90, 0),
+    pos = Vector()
+}
 SWEP.Spawnable = true
 
 SWEP.addPos = Vector(11, 0.05, 1)
 SWEP.addAng = Angle(-8.5, 2.2, 0)
 SWEP.sightPos = Vector(10, 5, 1.3)
-SWEP.sightAng = Angle(-5, 5, -5)
+SWEP.sightAng = Angle(5, 5, 5)
 SWEP.fakeHandRight = Vector(4, -2, 0)
 SWEP.fakeHandLeft = Vector(10, -4, -7)
 SWEP.Recoil = 0.4
 
 function SWEP:PrimaryAttack()
+    //print(self)
     self:ShootBullet()
 end
-

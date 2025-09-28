@@ -80,6 +80,7 @@ function ENT:Equip(ply) // ply want to wear ent
         local success = player_manager.RunClass(ply, "EquipItem", self)
         if success then
             if cont then
+                print(cont)
                 cont:RemoveItem(self)
             end
             self.EquipOwner = ply

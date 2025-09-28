@@ -110,6 +110,20 @@ end
 
 AddEntItem(ENT, "base_magazine")
 
+local function GenerateMagazineFull(mag, data)
+    local ENT = {}
+
+    function ENT:PostInit()
+        self.Magazine = util.TableMul(next(self.AcceptCalibr), self.MaxAmmo)
+        self:SetNWInt("Bullets", self.MaxAmmo)
+    end
+
+    ENT.PrintName = data.Name.."(full)"
+
+    AddEntItem(ENT, mag.."_full", mag)
+end
+
+
 local function GenerateMagazine(weap_class, mag_data)
     local ENT = {}
 
@@ -127,8 +141,14 @@ local function GenerateMagazine(weap_class, mag_data)
     ENT.PrintName = ENT.Name or "magazine"
     ENT.Spawnable = true
 
+    local entclass = "mag_"..weap_class
+
     AddEntItem(ENT, "mag_"..weap_class, "base_magazine")
+
+    GenerateMagazineFull(entclass, ENT)
 end
+
+
 
 GenerateMagazine("gs_mp5", {
     accept = {

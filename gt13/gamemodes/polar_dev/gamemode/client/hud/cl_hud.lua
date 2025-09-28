@@ -9,7 +9,8 @@ local hide = {
 
 
 hook.Add( "HUDShouldDraw", "HideHUD", function( name )
-    local ply = LocalPlayer()
-	return player_manager.GetPlayerClass( ply ) != "gs_human" or hide[name] != true
+    //local ply = LocalPlayer()
+	//return player_manager.GetPlayerClass( ply ) != "gs_human" or hide[name] != true
+    return hide[name] != true
 end)
 

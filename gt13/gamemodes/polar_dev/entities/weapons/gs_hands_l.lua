@@ -249,9 +249,15 @@ function SWEP:UpdateCSModels()
     end
 end
 
+local function CanPickup(item)
+    if !IsValid(item) then return end
+    if item:IsPlayer() or item:IsNPC()  then return end
+    
+    return true
+end
+
 function SWEP:PickupItem(item)
     if CLIENT then return end
-
     if !item then
         local trace = self:GetOwner():MakeViewTrace()//self:MakeTrace()
         if !trace.Entity:IsValid() then
@@ -261,7 +267,7 @@ function SWEP:PickupItem(item)
     end
     
     if item:IsPlayerHolding() then return end
-
+    if !CanPickup(item) then return end
     local can = hook.Run("HandCanPickup", self:GetOwner(), self, item)
 
     if can == false then

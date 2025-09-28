@@ -11,6 +11,17 @@ ENT.Size  = ITEM_SMALL
 ENT.Spawnable = true
 ENT.Category = "Developing"
 
+ENT.Craftable = false
+
+-- create craft receipt here 
+-- ENT.ReceiptData = {
+--      name = "" // set custom name receipt, if nil then name = ENT.Name
+--      category = "",
+--      receipt = {},
+--      tools = {},
+-- }
+
+
 function ENT:SetupNWVars()
 end
 
@@ -19,7 +30,6 @@ end
 
 function ENT:PostInit()
 end
-
 
 function ENT:ItemPrimary(hands, ply)
     -- using item in hands LMB
@@ -33,7 +43,6 @@ function ENT:ItemInteraction(drop, ply)
     // custom func to interact item with item (drop -> receiver)
     // if true then delete item from last cont
     // false - dont delete
-    // return false
     return false
 end
 
@@ -44,6 +53,7 @@ function ENT:Examine(ply)
 end
 
 function ENT:SetupBaseContextCallbacks()
+    -- base item contextbuttons, run in init
     self:AddContextCallback("Examine",
         function()
             self:Examine()

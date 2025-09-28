@@ -47,7 +47,7 @@ end
 function GM:PlayerLoadout( ply )
 	player_manager.RunClass( ply, "Loadout" )
 end
-
+/*
 hook.Add("PlayerDroppedWeapon", "GameDropWeapon" , function(ply, swep)
 	// give hands, if drop some wep
 	// weapon already dropped after this
@@ -74,7 +74,7 @@ hook.Add("PlayerDroppedWeapon", "GameDropWeapon" , function(ply, swep)
 		if ply:GetWeapon(v) == nil then ply:PickupWeapon(v) end		
 	end
 end)
-
+*/
 hook.Add("WeaponEquip", "GameWeaponPickup", function(swep, ply)
 	// drop active hand if pickup wep
 
@@ -154,12 +154,13 @@ function GM:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
 		return false
 	end
 end
+/*
 
 function GM:PlayerCanPickupWeapon()
 	//return false
 	return true
 end
-
+*/
 function GM:PlayerDeathSound() 
 	return true 
 end
@@ -305,10 +306,6 @@ function GM:PlayerNoClip( ply, desiredState )
 	return GetConVar("sv_cheats"):GetBool()
 end
 
-function GM:PlayerDeathSound() 
-	return true
-end
-
 
 local hg_scaledmg = {
 	[HITGROUP_GENERIC]	= 1,
@@ -335,13 +332,17 @@ function GM:ScalePlayerDamage(ply, hg, dmg)
 	local dmg = dmg:GetDamage()
 	local scale = hg_scaledmg[hg] or 1
 	local mod_applied = false
+	local part = HIT_GROUP_TO_PART[hg]
+	//print()
+	print(part,hg)
+	print(ARMORY_PART)
 
 	for _, eq in pairs(ARMORY_PART[part]) do
 		if eq == "SUIT" then
 			print("SUIT ARMOR skibidi")
 		end
 
-		local equip = player_manager.RunClass(ply, "GetEquipItem", eq)
+		local equip = player_manager.RunClass(ply, "GetEquip", eq)
 		if !IsValid(equip) then continue end
 		if !equip.IsArmor then
 			local dmgtyp = GS_DMG_LIST[hg_scale] or D_BRUTE 
@@ -355,17 +356,53 @@ function GM:ScalePlayerDamage(ply, hg, dmg)
 		dmg = dmg * hg_scaledmg[hg]
 	end
 
-	
+	print(part, dmg)
+
+	return dmg
 end
 
 // need use this for apply damage another(poison, explosion)
 local function HandleBodyDamage(ply, dmg)
 	if dmg:IsFallDamage() then
+		return // fall damage in GetFallDamage 
+	end	
+	
+end
 
+function GM:BulletHitPlayer(attacker, victim, weapon, bullet_dmg, part)
+	print("BulletHitPlayer", attacker, victim, weapon, bullet_dmg, part)
+	// Пуля попала по игроку, что дальше?
+	// нанесение урона по части тела
+	// до того как мы вызовем plyclass:HurtPart нужно проверить на броню и другие факторы снижения дамага
+	
+	// что сдесь происходит
+	// мы попали в тело
+	// перебираем все типы снаряги для этой части тела (то есть жилет и костюм)
+	for _, eq in pairs(ARMORY_PART[part]) do
+		local equip = player_manager.RunClass(victim, "GetEquip", eq)
+		if !IsValid(equip) then continue end
+		local protection = equip.Protection
+		if protection then
+			for typ, dmg in pairs(bullet_dmg) do
+				local prot = protection[typ] or 0 
+				bullet_dmg[typ] = math.max(dmg - prot, 0)
+			end
+		end
+	end
+
+	for typ, dmg in pairs(bullet_dmg) do
+		if dmg > 0 then
+			victim:RunClass("HurtPart", part, bullet_dmg)
+		else
+			// звук крутой типо попал или эффект я незнаю
+		end
 	end
 end
 
+// эта функция для обработки дамагов от карты, нпс, и так далее (то есть не урон от пушек и пуль)
+// этим занимается то, что выше
 function GM:EntityTakeDamage( target, dmg )
+	print("EntityTakeDamage", target, dmg)
 	if target.corpse then -- ItS a CORPSE!!1
 		GS_Corpse.DamageHandler(target, dmg)
 		return
@@ -379,11 +416,89 @@ function GM:EntityTakeDamage( target, dmg )
 		else
 			HandleBodyDamage(ply, dmg)
 		end
-		dmg:SetDamage(0)
+		//dmg:SetDamage(0)
 		//return true
 	end
 end
 
+
+// нужно найти другой способ
+/*
+function GM:PlayerSay(ply, text)
+	if !ply:IsActive() then return end
+	
+	local name = ply:GetName()
+	if name == "" or name == "N/A" then
+		name = "..."
+	end
+
+	//chat.AddText(name .." - ".. )
+
+	return name .." - "..text
+end
+*/
+
+function GM:PlayerCanPickupWeapon(ply, weapon)
+	// игрок не сможет поднимать оружие просто так
+	if ply:KeyDown(IN_USE) then
+		local hand = ply:GetActiveWeapon()
+		if !hand.IsHands then return end
+		if IsValid(hand:GetItem()) then return end
+
+		local trace = ply:MakeTrace()
+		if trace.Entity == weapon then
+			//GS_EquipWeapon(ply, weapon)
+			ply:PickupWeapon(weapon)
+		end
+	end
+	
+	return false
+end
+
+
+function GM:PlayerCanPickupItem(ply, item)
+
+	return false
+end
+
+
+function GM:PlayerDroppedWeapon(ply, dropped)
+	print(ply, dropped)
+	if !ply:IsValid() or !IsValid(dropped) then return end
+	if !ply:IsActive() then return end
+	if !dropped.GMSWEP or dropped.isHands then 
+		return
+	end
+
+
+	//dropped.Dropped = true 
+	local weps = ply:GetWeapons()
+
+	// remove dropped weapon from weps, because он там остается
+	for k, v in pairs(weps) do
+		if v == dropped then
+			table.remove(weps, k)
+			break
+		end
+	end
+	
+	PrintTable(weps)
+
+	if #weps >= 2 then return end
+
+	local hands = {
+		"gs_hands_l",
+		"gs_hands_r",
+	}
+
+	for k, v in pairs(hands) do
+		if !IsValid(ply:GetWeapon(v)) then
+			print("ply need give a", v)
+			GS_EquipWeapon(ply, v)
+			
+		end		
+	end
+end
 
 
 

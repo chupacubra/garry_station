@@ -23,13 +23,9 @@ GS_Entity_Crafts = {}
     }
 */
 function RegisterCraft(receipt_data)
-    if table.Count(receipt_data.receipt)
+    //if table.Count(receipt_data.receipt)
 end
 
 function GetCrafts(category)
-    if category then
-        
-    else
-
-    end
+    if !category then return end
 end

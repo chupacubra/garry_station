@@ -183,7 +183,7 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 		return SpecCam(specPly)
 	end
     --]]
-    --[[
+    
 	if ply:GetNWBool("fake") == true and IsValid(ply:GetNWEntity("DeathRagdoll")) then
 		local attach = ply:GetNWEntity("DeathRagdoll"):GetAttachment(1)
 		ply:GetNWEntity("DeathRagdoll"):ManipulateBoneScale(ply:GetNWEntity("DeathRagdoll"):LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
@@ -200,7 +200,7 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 
 		return view
 	end
-    --]]
+    
 
 	if IsValid(ply) and IsValid(ply:GetActiveWeapon()) then
 		wep = ply:GetActiveWeapon()

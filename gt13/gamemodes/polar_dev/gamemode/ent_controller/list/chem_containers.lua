@@ -18,7 +18,7 @@ ENT.RenderChem_Data = {
     rad_min = 6.534,
 }
 
-ENT.ChemContainerInit = {
+ENT.ChemContainerData = {
     Max = 100,
     Chems = {}
 }

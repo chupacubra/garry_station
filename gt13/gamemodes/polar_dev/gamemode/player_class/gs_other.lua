@@ -1,13 +1,7 @@
 PLAYER_OTHER = {}
 
-local BD_EX = {
-    head   = "head",
-    hand_l = "left hand",
-    hand_r = "right hand",
-    body   = "torse",
-    leg_l  = "left leg",
-    leg_r  = "right leg",
-}
+/*
+
 
 function PLAYER_OTHER:ExamineEquip(ply)
     --GS_ChatPrint(ply, self.Character.name .. " equipment:")
@@ -17,7 +11,8 @@ function PLAYER_OTHER:ExamineEquip(ply)
         end
     end
 end
-
+*/
+/*
 function PLAYER_OTHER:ExamineBody(ply)
     for k, v in pairs(BD_EX) do
         local pnd = self.Player.Body_Parts[k][1] + self.Player.Body_Parts[k][2]
@@ -29,7 +24,7 @@ function PLAYER_OTHER:ExamineBody(ply)
             st = "bruised"
         else 
             st = "crippled"
-        end 
+        end
         
         GS_ChatPrint(ply, v.." is "..st)
     end
@@ -38,7 +33,10 @@ function PLAYER_OTHER:ExamineBody(ply)
         GS_ChatPrint("the skin is pale")
     end
 end
+*/
 
+
+/*
 function PLAYER_OTHER:MakeAction(ply, id)
     if id == S_EXAMINE then
         self:Examine(ply)
@@ -48,12 +46,12 @@ function PLAYER_OTHER:MakeAction(ply, id)
         self:ExamineBody(ply)
     end
 end
-
+*/
 --[[
 GOING TO player_ext.lua
 
 function PLAYER_OTHER:GetID() -- getting id from equip and hands
-    local id = self:GetEquipItem("KEYCARD")
+    local id = self:GetEquip("KEYCARD")
 
     if !id then
         id = self:GetItemFromContext(context, key)

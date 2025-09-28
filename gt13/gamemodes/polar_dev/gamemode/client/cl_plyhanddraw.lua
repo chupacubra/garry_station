@@ -58,10 +58,7 @@ function PlayerUpdateWorldModelsSWEP(ply)
 
         local model
         if IsValid(swep.WMGun) and swep.GMSWEP then
-            //continue
-            print("use swep mdl")
             model = swep.WMGun
-            //model:SetNoDraw(false)
         else
             model = ClientsideModel(item:GetModel())
             model:SetColor(item:GetColor())
@@ -146,6 +143,45 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
     end
 
 end) 
+
+/*
+hook.Add("Think", "UpdateHandsDraw", function()
+    // get old and new player sweps, check if is not ravno
+    // пример кода
+    // проблема только в одном - это надо делать для всех игроков
+    // может в корутину?
+    // или все таки сделать по нормальному
+    if true return end
+
+    local old = ply.Old
+    local new = ply:GetWeapons()
+    if old != new then
+
+        PlayerUpdateWorldModelsSWEP
+    end
+end)
+*/
+
+hook.Add("Think", "UpdateHandsDraw", function()
+    /*local old = ply.Old
+    local new = ply:GetWeapons()
+    if old != new then
+
+        PlayerUpdateWorldModelsSWEP
+    end*/
+    for _, ply in ipairs(player.GetAll()) do
+        //local new_weaps = ply:GetWeapons()
+        //local f_equal = false
+        /*
+        for i = 1, #new do
+            if new_weaps[i] != 
+        end
+        */
+        //ply.OldWeapForCheck = new
+        PlayerUpdateWorldModelsSWEP(ply)
+    end
+end)
+
 
 
 hook.Add("PlayerSwitchWeapon", "UpdateDrawWeapon", function( ply, oldWeapon, newWeapon)

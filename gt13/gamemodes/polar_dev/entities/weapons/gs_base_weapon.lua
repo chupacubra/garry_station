@@ -127,6 +127,9 @@ function SWEP:BulletCallbackFunc(dmgAmt, ply, tr, dmg, tracer, hard, multi)
 	end
 end
 
+function SWEP:Initialize()
+    self.Init = true
+end
 
 function SWEP:UpdateHoldType()
     local holdtype = self.HoldType
@@ -261,7 +264,6 @@ function SWEP:EjectMag()
     mag:ItemRecover(pos)
     
     self.Magazine = nil
-    self:SetNWInt("MagAmmo", 0)
     self:SetNWEntity("Magazine", nil)
     self:UpdateWModelBodyGroups("no_mag")
     self:GetOwner():DoReloadEvent()
@@ -287,12 +289,9 @@ function SWEP:ItemInteraction(item)
 end
 
 function SWEP:InitializeWM()
-    //print("Init cl wm", self, self.WorldModelCustom)
     if !self.WorldModelCustom then return end
 
     self.WMGun = ClientsideModel(self.WModel)
-
-    //self:UpdateWMState()
 
     if self.WorldModelBodyGroups["base"] then
         self:ChangeBodyGroup("base")
@@ -368,9 +367,11 @@ function SWEP:DrawWorldModel()
         gun:SetupBones()
 	    gun:DrawModel()
     else
+        // need add offsets
         gun:SetRenderOrigin(self:GetPos())
-        gun:SetRenderAngles(self:GetAngles())
+        gun:SetRenderAngles(self:LocalToWorldAngles(Angle(0, 90,0)))
 	    gun:DrawModel()
+        
     end
 
 end
@@ -398,16 +399,15 @@ function SWEP:GetContextButtons()
             icon = "icon16/arrow_down.png",
         }
     end
-
     /*
-    elseif self.Magazine.IsIternal then
+    elseif self.Magazine then
         buttons["pop_bullet"] = {
-        name = "Get bullet", -- ?
-        func = function()
-            local bullet = self:PopUpBulletFromMagazine()
-            -- RecoverBullet(self, bullet)
-        end,
-        icon = "icon16/arrow_up.png",
+            name = "Get bullet", -- ?
+            func = function()
+                local bullet = self:PopUpBulletFromMagazine()
+                -- RecoverBullet(self, bullet)
+            end,
+            icon = "icon16/arrow_up.png",
         }
     end
     */
@@ -457,7 +457,7 @@ function SWEP:DevShoot()
 	bullet.Damage = 50 //dmg or 25
 	bullet.Attacker = ply
     bullet.Callback = function(att, trace, dmg)
-        //self:BulletCallbackFunc()
+        //self:BulletCallbackFunc(att, trace, dmg)
     end
 	self:FireBullets(bullet)
 
@@ -476,10 +476,17 @@ function SWEP:DevShoot()
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
 end
 
-function SWEP:GetMagAmmo()
+function SWEP:GetMag()
+    if self.Magazine then       // pump action shotgun 
+        return self.Magazine 
+    else
+        return self:GetNWEntity("Magazine")
+    end
+end
+
+function SWEP:GetBulletsInMag()
     local mag = self:GetNWEntity("Magazine")
-    //print(mag, mag:GetNWInt("Bullets"))
-    if mag then
+    if IsValid(mag) then
         return mag:GetNWInt("Bullets")
     else
         return 0
@@ -487,22 +494,30 @@ function SWEP:GetMagAmmo()
 end
 
 function SWEP:SubBullet()
-    local mag = self:GetNWEntity("Magazine")
-    local ammo = mag:GetNWInt("Bullets")
-    if ammo < 1 then return end
-    if mag then
-        mag:SetNWInt("Bullets", ammo - 1)
+    local magazine = self:GetNWEntity("Magazine")
+    if IsValid(magazine) then
+        local ammo = magazine:GetNWInt("Bullets")
+        if ammo > 1 then
+            magazine:SetNWInt("Bullets", ammo - 1)
+        end
     end
 
     if SERVER then
-
+        // удаление пули из массива, последнюю
+        table.remove(magazine)
     end
+end
+
+function SWEP:PopUpBulletFromMag()
+    local magazine = self:GetNWEntity("Magazine")
+    local bullet = table.remove(magazine.Magazine, #magazine.Magazine)
+    return bullet
 end
 
 function SWEP:ShootBullet()
     if not IsValid(self) then return nil end
-     
-    local ammo = self:GetMagAmmo()
+
+    local ammo = self:GetBulletsInMag()
 
     if ammo < 1 then 
         self:EmitSound("Weapon_AR2.Empty")
@@ -523,20 +538,33 @@ function SWEP:ShootBullet()
     end
     debugoverlay.Line(shootOrigin, shootOrigin + shootDir*1000,1,nil, true)
 
+    local bullet_type = self:PopUpBulletFromMag()
+    local bullet_dmg = GetBulletDMG(bullet_type)
+
+    if !bullet_dmg then bullet_dmg = {} end
+
+    local bullet_dmgsum = tblsum(bullet_dmg) 
+
 	local ply = self:GetOwner()
 	local bullet = {}
 	local cone = self.Primary.Cone
+
 	bullet.Num = self.NumBullet or 1
 	bullet.Src = shootOrigin
 	bullet.Dir = shootDir
 	bullet.Spread = Vector(cone, cone, 0)
 	bullet.Tracer = 1
 	bullet.TracerName = 4
-	bullet.Force = 100 / 20
-	bullet.Damage = 50 //dmg or 25
+	bullet.Force = bullet_dmgsum / 10
+	bullet.Damage = bullet_dmgsum
 	bullet.Attacker = ply
     bullet.Callback = function(att, trace, dmg)
-        //self:BulletCallbackFunc()
+        self:BulletCallbackFunc(att, trace, dmg)
+        if trace.Entity:IsPlayer() then
+            //GAMEMODE:BulletHitPlayer(att, trace.entity, self, bullet_dmg )
+            
+            hook.Run("BulletHitPlayer", att, trace.Entity, self, bullet_dmg, HIT_GROUP_TO_PART[trace.HitGroup])
+        end
     end
 	self:FireBullets(bullet)
 
@@ -552,10 +580,11 @@ function SWEP:ShootBullet()
 		util.Effect("MuzzleFlash", ef)
     end
     self:EmitSound(self.Primary.Sound)
-    //self:SetNWInt("MagAmmo", ammo - 1)
-    self:SubBullet()
+
+    //self:SubBullet()
 
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
+    //self:SetNWFloat("VisualRecoil", 0)
     self:SetNextPrimaryFire(CurTime()+0.1)
 end
 
@@ -563,7 +592,11 @@ function SWEP:IsLocal()
 	return CLIENT and self:GetOwner() == LocalPlayer()
 end
 
-// this from homigrad weapons
+local mul = 1
+function LerpAngleFT(lerp, source, set)
+	return LerpAngle(math.min(lerp * mul, 1), source, set)
+end
+
 function SWEP:Step()
 	self.animProg = self:GetNWFloat("VisualRecoil") or 0
 	self.animLerp = self.animLerp or Angle(0, 0, 0)
@@ -601,8 +634,7 @@ function SWEP:Step()
 	end
 end
 
-// необходимо описать синхронизацию магазина
-// можно реализовать это через NW, так как за время перезарядки NW успеет скинуться
+
 
 function SWEP:Think()
     local owner = self:GetOwner()
@@ -614,7 +646,6 @@ function SWEP:Think()
     self.Zoom = owner:KeyDown(IN_ATTACK2)
     
     self:UpdateHoldType()
-    //self:SetNWInt("AmmoMag", #self.Magazine.Ammo)
 end
 
 net.Receive("gs_swep_update_wm", function(_, ply)
@@ -628,8 +659,6 @@ net.Receive("gs_wep_detach", function(_, ply)
     local ent = net.ReadEntity()
 
     ent:EjectMag()
-    // rwgkmrgu
-    //if !IsValid(self)
 end)
 
 net.Receive("gs_wep_drop", function(_, ply)

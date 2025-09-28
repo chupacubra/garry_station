@@ -284,3 +284,24 @@ ARMORY_PART = {
     leg_r  = {"SUIT"},
 }
 
+
+DMG_PART_SCALE = {
+    head   = 3,
+    hand_l = 0.5,
+    hand_r = 0.5,
+    body   = 1,
+    leg_l  = 0.5,
+    leg_r  = 0.5,
+}
+
+HIT_GROUP_TO_PART = {
+    [HITGROUP_GENERIC]    = "body",
+    [HITGROUP_HEAD]	    = "head",
+    [HITGROUP_CHEST]	    = "body",
+    [HITGROUP_STOMACH]    = "body",
+    [HITGROUP_LEFTARM]    = "hand_l",
+    [HITGROUP_RIGHTARM]   = "hand_r",
+    [HITGROUP_LEFTLEG]	= "leg_l",
+    [HITGROUP_RIGHTLEG]	= "leg_r",
+    [HITGROUP_GEAR]       = "body",
+}

@@ -81,7 +81,10 @@ function PLAYER_INVENTARY:EquipItem(item)
 		item:OnEquip(ply)
 	end
 
+	
+
 	self.Player.Equipment[item.TypeEquip] = item
+	item:ItemHide()
 	item:SetParentContainer(self.Player)
 	self:EquipSync()
 
@@ -89,18 +92,18 @@ function PLAYER_INVENTARY:EquipItem(item)
 end
 
 local function recover(ply, ent)
-	local trace = {
-		start = self.Player:EyePos(),
-		endpos = self.Player:EyePos() + self.Player:GetAimVector() * (70),
-		filter =  function( ent ) return ( ent != self.Player ) end
-	}
+	/*local trace = {
+		start = ply:EyePos(),
+		endpos = ply:EyePos() + ply:GetAimVector() * (20),
+		filter =  function( ent ) return ( ent != ply ) end
+	}*/
 	
-	trace = util.TraceLine(trace)
+	//trace = util.TraceLine(trace)
 
-	item:ItemRecover(trace.HitPos)
+	ent:ItemRecover(ply:EyePos())
 end
 
-function PLAYER_INVENTARY:DequipItem(item, container)
+function PLAYER_INVENTARY:DequipItem(item, noDrop)
 	if item.TypeEquip == "SUIT" then
 		// we cant remove suit, only change to another
 		return false
@@ -137,8 +140,12 @@ function PLAYER_INVENTARY:DequipItem(item, container)
 		item:ItemRecover(trace.HitPos)
 	end
 	*/
+	
+	//PrintTable(self.Player.Equipment)
 
-	PrintTable(self.Player.Equipment)
+	if !noDrop then
+		recover(self.Player, item)
+	end
 	self:EquipSync()
 	return true
 end
@@ -404,7 +411,27 @@ net.Receive("gs_equip_sync", function()
 	hook.Run("PlayerEquipUpdated", ply, tbl)
 end)
 
+function PLAYER_INVENTARY:EquipExamineData()
+	local equip = self.Player.Equipment
+	local exam  = {}
+
+	for k, v in pairs(equip) do
+		local str = "  "
+		if !IsValid(v) then continue end
+		if v.IsKeycard then
+			str = str.. v:KeycardName()
+		else
+			str = str .. v.Name
+		end
+		table.insert(exam, str)
+	end
+
+	return exam
+end
+
+
 if SERVER then return end
+
 
 function PLAYER_INVENTARY:DrawEquip()
 	if !self.Player.CLEquipment then return end
@@ -445,6 +472,7 @@ function PLAYER_INVENTARY:DrawEquip()
         end
     end
 end
+
 
 hook.Add( "PostPlayerDraw" , "gs_draw_equip_model", function( ply )
     if ply:IsValid() then

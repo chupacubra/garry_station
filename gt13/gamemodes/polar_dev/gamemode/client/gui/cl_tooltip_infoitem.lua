@@ -25,8 +25,8 @@ end
 function PANEL:Paint(w, h)
     derma.SkinHook( "Paint", "PropertySheet", self, w, h )
     if self.Item then
-        draw.SimpleText( self.Item.Name,"GModToolSubtitle", 10, 10, self:GetTextColor() )
-        draw.SimpleText( self.Item.Desc,"GModToolSubtitle", 10, 50, self:GetTextColor() )
+        draw.SimpleText( self.Item:GetIName(),"GModToolSubtitle", 10, 10, self:GetTextColor() )
+        draw.SimpleText( self.Item:GetDesc(),"GModToolSubtitle", 10, 50, self:GetTextColor() )
 
     end
 end

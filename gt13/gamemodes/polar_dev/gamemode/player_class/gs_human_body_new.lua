@@ -540,3 +540,65 @@ function PLAYER_HP:RagdollThink()
 		return true
 	end
 end
+
+local BD_EX = {
+    head   = "head",
+    hand_l = "left hand",
+    hand_r = "right hand",
+    body   = "torse",
+    leg_l  = "left leg",
+    leg_r  = "right leg",
+}
+
+function PLAYER_HP:BodyExamineData(ply)
+    local exam = {}
+    for k, v in pairs(BD_EX) do
+        local str_part = {}
+        local dmg = self.Player.Body_Parts[k]
+/*
+        if dmg[D_BRUTE] > 40 and dmg[D_BRUTE] < 15 then
+            //table.insert(str_part, "numb")
+        elseif dmg[D_BRUTE] < 40 then
+            //table.insert(str_part, "bruised")
+        else
+            //table.insert(str_part, "crippled")
+        end
+
+		*/
+
+		if dmg[D_BRUTE] > 40  then
+            table.insert(str_part, "crippled")
+        elseif dmg[D_BRUTE] > 15 then
+            table.insert(str_part, "bruised")
+		elseif dmg[D_BRUTE] > 5 then
+			table.insert(str_part, "numb")
+        end
+        if dmg[D_BURN] > 40 then
+            table.insert(str_part, "very burn")
+        elseif dmg[D_BURN] > 15 then
+            table.insert(str_part, "burned")
+		elseif dmg[D_BURN] > 5 then
+            table.insert(str_part, "red")
+        end
+
+        local str = "{255 255 255}The "..BD_EX[k].." is a "
+
+        if #str_part == 0 then
+            //str = str .. "ok"
+			continue
+
+        elseif #str_part == 1 then
+            str = str.. "{255 0 0}"..str_part[1]
+        else
+            str = str .. "{255 0 0}"..str_part[1] .. " {255 255 255}and {255 0 0}".. str_part[2] 
+        end
+        
+        table.insert(exam, str)
+    end
+    
+    if self.Player.Organism_Value.pain_shock or self.Player.Organism_Value.blood.level < 75 then
+        table.insert(exam, "{255 255 255}The skin is pale")
+    end
+
+    return exam
+end

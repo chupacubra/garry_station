@@ -88,10 +88,11 @@ if SERVER then
 end
 
 function ENT:ChemContainerInit()
-    local tbl = self.ChemContainer.Chems
-    self.ChemContainer = CHEMIC_CONTAINER:New_Container(self, self.ChemContainerInit.Max)
+    local tbl = self.ChemContainerData.Chems
+    self.ChemContainer = CHEMIC_CONTAINER:New_Container(self, self.ChemContainerData.Max)
     self:SetNWInt("Chems", 0)
 end
+
 
 function ENT:PostInit()
     //self.BaseClass.PostInit(self)
@@ -101,7 +102,7 @@ function ENT:PostInit()
         self:InitRenderChem()
         self:SetNWVarProxy("Chems", function(_,_,_, new)
             //self:ChemContainerUpdate()
-            self:UpdateMesh(self.ChemContainerInit.Max / new )
+            self:UpdateMesh(self.ChemContainerData.Max / new )
         end)
 
         self:SetNWVarProxy("ChemColor", function()

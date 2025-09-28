@@ -110,9 +110,7 @@ function PANEL:PaintOver( w, h ) end
 function PANEL:SetItem(item, cont)
     self.Item = item
     
-
     //self:SetTooltipPanel(panel)
-    
     self:SetTooltipPanelOverride("GUITooltip")
 end
 

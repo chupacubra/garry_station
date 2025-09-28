@@ -11,8 +11,11 @@ GM.Email = "N/A"
 GM.Website = "N/A"
 
 function GM:Initialize()
-    --GS_Round_System:InitGame()
-    --PrintTable(GS_Round_System)
+    // some shit?
+    if !LUA_FILES_LOADED or self.Init then return end
+   
+    self.Init = true
+    
 end
 
 TEAM_PLY = 1

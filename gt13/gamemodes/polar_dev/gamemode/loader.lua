@@ -19,6 +19,8 @@ local folder_ignore = {
     ["polar_dev/gamemode/ent_controler/list"] = true,
 }
 
+LUA_FILES_LOADED = false
+
 function loadfiles(path, files) 
     for _, fil in ipairs(files) do
         if string.Left(fil, 1) == "!" then continue end
@@ -44,6 +46,8 @@ function loadfiles(path, files)
             end
         end
     end
+
+
 end
  
 local i = 1
@@ -68,11 +72,18 @@ function recurs_dir_load(path)
         recurs_dir_load(path.."/"..v)
     end
     i = i + 1
+
+    LUA_FILES_LOADED = true
+
 end
 
 recurs_dir_load(fol)
 print("=========================")
+GS_MSG("All Files Loaded!, start init polar")
 
+timer.Simple(0, function()
+    GAMEMODE:Initialize()
+end)
 concommand.Add("gs_reload", function()
     recurs_dir_load(fol)
 end)

@@ -14,15 +14,15 @@ local ENT = {}
 
 ENT.Base = "gs_equip"
 
-ENT.Name  = "Duffle bag"
-ENT.Desc  = "Cool shit"
+ENT.Name  = "Armor vest"
+ENT.Desc  = "Durable"
 ENT.Model = "models/eft_props/gear/backpacks/bp_forward.mdl"
 ENT.Size  = ITEM_MEDIUM
 
 ENT.Spawnable = true
 ENT.Category = "Developing"
 
-ENT.TypeEquip   = "BACKPACK"
+ENT.TypeEquip   = "Vest"
 
 ENT.EquipModelDraw = {
     model       = "models/eft_props/gear/backpacks/bp_forward.mdl",
@@ -36,10 +36,9 @@ ENT.EquipModelDraw = {
 ENT.HandOffsetVec = Vector(-2,0,10)
 ENT.HandOffsetAng = Angle(0,0,-90)
 
-
-function ENT:ItemInteraction(ent)
-    return self:InsertItemInContainer(ent)
-end
+ENT.Protection = {
+    [D_BRUTE] = 10
+}
 
 AddEntItem(ENT, "test_dufflebag")
 */

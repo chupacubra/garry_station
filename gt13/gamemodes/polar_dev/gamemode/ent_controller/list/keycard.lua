@@ -44,6 +44,10 @@ function Base:ShowCard(owner, ply)
     end
 end
 
+function Base:KeycardName() // John Jhnson Guard card
+    return self:GetOwnerName().." "..self:GetPost().." card"
+end
+
 function Base:GetKeyData()
     return {
         access = self:GetAccess(),

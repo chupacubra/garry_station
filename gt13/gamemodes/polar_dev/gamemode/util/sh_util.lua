@@ -18,3 +18,11 @@ function util.getGameTimeStamp()
     local t = os.date("!*t")
     return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
 end
+
+function util.TableMul(value, count)
+    local tbl = {}
+    for i = 1, count do
+        table.insert(tbl, value)
+    end
+    return tbl
+end

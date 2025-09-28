@@ -158,6 +158,8 @@ function ENT:Examine(ply)
     if SERVER and !ply then GS_MSG("try ent exam on server but no ply") return end
     RichTextPrint("It's a {255 255 255}".. self.Name, ply)
     RichTextPrint("{255 255 255}"..self.Desc, ply)
+
+    debug.Trace()
 end
 
 function ENT:SetupBaseContextCallbacks()

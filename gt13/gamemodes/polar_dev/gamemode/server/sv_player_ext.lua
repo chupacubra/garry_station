@@ -59,7 +59,7 @@ end
 function PLAYER:GS_GetAccess()
     -- get access from ID
 end
-
+/*
 function PLAYER:Examine(ply)
     local ex = player_manager.RunClass(self, "Examine")
 
@@ -72,7 +72,7 @@ function PLAYER:Examine(ply)
         ply:ChatPrint(v)
     end
 end
-
+*/
 function PLAYER:Death()
     --[[
         move ply spectator

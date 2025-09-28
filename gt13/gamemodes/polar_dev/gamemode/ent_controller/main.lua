@@ -17,6 +17,13 @@ function AddEntItem(data, name, base)
     end 
 
     GS_EntityList[name] = data
+
+    if !data.Craftable then return end
+    local recept = data.ReceiptData
+    if !recept then
+        GS_MSG("item "..name.." have craftable = true, but no recept?") 
+    end
+    
     //PrintTable(GS_EntityList)
 end
 

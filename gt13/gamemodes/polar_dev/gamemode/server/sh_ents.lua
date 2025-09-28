@@ -51,14 +51,30 @@ end
 
 function ENT:ItemRecover(pos)
     self:SetParent(nil)
-    self:SetMoveType(self.HideData.MT)
-    self:SetSolid(self.HideData.SD)
+    if self.HideData then
+        self:SetMoveType(self.HideData.MT)
+        self:SetSolid(self.HideData.SD)
+    else
+        self:SetMoveType(MOVETYPE_VPHYSICS)
+        self:SetSolid(SOLID_VPHYSICS)
+    end
     self:SetNoDraw(false)
     self:SetPos(pos)
     self:SetAngles(Angle())
     self:PhysWake()
+
     self.HideData = nil
     self.Hided = false
+end
+
+function ENT:GetIName()
+    local name = self.Name or self.PrintName
+
+    return name or "Prop"
+end
+
+function ENT:GetDesc()
+    return self.Desc or self:GetModel()
 end
 
 function ENT:MoveItemInContainer(cont) // strange name but ok

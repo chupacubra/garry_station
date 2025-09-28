@@ -1,9 +1,11 @@
 local PLAYER = FindMetaTable("Player")
-/*
-function GM:PlayerSwitchWeapon( ply, oldwep, newwep )
-	//return false
+
+function PLAYER:SetupDataTables()
+	self.Player:NetworkVar( "String", 0, "Name" )
+
+	self:SetName(self:Nick())
 end
-*/
+
 function InHandsItem(ply, class)
 	local c
 	for _, w in ipairs(ply:GetWeapons()) do
@@ -17,8 +19,54 @@ function InHandsItem(ply, class)
 	return false
 end
 
-function PLAYER:RunClass(...)
-	return player_manager.RunClass(ply, unpack(args))
+function PLAYER:RunClass(func, ...)
+	print(self, func, ... )
+	//PrintTable(args)
+	print(args)
+	return player_manager.RunClass(self, func, ...)
+end
+
+function PLAYER:GetExamineData()
+	if CLIENT then return end
+	local exam = {}
+	
+	print(player_manager.GetPlayerClass(self))
+
+	table.insert(exam, "{255 255 255}It's a "..self:GetName())
+	table.Add(exam, self:RunClass("GetExamineData" ))
+
+	return exam
+end
+
+//function PLAYER:ServerContextMenuCallback()
+
+function PLAYER:GetContextButtons(args)
+	local buttons = {}
+
+	buttons["Examine"] = {
+        name = "Examine",
+        //func = func,
+		func = function()
+			//self:RunCallback()
+			self:Examine()
+		end,
+        icon = "icon16/eye.png",
+    }
+	
+	return buttons
+end
+
+function PLAYER:Examine(ply)
+	if CLIENT then 
+		net.Start("gs_examine_ply")
+		net.WritePlayer(self)
+		net.SendToServer()
+		return
+	end
+	local exam = self:GetExamineData()
+	local exam_str = table.concat(exam, "\n")
+	
+	RichTextPrint(exam_str, ply)
 end
 
 function PLAYER:IsGhost()
@@ -28,16 +76,11 @@ function PLAYER:IsGhost()
 end
 
 function PLAYER:IsActive()
-    // can player use something, pickup something
+    // can player use something, pickup something 
     // if player is sleep or in ragdoll
-    return self:Team() == TEAM_PLY and player_manager.GetPlayerClass( self ) == "gs_human"
+    return self:Team() == TEAM_PLY and player_manager.GetPlayerClass(self) == "gs_human"
 end
-/*
-function PLAYER:Think()
-	print("123")
-	ply:RunClass("Think")
-end
-*/
+
 function PLAYER:GetEquip(id)
 	return player_managery.RunClass(self, "GetEquip", id)
 end
@@ -77,17 +120,24 @@ function PLAYER:MakeTrace(len)
 	})
 end
 
-function PLAYER:MakeViewTrace(len)
+function PLAYER:MakeViewTrace(len, dir)
 	local eye = self:GetAttachment(self:LookupAttachment("eyes"))
 	local pos = eye.Pos
 
 	debugoverlay.Line(pos, pos + self:EyeAngles():Forward() * (len or 120))
-
-	return util.TraceLine({
-		start = pos,
-		endpos = pos + self:EyeAngles():Forward() * (len or 120),
-		filter = self,
-	})
+	if dir then
+		return util.TraceLine({
+			start = pos,
+			endpos = pos + dir,
+			filter = self,
+		})
+	else
+		return util.TraceLine({
+			start = pos,
+			endpos = pos + self:EyeAngles():Forward() * (len or 120),
+			filter = self,
+		})
+	end
 end
 
 local stamina_to_run = 50
@@ -117,4 +167,10 @@ hook.Add("Move", "PlayerMove", function(ply, mv)
 		ply.LastInSpeed = CurTime()
 	end
 
+end)
+
+net.Receive("gs_examine_ply", function(_, ply)
+	local target = net.ReadPlayer()
+
+	target:Examine(ply)
 end)

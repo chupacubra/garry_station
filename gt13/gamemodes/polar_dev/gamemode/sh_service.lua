@@ -346,3 +346,7 @@ end
 net.Receive("gs_rich_print", function()
     RichTextPrint(net.ReadString())
 end)
+ 
+function util.ScaleSizeGUI(w, h)
+    return ScreenScale(w) * ( ScrW() / ScrH() ), ScreenScaleH(h) * ( ScrW() / ScrH() )
+end

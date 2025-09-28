@@ -5,7 +5,7 @@ if SERVER then
 	include("gs_human_body_new.lua")
 	include("gs_human_body_organs.lua")
 	include("gs_effects.lua")
-	include("gs_char.lua")
+	//include("gs_char.lua")
 
 	//AddCSLuaFile("gs_cl_equipment.lua")
 else
@@ -31,11 +31,8 @@ if SERVER then
 	table.Merge(PLAYER, PLAYER_HP)
 	table.Merge(PLAYER, PLAYER_ORGANS)
 	table.Merge(PLAYER, PLAYER_EFFECT)
-	table.Merge(PLAYER, PLAYER_CHAR)
 else
-
 	table.Merge(PLAYER, PLAYER_INVENTARY)
-
 end
 
 local function RunOnClient(ply, fun, broad)
@@ -58,7 +55,6 @@ function PLAYER:SetModel(name)
 
 	self.Player:SetupHands()
 end
-
 
 function PLAYER:GetHandsModel()
 	local playermodel = player_manager.TranslateToPlayerModelName( self.Player:GetModel() )
@@ -107,18 +103,9 @@ function PLAYER:Spawn()
 	self.FirstSpawn = true
 end
 
-function PLAYER:Think()
-	print(self.Player, "thinked")
-end
-
 function GS_EquipWeapon(ply, weapon) -- for start loadout
 	local ent = ents.Create(weapon)
 	ply:PickupWeapon( ent )
-	if weapon == "gs_swep_hand" then
-		timer.Simple(0.5, function()
-			ent:SetHoldType("normal")
-		end)
-	end
 end
 
 function PLAYER:Loadout()
@@ -129,8 +116,17 @@ function PLAYER:Loadout()
 	GS_EquipWeapon(self.Player, "gs_hands_r")
 end
 
-local dev = GetConVar( "developer")
+// отныне все методы связанные с examine, которые не находятся в playerMeta лишь собирают таблицы строк, а не принтят сразу
+function PLAYER:GetExamineData()
+	local exam = {}
+	
+	table.Add(exam, self:EquipExamineData())
+	table.Add(exam, self:BodyExamineData())
 
+	return exam
+end
+
+local dev = GetConVar( "developer")
 
 local DEBUG_CD = 1
 local Next_DebugPrint = 0
@@ -149,8 +145,8 @@ local debug_colors = {
 	default = Color(255,255,255),
 	table_label = Color(251,222,0),
 	bool = {
-		["true"] = Color(76,223,43),
-		["false"] = Color(83,74,249),
+		[true] = Color(76,223,43),
+		[false] = Color(83,74,249),
 	},
 	zero_int = Color(200, 200, 200),
 }
@@ -166,7 +162,7 @@ local function RecursDebugScreenText(tbl, str_x, str_y)
 			_, str_y = RecursDebugScreenText(v, str_x+1, str_y+1)
 			str_y = str_y - 1
 		elseif typ == "boolean" then
-			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": "..tostring(v), DEBUG_CD, debug_colors.bool[tostring(v)] )
+			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": "..tostring(v), DEBUG_CD, debug_colors.bool[v] )
 		elseif v == 0 then
 			debugoverlay.ScreenText( pos_x / w ,  pos_y / h, tostring(k)..": "..tostring(v), DEBUG_CD, debug_colors.zero_int )
 			
@@ -229,12 +225,7 @@ net.Receive("gs_cl_inventary_drop_ent", function(_, ply)
 	local key = net.ReadUInt(6)
 	player_manager.RunClass( ply, "DropEntFromInventary", key, from)
 end)
---[[
-net.Receive("gs_cl_weapon_drop", function(_, ply)
-	local ent = net.ReadEntity()
-	player_manager.RunClass( ply, "DropSWEP", ent )
-end)
---]]
+
 
 net.Receive("gs_cl_inventary_examine_item", function(_, ply)
 	local from    = net.ReadUInt(5)
@@ -242,30 +233,6 @@ net.Receive("gs_cl_inventary_examine_item", function(_, ply)
 	player_manager.RunClass( ply, "ExamineItemFromInventory", keyitem, from)
 end)
 
---[[
-net.Receive("gs_cl_contex_item_action", function(len, ply)
-	local receiver = {}
-	local drop     = {}
-
-	receiver.entity = net.ReadEntity()
-	receiver.key    = net.ReadUInt(6)
-	receiver.from   = net.ReadUInt(5)
-
-	drop.entity = net.ReadEntity()
-	drop.key    = net.ReadUInt(6)
-	drop.from   = net.ReadUInt(5)
-
-	GS_MSG(ply:GetName().." make action on context menu")
-
-	PrintTable(receiver)
-	PrintTable(drop)
-	player_manager.RunClass( ply, "MakeNormalContext", receiver, drop)
-end)
-
-net.Receive("gs_ent_container_close",function(_,ply)
-	player_manager.RunClass( ply, "CloseEntContainer", true)
-end)
---]]
 net.Receive("gs_cl_actions_human", function(_, ply)
 	local target = net.ReadEntity()
 	local act    = net.ReadUInt(3)
@@ -279,4 +246,4 @@ net.Receive("gs_equipment_update", function(_, ply)
 	player_manager.RunClass(ply, "RemoveEquip", EQUIP_NAMES[key] )
 end)
 
-print("SKIBIDI")
+print("class human init")

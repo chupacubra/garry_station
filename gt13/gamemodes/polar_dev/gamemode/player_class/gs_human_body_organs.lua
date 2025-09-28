@@ -103,14 +103,41 @@ function PLAYER_ORGANS:SetupThinkOrgans()
         //self:BrainThink()
         //self:HeartThink()
         self:Metabolize()
-        self:AddOxygenInBlood(0.15)
+        if self.Player.Health_Status != GS_HS_CRIT then
+            self:AddOxygenInBlood(0.15)
+        end
         self:HeartMoveBlood()
 
         //self:LungsThink()
         //self:StomachThink()
         --PrintTable(self.Player.Organs)
         self:BodyDebugPrint()
+        self:CheckDeathConditions()
     end)
+end
+
+
+local hypoxia_to_death = 100
+local all_dmg_to_death = 200
+
+function PLAYER_ORGANS:CheckDeathConditions()
+    //local organism_value = self.Player.Organism_Value
+    //local body = self.Player.Body
+    local spec_damage = self.Player.Spec_Damage
+
+    // 1. нет кислорода (урон гипоксии много)
+    if spec_damage.hypoxia > hypoxia_to_death then
+        self:Death()
+        return
+    end
+
+    // 2. общий дамаг под 200
+    local body_dmg = self:GetSumDMG()
+    if body_dmg > all_dmg_to_death then
+        self:Death()
+        return
+    end
+
 end
 
 function PLAYER_ORGANS:SetupBones()
