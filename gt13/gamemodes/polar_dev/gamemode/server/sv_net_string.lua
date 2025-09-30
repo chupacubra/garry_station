@@ -111,4 +111,6 @@ util.AddNetworkString("gs_rich_print")
 util.AddNetworkString("gs_ply_task")
 
 util.AddNetworkString("gs_examine_ply")
+
+util.AddNetworkString("gs_corpse_update")
 //util.AddNetworkString("gs_context_callbacks_ply")

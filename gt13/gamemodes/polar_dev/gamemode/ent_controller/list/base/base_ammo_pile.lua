@@ -54,5 +54,5 @@ GenerateAmmoPile({
     Calibr = "9mm",
 })
 if SERVER then
-    RegisterAmmo("9mm", {D_BRUTE = 15, D_STAMINA = 10})
+    RegisterAmmo("9mm", {[D_BRUTE] = 15, [D_STAMINA] = 10})
 end

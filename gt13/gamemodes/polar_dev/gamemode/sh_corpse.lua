@@ -1,170 +1,10 @@
-GS_Corpse = {}
+GS_Corpses = GS_Corpses or {}
 local PLAYER = FindMetaTable("Player")
-
---[[
-    THE CORPSE MUST BE APART HUMAN
-    SAVE IN CORPSE ONLY ID PLY
-]]
---[[
-function GS_Corpse.SendCorpseClient(rag)
-    net.Start("gs_sys_corpse_create")
-    net.WriteEntity(rag)
-    net.Broadcast()
-end
---]]
-
-function GS_Corpse.SetDrawEq(corpse, tbl)
-    -- setNWString()
-end
-/*
-function GS_Corpse.Create(ply)
-    local ragdoll = ents.Create("prop_ragdoll")
-
-    ragdoll:SetCustomCollisionCheck(true)
-    ragdoll:SetPos( ply:GetPos() )
-    ragdoll:SetModel( ply:GetModel() )
-    ragdoll:SetAngles(Angle((ply:GetAngles().p), (ply:GetAngles().y), ply:GetAngles().r))
-    ragdoll:Spawn()
-
-    ragdoll.RagdollStartSpeed = ply:GetVelocity()
-
-    local bones = ragdoll:GetPhysicsObjectCount()
-    for i=1,bones-1 do
-        local bone = ragdoll:GetPhysicsObjectNum( i )  
-        if bone:IsValid() then  
-            local bonepos = ply:GetBonePosition( ragdoll:TranslatePhysBoneToBone( i ) ) 
-            local bonematrix = ply:GetBoneMatrix(ragdoll:TranslatePhysBoneToBone( i ))
-            local boneang = bonematrix:GetAngles()
-
-            bone:SetPos( bonepos )  
-            bone:SetAngles( boneang )  
-            bone:SetVelocity(ragdoll.RagdollStartSpeed)  
-        end  
-    end
-
-    ragdoll.ownerID = ply:SteamID()
-    ragdoll.corpse  = true
-
-    return ragdoll
-end
-
-*/
-function GS_Corpse.SetRagdollDeath(ply, rag, leave) -- if ply death in crit paralyze -> set RAG to death
-    --[[
-        set equipment, pockets
-        set hp (for redeem?!)
-        set data
-    
-        if ply is DEAD ->
-            all actions handler GS_Corpse
-        else crit only
-            all actions handler GS_Corpse AND gs_human CLASS
-    ]]
-    rag.ply_dead   = true
-    rag.ownerID    = ply:SteamID()
-    rag.disconnect = leave
-
-    local items = {
-        equip   = ply.Equipment,
-        pocket  = ply.Pocket,
-    }
-    local body = {
-        parts   = ply.Body_Parts,
-        organs  = ply.Organs,
-        bones   = ply.Bones,
-        hp_eff  = ply.HP_Effect,
-    }
-    --local
-    rag.Corpse = {
-        /*
-        Equipment = equip,
-        Pocket    = pocket,
-        Body      = body,
-        hp_eff    = hp_effect,
-        */
-        Items   = items,
-        Body    = body,
-    }
-end
-
-function GS_Corpse.ExamineRag(viewer, rag)
-    local examine = {}
-
-    table.insert(examine, "It's human corpse.")
-    --test: alive or ded
-
-    if rag.ply_dead then
-        if rag.disconnect then
-            table.insert(examine, "Deep depression...")
-        else
-            table.insert(examine, "It's DEAD!")
-        end 
-    else
-        --test: status hp
-        local ply = player.GetBySteamID(rag.ownerID)
-
-        if IsValid(ply) then
-            local hp_stat = ply.HealthStatus
-            if hp_stat == GS_HS_OK then
-                table.insert(examine, "It's look good")
-            elseif hp_stat == GS_HS_CRIT then
-                table.insert(examine, "Face is pale...")
-            end
-        else
-            --GS_MSG(rag.ownerID.." no in server but rag in not dead mark and this runned, WTF?")
-            table.insert(examine, "The is strange")
-        end
-    end
-
-    for k, v in pairs(examine) do
-        ply:ChatPrint(v)
-    end
-end
-
-function GS_Corpse.DamageHandler(trup, dmg)
-    -- get part of body
-
-    local typ = GS_DMG_LIST[dmg:GetDamageType()]
-    if !typ then
-        GS_MSG("want to apply damage to corpse, but type unknw: "..tostring(dmg:GetDamageType()))
-        
-        return
-    end
-
-    if trup.ply_dead then
-        -- ply dead, simple add damage/break bone
-    else
-        -- ply is alive, give HIM damage
-
-    end
-end
-
-net.Receive("gs_sys_corpse_action", function(_,ply)
-    local rag = net.ReadEntity()
-    local act = net.ReadUInt(4)
-    local arg = net.ReadUInt(4)
-
-    if !IsValid(rag) then
-        return
-    end
-
-    if act == 0 then  -- EXAMINE COPRSE
-        GS_Corpse.ExamineRag(ply, rag)
-    else
-        --[[
-            other actions
-        ]]
-    end
-end)
-
-
-
-
 
 function PLAYER:CreateFakeRagdoll(attacker, dmginfo)
 	print("CREATE RAGDOLL", ply)
 	if not self:Alive() and self.fake then return nil end
-	local rag = self:GetNWEntity("DeathRagdoll")
+	local rag = self:GetNWEntity("Corpse")
 
 	local Data = duplicator.CopyEntTable(self)
 	local rag = ents.Create("prop_ragdoll")
@@ -179,6 +19,7 @@ function PLAYER:CreateFakeRagdoll(attacker, dmginfo)
 	rag:Activate()
 	rag:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 	rag:SetNWEntity("RagdollOwner", self)
+	rag:SetNWBool("IsCorpse", true)
 
 	local vel = self:GetVelocity() / 1
 	for i = 0, rag:GetPhysicsObjectCount() - 1 do
@@ -202,181 +43,67 @@ function PLAYER:CreateFakeRagdoll(attacker, dmginfo)
 		end
 	end
 
-	self:SetNWEntity("DeathRagdoll", rag)
-
-/*
-	if self:Alive() then
-		self:SetNWEntity("DeathRagdoll", rag)
-	else
-		self:SetNWEntity("DeathRagdoll", rag)
-		self.curweapon = self:GetActiveWeapon():GetClass()
-		local guninfo = weapons.Get(self.curweapon)
-		if guninfo.Base == "salat_base" then
-			SpawnWeapon(self)
-		end
-
-		self:Spectate(OBS_MODE_ROAMING)
-		self:SetMoveType(MOVETYPE_OBSERVER)
-		rag:SetEyeTarget(vector_origin)
-		if self.IsBleeding then
-			rag.IsBleeding = true
-		end
-
-		rag.deadbody = true
-	end
-	*/
+	self:SetNWEntity("Corpse", rag)
 end
 
-
+/*
 function PLAYER:Ragdollize()
-	//if !IsValid(self:GetNWEntity("DeathRagdoll")) then
-		Faking(self)
+	//if !IsValid(self:GetNWEntity("Corpse")) then
+	//	Faking(self)
 	//end
 end
 
 function PLAYER:UnRagdollize()
 
 end
+*/
 
 // from homidrad core
 // peredelat
-function SavePlyInfo(ply)
-	/*
-	ply.Info = {}
-	local info = ply.Info
-	info.HasSuit = ply:IsSuitEquipped()
-	info.SuitPower = ply:GetSuitPower()
-	info.Ammo = ply:GetAmmo()
-	info.ActiveWeapon = IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon():GetClass() or nil
-	info.ActiveWeapon2 = ply:GetActiveWeapon()
-	//GetFakeWeapon(ply)
-	info.Weapons = {}
-	for i, wep in pairs(ply:GetWeapons()) do
-		info.Weapons[wep:GetClass()] = {
-			Clip1 = wep:Clip1(),
-			Clip2 = wep:Clip2(),
-		}
-	end
-
-	return info
-	*/
-	return {}
-end
-
 
 -- Сохранение игрока перед вставанием
 function SavePlyInfoPreSpawn(ply)
-	/*
-	ply.Info = ply.Info or {}
-	local info = ply.Info
-	info.Hp = ply:Health()
-	info.Armor = ply:Armor()
+	ply.RagPrespawnInfo = ply.RagPrespawnInfo or {}
 
-	*/
-	return {}
+	ply.RagPrespawnInfo.Body_Parts 			= ply.Body_Parts
+	ply.RagPrespawnInfo.Organism_Value 		= ply.Organism_Value
+
+	ply.RagPrespawnInfo.Chemicals 			= ply.Chemicals
+	ply.RagPrespawnInfo.HealthStatus 		= ply.HealthStatus
+	ply.RagPrespawnInfo.Ragdolled 			= ply.Ragdolled
+	ply.RagPrespawnInfo.CritParalyzeDelay  	= ply.CritParalyzeDelay
+
+	ply.RagPrespawnInfo.Equipment 	= ply.Equipment
+	ply.RagPrespawnInfo.Pockets 	= ply.Pockets
 end
 
 -- возвращение информации игроку по его вставанию
 function ReturnPlyInfo(ply)
-	//ClearFakeWeapon(ply)
-	/*
-	local info = ply.Info
-	if not info then return end
-	ply:SetSuppressPickupNotices(true)
-	ply:StripWeapons()
-	ply:StripAmmo()
-	for name, wepinfo in pairs(info.Weapons or {}) do
-		local weapon = ply:Give(name, true)
-		if IsValid(weapon) then
-			weapon:SetClip1(wepinfo.Clip1)
-			weapon:SetClip2(wepinfo.Clip2)
-		end
-	end
+	ply.Body_Parts 			= ply.RagPrespawnInfo.Body_Parts
+	ply.Organism_Value 		= ply.RagPrespawnInfo.Organism_Value
 
-	for ammo, amt in pairs(info.Ammo or {}) do
-		ply:GiveAmmo(amt, ammo)
-	end
+	ply.Chemicals 			= ply.RagPrespawnInfo.Chemicals
+	ply.HealthStatus 		= ply.RagPrespawnInfo.HealthStatus
+	ply.Ragdolled 			= ply.RagPrespawnInfo.Ragdolled
+	ply.CritParalyzeDelay	= ply.RagPrespawnInfo.CritParalyzeDelay
+	
+	ply.Equipment	= ply.RagPrespawnInfo.Equipment
+	ply.Pockets		= ply.RagPrespawnInfo.Pockets
 
-	if info.ActiveWeapon then
-		ply:SelectWeapon(info.ActiveWeapon)
-	end
-
-	if info.HasSuit then
-		ply:EquipSuit()
-		ply:SetSuitPower(info.SuitPower or 0)
-	else
-		ply:RemoveSuit()
-	end
-
-	ply:SetHealth(info.Hp)
-	ply:SetArmor(info.Armor)
-	ply:SetSuppressPickupNotices(false)
-	*/
+	ply:RunClass("RagdollWakeUp")
 end
 
 -- функция падения
 -- добавить дроп всех предметов в руках
-function Faking(ply)
-	ply.fake = not ply.fake
-	ply:SetNWBool("fake", ply.fake)
-	if ply.fake == true then
-		SavePlyInfo(ply)
-		//ply:DrawViewModel(false)
-		if SERVER then
-			ply:DrawWorldModel(false)
-		end
 
-		if ply:InVehicle() then
-			ply:ExitVehicle()
-		end
-		print("ply", ply, "is going to rag")
-		ply:CreateFakeRagdoll()
-		print(ply, ply:GetNWEntity("DeathRagdoll"), ply:GetRagdollEntity()) 
-		if IsValid(ply:GetNWEntity("DeathRagdoll")) then
-			ply.fakeragdoll = ply:GetNWEntity("DeathRagdoll")
-			ply:RagSpectate()
-			--ply:SetParent(ply:GetNWEntity("DeathRagdoll"))
-			ply:SetSuppressPickupNotices(false)
-			ply:SetActiveWeapon(nil)
-			ply:DropObject()
-			//timer.Create("faketimer" .. ply:EntIndex(), 2, 1, function() end)
-			//local guninfo = weapons.Get(ply.curweapon)
-			/*
-			if guninfo and guninfo.Base == "salat_base" then
-				ply.FakeShooting = true
-				ply:SetNWInt("FakeShooting", true)
-			else
-				ply.FakeShooting = false
-				ply:SetNWInt("FakeShooting", false)
-			end
-			*/
-		end
-	else
-		if IsValid(ply:GetNWEntity("DeathRagdoll")) then
-			ply.fakeragdoll = nil
-			SavePlyInfoPreSpawn(ply)
-			local pos = ply:GetNWEntity("DeathRagdoll"):GetPos()
-			local vel = ply:GetNWEntity("DeathRagdoll"):GetVelocity()
-			--ply:UnSpectate()
-			ply.unfaked = true
-			ply:SetNWBool("unfaked", ply.unfaked)
-			//local eyepos = ply:EyeAngles()
-			ply:Spawn()
-			//ReturnPlyInfo(ply)
-			//ply.FakeShooting = false
-			ply:SetNWInt("FakeShooting", false)
-			ply:SetVelocity(vel)
-			//ply:SetEyeAngles(eyepos)
-			ply.unfaked = false
+local function DropAll(ply)
+	local sweps = ply:GetWeapons()
 
-			ply:SetNWBool("unfaked", ply.unfaked)
-			ply:SetParent()
-			ply:SetPos(pos)
-			//ply:DrawViewModel(true)
-			ply:DrawWorldModel(true)
-
-			ply:GetNWEntity("DeathRagdoll"):Remove()
-			ply:SetNWEntity("DeathRagdoll", nil)
+	for k, swep in pairs(sweps) do
+		if swep.IsHands then
+			swep:DropItem()
+		else
+			ply:DropWeapon(swep)
 		end
 	end
 end
@@ -389,32 +116,309 @@ function PLAYER:RagSpectate()
 	ply:SetMoveType(MOVETYPE_OBSERVER)
 end
 
-hook.Add(
-	"PlayerDeath",
-	"resetfakes",
-	function(ply, inflictor, attacker)
-		if ply.fake then
-			ply:SetNWEntity("DeathRagdoll", nil)
-			Faking(ply)
-			ply:SetParent()
-			ply:Spectate(OBS_MODE_ROAMING)
-			ply:SetNWEntity("DeathRagdoll", nil)
+function Faking(ply)
+	ply.fake = not ply.fake
+	ply:SetNWBool("fake", ply.fake)
+
+	if ply.fake == true then
+		SavePlyInfoPreSpawn(ply)
+
+		if SERVER then
+			ply:DrawWorldModel(false)
 		end
-        /*
-		if ply.Attacker ~= nil and ply.Attacker ~= ply:Nick() then
-			if bonenames[tostring(ply.LastHit)] ~= nil then
-				ply:ChatPrint("you were killed by a " .. ply.Attacker .. " in " .. bonenames[tostring(ply.LastHit)] .. ".")
+
+		if ply:InVehicle() then
+			ply:ExitVehicle()
+		end
+		
+		DropAll(ply)
+
+		ply:CreateFakeRagdoll()
+
+		if IsValid(ply:GetNWEntity("Corpse")) then
+			ply.fakeragdoll = ply:GetNWEntity("Corpse")
+			ply:RagSpectate()
+			ply:SetParent(ply:GetNWEntity("Corpse"))
+			ply:SetSuppressPickupNotices(false)
+			ply:SetActiveWeapon(nil)
+			ply:DropObject()
+		end
+	else
+		if IsValid(ply:GetNWEntity("Corpse")) then
+			ply.fakeragdoll = nil
+			SavePlyInfoPreSpawn(ply)
+
+			local pos = ply:GetNWEntity("Corpse"):GetPos()
+			local vel = ply:GetNWEntity("Corpse"):GetVelocity()
+			
+			ply:UnSpectate()
+			
+			ply.unfaked = true
+			ply:SetNWBool("unfaked", ply.unfaked)
+			ply:Spawn()
+			
+			ReturnPlyInfo(ply)
+
+			ply:SetNWInt("FakeShooting", false)
+			ply:SetVelocity(vel)
+			ply.unfaked = false
+
+			ply:SetNWBool("unfaked", ply.unfaked)
+			ply:SetParent()
+			ply:SetPos(pos)
+			ply:DrawWorldModel(true)
+
+			ply:GetNWEntity("Corpse"):Remove()
+			ply:SetNWEntity("Corpse", nil)
+		end
+	end
+end
+
+// в последствии будет необходимо написать какую - нибудь синхронизацию (можно использовать c hash)
+
+
+function UpdateClModelsForRag(rag, new_equip)
+	if SERVER then return end
+	local function createModel(ent_eq)
+		local mdl
+		if ent_eq.CreateEquipDrawModel then
+			// create with entfunc
+			mdl = ent_eq:CreateEquipDrawModel(rag)
+		else
+			// creating with our forces
+			if ent_eq.EquipModelDraw then
+				local mdl = ClientsideModel(ent_eq.EquipModelDraw.model or ent_eq:GetModel())
+				if ent_eq.EquipModelDraw.bodygroups then
+					mdl:SetBodyGroups(ent_eq.EquipModelDraw.bodygroups)
+				end
+				
+				if ent_eq.EquipModelDraw.skin then
+					mdl:SetSkin(ent_eq.EquipModelDraw.skin)
+				end
+
+				if ent_eq.EquipModelDraw.size then
+					mdl:SetModelScale(ent_eq.EquipModelDraw.size)
+				end
+			end
+		end
+		return mdl
+	end
+
+	rag.Equipment = new_equip
+
+	//PrintTable(self.Player.Equipment)
+
+	for eq_key, ent_eq in pairs(rag.Equipment) do
+		if eq_key == EQUIP_ID or eq_key == EQUIP_SUIT then continue end
+		if IsValid(ent_eq) then
+			if rag.CLEquipment[eq_key] then
+				// check, for this ent we draw
+				if rag.CLEquipment[eq_key].item != ent_eq then
+					rag.CLEquipment[eq_key].model:Remove()
+					rag.CLEquipment[eq_key] = nil
+					local model = createModel(ent_eq)
+
+					rag.CLEquipment[eq_key] = {
+						model = model,
+						item = ent_eq,
+					}
+				end
 			else
-				ply:ChatPrint("you were killed by a " .. ply.Attacker .. ".")
+				local model = createModel(ent_eq)
+				
+
+				rag.CLEquipment[eq_key] = {
+					model = model,
+					item = ent_eq,
+				}
+			end
+		else
+			if rag.CLEquipment[eq_key] then
+				// delete model
+				rag.CLEquipment[eq_key].model:Remove()
+				rag.CLEquipment[eq_key] = nil
+			end
+		end 
+	end
+end
+
+local function SyncEquipRagdoll(rag)
+	if SERVER then
+		local equip = rag.Equipment
+		net.Start("gs_corpse_update")
+		net.WriteEntity(rag)
+		net.WriteEntity(equip.BELT)
+		net.WriteEntity(equip.KEYCARD)
+		net.WriteEntity(equip.BACKPACK)
+		net.WriteEntity(equip.VEST)
+		net.WriteEntity(equip.HEAD)
+		net.WriteEntity(equip.MASK)
+		net.WriteEntity(equip.EAR)
+		//net.WriteEntity(equip.SUIT) // какой смысл отправлять, если и так понятно, да и с трупов не снимишь костюм
+		net.Broadcast()
+	else
+		local new_equip = {
+			BELT      = net.ReadEntity(),
+			KEYCARD   = net.ReadEntity(),
+			BACKPACK  = net.ReadEntity(),
+			VEST      = net.ReadEntity(),
+			HEAD      = net.ReadEntity(),
+			MASK      = net.ReadEntity(),
+			EAR       = net.ReadEntity(),
+			//SUIT	  = net.ReadEntity(),
+		}
+
+		//print("UPDATE FOR CORPSE", rag, new_equip)
+
+		rag.CLEquipment = rag.CLEquipment or {}
+		UpdateClModelsForRag(rag, new_equip)
+
+		//after death return size of head
+		rag:ManipulateBoneScale(rag:LookupBone("ValveBiped.Bip01_Head1"), Vector(1,1,1))
+
+		rag:CallOnRemove("RemoveCModels", function()
+			if !rag.CLEquipment then return end
+			for k, v in pairs(rag.CLEquipment) do
+				if v.model then
+					v.model:Remove()
+				end
+			end
+		end)
+	end
+end
+
+function SetCorpseDead(ply)
+	local rag = ply:GetNWEntity("Corpse")
+	if !IsValid(rag) then return end
+	// apply damage
+	// apply equipment
+
+	rag:SetNWBool("DeadCorpse", true)
+	rag:SetNWEntity("RagdollOwner", Entity(-1))
+
+	rag.Name = ply:GetName()
+	rag.Desc = "ded xD"
+
+	rag.PlyID = ply:SteamID()
+
+	rag.Body_Parts 			= ply.Body_Parts
+	rag.Organism_Value 		= ply.Organism_Value
+
+	rag.Chemicals 			= ply.Chemicals
+	rag.HealthStatus 		= ply.HealthStatus
+	rag.Ragdolled 			= ply.Ragdolled
+	rag.CritParalyzeDelay  	= ply.CritParalyzeDelay
+
+	rag.Equipment 	= ply.Equipment
+	rag.Pockets 	= ply.Pockets
+
+	SyncEquipRagdoll(rag)
+
+	//table.insert(GS_Corpses, rag)
+	GS_Corpses[rag] = true
+	// need broadcasting and syncing ragdoll trup data
+end
+
+hook.Add("PostDrawOpaqueRenderables", "CorpseEquipDraw", function()
+	for k, rag in pairs(ents.FindByClass( "prop_ragdoll" )) do
+		//print(rag, rag:GetNWBool("IsCorpse"))
+		if !rag:GetNWBool("IsCorpse") then continue end
+		
+		local draw_target = rag
+
+		local equip = rag.CLEquipment
+		//print(rag:GetNWEntity("RagdollOwner"))
+		if IsValid(rag:GetNWEntity("RagdollOwner")) then
+			equip = rag:GetNWEntity("RagdollOwner").CLEquipment
+			//PrintTable(equip)
+		end
+
+		if !equip then continue end
+
+		for k, equip_item in pairs(equip) do
+			if table.IsEmpty(equip_item) then
+				continue
+			end
+			//print(equip_item)
+			local drawData = equip_item.item.EquipModelDraw 
+			local boneid = draw_target:LookupBone( drawData.bone )
+				
+			if not boneid then
+				continue
+			end
+			
+			local matrix = draw_target:GetBoneMatrix( boneid )
+			
+			if not matrix then 
+				continue
 			end
 
-			print(bonenames[tostring(ply.LastHit)])
-		else
-			ply:ChatPrint("You dead.")
+			local pos, ang = matrix:GetTranslation(), matrix:GetAngles()
+
+			debugoverlay.Axis(pos, ang, 10, 0, true)
+
+			local ang_offset =  drawData.offset_ang
+			local pos_offset =  drawData.offset_pos
+
+			local Right, Forward, Up = ang:Right(), ang:Forward(), ang:Up()
+			pos = pos + Right * pos_offset.x + Forward * pos_offset.y + Up * pos_offset.z
+
+			local mdl = equip_item.model
+			ang:RotateAroundAxis(Right, ang_offset.p)
+			ang:RotateAroundAxis(Up,ang_offset.y)
+			ang:RotateAroundAxis(Forward, ang_offset.r)
+
+			mdl:SetRenderOrigin(pos)
+			mdl:SetRenderAngles(ang)
+			mdl:SetupBones()
+			mdl:DrawModel()
 		end
-        */
 	end
-)
+end)
+
+hook.Add("PlayerDeath", "resetfakes", function(ply, inflictor, attacker)
+	if ply.fake then
+		SetCorpseDead(ply)
+
+		ply:SetNWEntity("Corpse", nil)
+		
+		Faking(ply)
+		ply:SetParent()
+		ply:Spectate(OBS_MODE_ROAMING)
+		//ply:SetNWEntity("Corpse", nil)
+
+	end
+end)
+
+if SERVER then
+	local sync_cd = 2
+	local last_sync = CurTime()
+
+	hook.Add("Think", "SyncEquipRagdoll", function()
+		if last_sync > CurTime() then return end
+
+		for corpse, v in pairs(GS_Corpses) do 
+			if !IsValid(corpse) then  		// clean deleted rags
+				GS_Corpses[corpse] = nil
+				continue
+			end
+		
+			SyncEquipRagdoll(corpse)
+		end
+
+		last_sync = CurTime() + sync_cd
+	end)
+end
+
+if CLIENT then
+	net.Receive("gs_corpse_update", function(len)
+		local rag = net.ReadEntity()
+
+		print(len)
+		SyncEquipRagdoll(rag)
+	end)
+end
+
 
 if SERVER then
 	concommand.Add("fake", function(ply)

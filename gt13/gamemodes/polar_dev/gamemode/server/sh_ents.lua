@@ -65,6 +65,7 @@ function ENT:ItemRecover(pos)
 
     self.HideData = nil
     self.Hided = false
+    self.Container = nil
 end
 
 function ENT:GetIName()

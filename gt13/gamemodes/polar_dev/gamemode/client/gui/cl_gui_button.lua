@@ -2,6 +2,8 @@ local PANEL = {}
 
 local function AllowDrop(receiver, drop)
     // exmpl - container, if cant put more items
+    //if !IsValid(drop.item) then return false, "nothing" 
+    if !drop:IsEnabled() then return false, "drop is disabled" end
     if receiver == drop then return false, "same box" end
     return true, ""
 end
@@ -50,17 +52,41 @@ end
 
 function PANEL:Init()
     self.Hovering = false
-    self:SetAlpha(0)
-    self:SetEnabled(true)
-    self:AlphaTo( 200, 0.2, 0, function() self:SetEnabled(true) end)
-    self:SetMouseInputEnabled(true)
 
-    self:SetTextColor( Color( 0, 0, 0))
+    self:SetTextColor( Color( 72, 72, 72))
     self:SetFont("GModToolSubtitle")
-    self:Droppable( "GUIButton" )
+    
+    if self.item then
+        self:Droppable( "GUIButton" )
+    end
     self:Receiver( "GUIButton", self.DragAndDrop)
+    
+    self:SetAlpha(0)
+    self:SetEnabled(false)
+    timer.Simple(0, function()
+        if self.NoAnim then
+            self:SetAlpha(220)
+            self:SetEnabled(true)
+        elseif self.item then
+            self:SetAlpha(0)
+            self:AlphaTo( 255, 0.2, 0, function() self:SetEnabled(true) end)
+        else
+            self:SetAlpha(0)
+            self:SetEnabled(true)
+            self:AlphaTo( 220, 0.2, 0, function() self:SetEnabled(true) end)
+            self:SetMouseInputEnabled(true)
+        end
+    end)
 end
 
+/*
+function PANEL:SetItem(item)
+    self.item = item
+    self:SetText(item:GetIName() or "N/A")
+    self:SetTextColor(Color( 0, 0, 0))
+
+end
+*/
 function PANEL:GetActiveTab()
     return nil
 end
@@ -107,11 +133,45 @@ end
 
 function PANEL:PaintOver( w, h ) end
 
-function PANEL:SetItem(item, cont)
-    self.Item = item
+function PANEL:SetItem(item, noContexMenu)
+    if !IsValid(item) then 
+            if IsValid(self.item) then
+                self.item = nil 
+
+                self:SetTextColor(Color( 0, 0, 0))
+                
+                if self.m_DragSlot then
+                    self.m_DragSlot["GUIButton"] = nil // i dont see another way of stop being droppable
+                end
+
+                timer.Simple(0, function()
+                    self:SetAlpha(220)
+                end)
+
+            end
+        return
+        
+    end
+
+    self.item = item
     
-    //self:SetTooltipPanel(panel)
+    self:SetText(item:GetIName() or "N/A")
+    self:SetTextColor(Color( 0, 0, 0))
+    self:Droppable( "GUIButton" )
+
+    if !noContexMenu then
+        if item.GetContextButtons then
+            local menu = item:GetContextButtons()
+            if menu then self:SetContextMenu(menu) end
+        end
+    end
+
     self:SetTooltipPanelOverride("GUITooltip")
+    
+    timer.Simple(0, function()
+        self:SetAlpha(255)
+    end)
+    
 end
 
 
@@ -133,15 +193,22 @@ function PANEL:Think()
         end
     else
         if self.Hovering then
-            self:AlphaTo(200, 0.1,0)
+            if IsValid(self.item) then
+                //self:AlphaTo(220, 0.1,0)
+                self:SetAlpha(255)
+            else
+                self:AlphaTo(220, 0.1,0)
+            end
             self.Hovering = false
         end
     end
 end
 
 function PANEL:Close()
-    self:AlphaTo(0,0.2, 0)
-    timer.Simple(0.2, function() self:Remove() end )
+    if !self.DontAnim then
+        self:AlphaTo(0,0.2, 0)
+        timer.Simple(0.2, function() self:Remove() end )
+    end
 end
 
 vgui.Register("GUIButton", PANEL, "DButton")

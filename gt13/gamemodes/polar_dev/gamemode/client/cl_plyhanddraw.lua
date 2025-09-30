@@ -57,9 +57,14 @@ function PlayerUpdateWorldModelsSWEP(ply)
         end 
 
         local model
-        if IsValid(swep.WMGun) and swep.GMSWEP then
+        //print(IsValid(item.WMGun) and item.GSWEP == true)
+        if IsValid(swep.WMGun)then
+            
             model = swep.WMGun
+        elseif IsValid(item.WMGun) then
+            model = item.WMGun
         else
+            //print("123")
             model = ClientsideModel(item:GetModel())
             model:SetColor(item:GetColor())
             model:SetSkin(item:GetSkin())
@@ -84,6 +89,7 @@ end
 
 
 hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
+    //if ply == LocalPlayer() then return end
     if !ply:IsValid() then return end
     local hand_items = ply.HandItemModels 
     if !hand_items then return end
@@ -117,10 +123,12 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
         ang:RotateAroundAxis(Up,ang_offset.y)
         ang:RotateAroundAxis(Forward, ang_offset.r)
 
-        mdl:SetRenderOrigin(pos)
-        mdl:SetRenderAngles(ang)
+
         mdl:SetupBones()
         mdl:DrawModel()
+        mdl:SetRenderOrigin(pos)
+        mdl:SetRenderAngles(ang)
+        //print(mdl)
 
         // next we render chem cont with rendering liquid
         if mdlData.item.IsChemContainer then continue end

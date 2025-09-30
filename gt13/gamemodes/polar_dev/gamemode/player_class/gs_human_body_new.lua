@@ -148,6 +148,16 @@ function PLAYER_HP:SetupOrganismThink()
 	end)
 end
 
+
+function PLAYER_HP:AddStamina(int)
+    self.Player.Organism_Value.stamina = math.Clamp(self.Player.Organism_Value.stamina + int, 0, self.Player.Organism_Value.stamina_max)
+   // self.Player.Organism_Value.last_dmg = CurTime()
+end
+
+function PLAYER_HP:SubStamina(int)
+    self.Player.Organism_Value.stamina = math.Clamp(self.Player.Organism_Value.stamina - int, 0, self.Player.Organism_Value.stamina_max)
+end
+
 function PLAYER_HP:IncreasePain(int)
     self.Player.Organism_Value.pain = math.Clamp(self.Player.Organism_Value.pain + int, 0, 1)
     self.Player.Organism_Value.last_dmg = CurTime()
@@ -223,12 +233,18 @@ function PLAYER_HP:SetHP(body)
 end
 
 function PLAYER_HP:HurtPart(part, typeD, dmg)
-	if god_enable:GetBool() then return end
+	//if god_enable:GetBool() then return end
 	local brutesum = self:GetSumDMGBrute()
 
+	local organism_value = self.Player.Organism_Value
+
 	if type(typeD) == "table" then
-		for k_type, v_dmg in pairs(typdD) do
-			self:HurtPart(part, k_type, v_dmg)
+		for k_type, v_dmg in pairs(typeD) do
+			if k_type == D_STAMINA then
+				self:SubStamina(v_dmg)
+			else
+				self:HurtPart(part, k_type, v_dmg)
+			end
 		end
 	else
 		if typeD == D_STAMINA or typeD == D_TOXIN then
@@ -254,7 +270,14 @@ end
 
 // DamageHealth(nil, "toxin", 1)
 function PLAYER_HP:DamageHealth(part, typeD, dmg)
-	if god_enable:GetBool() then return end
+	//if god_enable:GetBool() then return end
+
+	//print(part, typeD, dmg)
+
+	if typeD == D_STAMINA then
+
+	end
+
 	if self.Player.Spec_Damage[typeD] then
 		self.Player.Spec_Damage[typeD] = self.Player.Spec_Damage[typeD] + dmg
 		return
@@ -268,7 +291,7 @@ function PLAYER_HP:DamageHealth(part, typeD, dmg)
 end
 
 function PLAYER_HP:HealHealth(part, typeD, dmg)
-	if god_enable:GetBool() then return end
+	//if god_enable:GetBool() then return end
 	if self.Player.Spec_Damage[typeD] then
 		self.Player.Spec_Damage[typeD] = math.max(self.Player.Spec_Damage[typeD] - dmg, 0)
 		return

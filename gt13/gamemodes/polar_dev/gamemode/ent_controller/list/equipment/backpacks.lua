@@ -97,7 +97,7 @@ local function fast_backpack(id, name, desk, model, max_items, EquipModelDraw ) 
         base_emd.model = model
         ent.EquipModelDraw = base_emd
 
-        PrintTable(ent.EquipModelDraw)
+        //PrintTable(ent.EquipModelDraw)
     elseif EquipModelDraw then
         ent.EquipModelDraw = EquipModelDraw
     end

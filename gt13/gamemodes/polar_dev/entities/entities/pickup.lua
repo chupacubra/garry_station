@@ -45,14 +45,15 @@ function ENT:ItemGetParentContainer()
 end
 
 function ENT:ItemRecover(pos)
-    ent:SetParent(nil)
-    ent:SetPos(pos)
-    ent:SetMoveType(ent.HideData.MT)
-    ent:SetSolid(ent.HideData.SD)
-    ent:SetNoDraw(false)
+    self:SetParent(nil)
+    self:SetPos(pos)
+    self:SetMoveType(ent.HideData.MT)
+    self:SetSolid(ent.HideData.SD)
+    self:SetNoDraw(false)
     
-    ent.HideData = nil
-    ent.Hided = false
+    //self.Container
+    self.HideData = nil
+    self.Hided = false
 end
 
 function ENT:MoveItemInContainer(cont) // strange name but ok

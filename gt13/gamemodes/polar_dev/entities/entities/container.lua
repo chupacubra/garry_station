@@ -50,6 +50,14 @@ function ENT:InsertItemInContainer(item)
 		return false
 	end
 
+    if item:IsWeapon() then
+        // drop weapon from ply
+        // request hand update
+        if IsValid(item:GetOwner()) then
+            item:GetOwner():DropWeapon(item)
+        end
+    end
+
     item:SetParentContainer(self)
     table.insert(self.Items, item)
 
@@ -59,6 +67,9 @@ function ENT:InsertItemInContainer(item)
 end
 
 function ENT:RemoveItem(key)
+
+    print("container need to remove item in key", key)
+
     if type(key) == "entity" then
         local ent, key = key, nil
         

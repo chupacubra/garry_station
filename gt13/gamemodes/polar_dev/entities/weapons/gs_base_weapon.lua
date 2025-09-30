@@ -75,6 +75,14 @@ local defaultBulletPosAng = {
 	smg = {Vector(14, -0.8, 6.8), Angle(-9.5, 0, 0)},
 }
 
+function SWEP:Examine(ply)
+    if SERVER and !ply then GS_MSG("try ent exam on server but no ply") return end
+    RichTextPrint("It's a {255 255 255}".. self.Name, ply)
+    RichTextPrint("{255 255 255}"..self.Desc, ply)
+
+    debug.Trace()
+end
+
 function SWEP:GetDefaultLocalMuzzlePos()
     local pos, ang
 
@@ -112,8 +120,8 @@ function SWEP:GetBulletSourcePos()
 	return pos, ang
 end
 
-function SWEP:BulletCallbackFunc(dmgAmt, ply, tr, dmg, tracer, hard, multi)
-	if tr.MatType == MAT_FLESH then
+function SWEP:BulletCallbackFunc(att, tr, dmg)
+	if tr.MatType == MAT_FLESH or tr.Entity:IsPlayer() then
 		util.Decal("Blood", tr.HitPos + tr.HitNormal, tr.HitPos - tr.HitNormal)
 		local vPoint = tr.HitPos
 		local effectdata = EffectData()
@@ -218,6 +226,7 @@ function SWEP:PopBulletFromMagazine()
 end
 
 function SWEP:InsertMagazine(item)
+    if self:GetOwner():GetActiveWeapon() != self then return end
     if CLIENT then return end
 
     if !item.IsWeaponMagazine then
@@ -244,6 +253,7 @@ function SWEP:InsertMagazine(item)
 
     self:UpdateWModelBodyGroups("mag")
 
+    return true
 end
 
 function SWEP:EjectMag()
@@ -293,6 +303,7 @@ function SWEP:InitializeWM()
 
     self.WMGun = ClientsideModel(self.WModel)
 
+    self.WMGun:SetNoDraw(true)
     if self.WorldModelBodyGroups["base"] then
         self:ChangeBodyGroup("base")
     end
@@ -368,6 +379,14 @@ function SWEP:DrawWorldModel()
 	    gun:DrawModel()
     else
         // need add offsets
+        //print(self:GetParent())
+        local parent = self:GetParent()
+        if IsValid(parent) then
+            print(parent, parent.IsContainer)
+            if parent.IsContainer then return end // это может означать только одно - предмет спрятан в контейнер и он не должен рисоваться
+        end
+
+        //print("123")
         gun:SetRenderOrigin(self:GetPos())
         gun:SetRenderAngles(self:LocalToWorldAngles(Angle(0, 90,0)))
 	    gun:DrawModel()
@@ -388,6 +407,8 @@ end
 
 
 function SWEP:GetContextButtons()
+    if !IsValid(self:GetOwner()) then return {} end
+
     local buttons = table.Copy(self.ContextCallback or {})
 
     if IsValid(self:GetNWEntity("Magazine")) then
@@ -503,14 +524,16 @@ function SWEP:SubBullet()
     end
 
     if SERVER then
-        // удаление пули из массива, последнюю
         table.remove(magazine)
     end
 end
 
 function SWEP:PopUpBulletFromMag()
     local magazine = self:GetNWEntity("Magazine")
+
     local bullet = table.remove(magazine.Magazine, #magazine.Magazine)
+    magazine:SetNWInt("Bullets", #magazine.Magazine)
+
     return bullet
 end
 
@@ -539,8 +562,14 @@ function SWEP:ShootBullet()
     debugoverlay.Line(shootOrigin, shootOrigin + shootDir*1000,1,nil, true)
 
     local bullet_type = self:PopUpBulletFromMag()
-    local bullet_dmg = GetBulletDMG(bullet_type)
-
+    
+    local bullet_dmg
+    if SERVER then
+        bullet_dmg = GetBulletDMG(bullet_type)
+    end
+    //print(bullet_type)
+    ///PrintTable(bullet_dmg)
+    print(bullet_dmg)
     if !bullet_dmg then bullet_dmg = {} end
 
     local bullet_dmgsum = tblsum(bullet_dmg) 
@@ -561,8 +590,6 @@ function SWEP:ShootBullet()
     bullet.Callback = function(att, trace, dmg)
         self:BulletCallbackFunc(att, trace, dmg)
         if trace.Entity:IsPlayer() then
-            //GAMEMODE:BulletHitPlayer(att, trace.entity, self, bullet_dmg )
-            
             hook.Run("BulletHitPlayer", att, trace.Entity, self, bullet_dmg, HIT_GROUP_TO_PART[trace.HitGroup])
         end
     end

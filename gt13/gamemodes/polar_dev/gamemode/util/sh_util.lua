@@ -26,3 +26,53 @@ function util.TableMul(value, count)
     end
     return tbl
 end
+
+function util.TableToHash(tbl)
+    if type(tbl) ~= "table" then
+        error("TableToHash ожидает таблицу в качестве аргумента", 2)
+    end
+    
+    local sortedKeys = {}
+
+    for k in pairs(tbl) do
+        table.insert(sortedKeys, k)
+    end
+    
+    table.sort(sortedKeys, function(a, b)
+        local typeA, typeB = type(a), type(b)
+
+        if typeA ~= typeB then
+            return tostring(typeA) < tostring(typeB)
+        end
+        
+        if typeA == "number" then
+            return a < b
+        elseif typeA == "string" then
+            return a < b
+        elseif typeA == "boolean" then
+            return tostring(a) < tostring(b)
+        else
+            return tostring(a) < tostring(b)
+        end
+    end)
+    
+    local hash = ""
+
+    for _, key in ipairs(sortedKeys) do
+        local value = tbl[key]
+        local keyType = type(key)
+        local valueType = type(value)
+        
+        hash = hash .. "[" .. keyType .. ":" .. tostring(key) .. "]"
+        
+        if valueType == "table" then
+            hash = hash .. "=" .. TableToHash(value)
+        else
+            hash = hash .. "=" .. valueType .. ":" .. tostring(value)
+        end
+        
+        hash = hash .. ";"
+    end
+    
+    return util.CRC(hash)
+end

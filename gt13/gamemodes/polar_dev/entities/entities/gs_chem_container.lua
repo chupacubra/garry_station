@@ -1,4 +1,6 @@
 -- init chem container if have
+AddCSLuaFile()
+
 ENT.Base = "gs_entity"
 
 ENT.IsChemContainer = true
@@ -287,6 +289,7 @@ function ENT:UpdateMesh(level) // 0-1
     local height_min = data.height_min
     local height_max = data.height_max
 
+    local max_level = self.ChemContainerData.Max
     local l = level / max_level
 
     local rad = Lerp(l, rad_min, rad_max)

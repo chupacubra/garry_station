@@ -71,7 +71,7 @@ function PANEL:PerformLayout()
 end
 
 function PANEL:SetItem(item)
-    self.Item = item
+    self.item = item
     
     local pnl = vgui.Create("DPanel")
     pnl:SetSize(150, 100)

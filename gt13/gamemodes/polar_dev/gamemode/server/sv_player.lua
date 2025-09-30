@@ -390,6 +390,9 @@ function GM:BulletHitPlayer(attacker, victim, weapon, bullet_dmg, part)
 		end
 	end
 
+	print(bullet_dmg, table.Count(bullet_dmg) )
+	PrintTable(bullet_dmg)
+
 	for typ, dmg in pairs(bullet_dmg) do
 		if dmg > 0 then
 			victim:RunClass("HurtPart", part, bullet_dmg)
@@ -403,10 +406,10 @@ end
 // этим занимается то, что выше
 function GM:EntityTakeDamage( target, dmg )
 	print("EntityTakeDamage", target, dmg)
-	if target.corpse then -- ItS a CORPSE!!1
-		GS_Corpse.DamageHandler(target, dmg)
-		return
-	end
+	//if target.corpse then -- ItS a CORPSE!!1
+	//	GS_Corpse.DamageHandler(target, dmg)
+	//	return
+	//end
 
 	if target:IsPlayer() then
 		local typ = dmg:GetDamageType()  
@@ -416,27 +419,11 @@ function GM:EntityTakeDamage( target, dmg )
 		else
 			HandleBodyDamage(ply, dmg)
 		end
-		//dmg:SetDamage(0)
+		dmg:SetDamage(0)
 		//return true
 	end
 end
 
-
-// нужно найти другой способ
-/*
-function GM:PlayerSay(ply, text)
-	if !ply:IsActive() then return end
-	
-	local name = ply:GetName()
-	if name == "" or name == "N/A" then
-		name = "..."
-	end
-
-	//chat.AddText(name .." - ".. )
-
-	return name .." - "..text
-end
-*/
 
 function GM:PlayerCanPickupWeapon(ply, weapon)
 	// игрок не сможет поднимать оружие просто так

@@ -11,7 +11,7 @@ local whitelistweps = {
 function RagdollOwner(rag)
 	for k, v in ipairs(player.GetAll()) do
 		local ply = v
-		if ply:GetNWEntity("DeathRagdoll") == rag then return ply end
+		if ply:GetNWEntity("Corpse") == rag then return ply end
 	end
 
 	return false
@@ -106,8 +106,8 @@ function SpecCam(ply, vec, ang, fov, znear, zfar)
 	local org = eye.Pos
 	local ang1 = eye.Ang + Angle(-10, 5, 0)
 	local org1 = eye.Pos + eye.Ang:Up() * 4 + eye.Ang:Forward() * -5 + eye.Ang:Right() * 6.5
-	if ply:GetNWBool("fake") == true and IsValid(ply:GetNWEntity("DeathRagdoll")) then
-		local attach = ply:GetNWEntity("DeathRagdoll"):GetAttachment(1)
+	if ply:GetNWBool("fake") == true and IsValid(ply:GetNWEntity("Corpse")) then
+		local attach = ply:GetNWEntity("Corpse"):GetAttachment(1)
 		local view = {
 			origin = attach.Pos + attach.Ang:Up() * 4 + attach.Ang:Forward() * -5 + attach.Ang:Right() * 6.5,
 			angles = attach.Ang + Angle(-10, 5, 0),
@@ -165,9 +165,9 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	--[[if not ply:Alive() then
 		local specPly = ply:GetNWEntity("SpecPly")
 		if not specPly:IsValid() then
-			if not IsValid(ply:GetNWEntity("DeathRagdoll")) then return end
-			local attach = ply:GetNWEntity("DeathRagdoll"):GetAttachment(1)
-			ply:GetNWEntity("DeathRagdoll"):ManipulateBoneScale(ply:GetNWEntity("DeathRagdoll"):LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
+			if not IsValid(ply:GetNWEntity("Corpse")) then return end
+			local attach = ply:GetNWEntity("Corpse"):GetAttachment(1)
+			ply:GetNWEntity("Corpse"):ManipulateBoneScale(ply:GetNWEntity("Corpse"):LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
 			local view = {
 				origin = attach.Pos,
 				angles = LerpAngle(0.2, ang1, attach.Ang),
@@ -184,9 +184,11 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	end
     --]]
     
-	if ply:GetNWBool("fake") == true and IsValid(ply:GetNWEntity("DeathRagdoll")) then
-		local attach = ply:GetNWEntity("DeathRagdoll"):GetAttachment(1)
-		ply:GetNWEntity("DeathRagdoll"):ManipulateBoneScale(ply:GetNWEntity("DeathRagdoll"):LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
+	if ply:GetNWBool("fake") == true and IsValid(ply:GetNWEntity("Corpse")) then
+		local rag = ply:GetNWEntity("Corpse")
+		local attach = rag:GetAttachment(1)
+		rag:ManipulateBoneScale(rag:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
+
 		lerping = Lerp(3 * FrameTime(), lerping, 0)
 		local view = {
 			origin = LerpVector(lerping, attach.Pos, oldOrigin),

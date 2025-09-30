@@ -18,7 +18,7 @@ function PLAYER_INVENTARY:SetupInventary()
 	}
 
 	if CLIENT then
-		self.Player.CLEquipment = {}
+		self.Player.CLEquipment = self.Player.CLEquipment or {}
 	end
 
 	self.Player.Pocket = {NULL, NULL}
@@ -81,8 +81,6 @@ function PLAYER_INVENTARY:EquipItem(item)
 		item:OnEquip(ply)
 	end
 
-	
-
 	self.Player.Equipment[item.TypeEquip] = item
 	item:ItemHide()
 	item:SetParentContainer(self.Player)
@@ -115,33 +113,6 @@ function PLAYER_INVENTARY:DequipItem(item, noDrop)
 	if item.OnDeEquip then
 		item:OnDeEquip(ply)
 	end
-	/*
-	if IsValid(container) then
-		// move in container or drop
-		//if container.IsHands then
-			local success = container:ItemInteraction(item)
-			if !success then
-				// item recover
-				recover(self.Player, item)
-			end
-		//else
-			
-		//end
-	else
-		// drop equip in somewhere
-		local trace = {
-			start = self.Player:EyePos(),
-			endpos = self.Player:EyePos() + self.Player:GetAimVector() * (70),
-			filter =  function( ent ) return ( ent != self.Player ) end
-		}
-		
-		trace = util.TraceLine(trace)
-
-		item:ItemRecover(trace.HitPos)
-	end
-	*/
-	
-	//PrintTable(self.Player.Equipment)
 
 	if !noDrop then
 		recover(self.Player, item)
@@ -432,22 +403,32 @@ end
 
 if SERVER then return end
 
-
+local NODRAW = {
+	HEAD = true,
+	MASK = true
+}
+local localply = LocalPlayer()
 function PLAYER_INVENTARY:DrawEquip()
-	if !self.Player.CLEquipment then return end
-    for k, eq in pairs(self.Player.CLEquipment) do
-        if !table.IsEmpty(eq) then
+	local ply = self.Player
+
+	if !ply.CLEquipment then return end
+
+    for typ, eq in pairs(ply.CLEquipment) do
+		if localply == self.Player and NODRAW[typ] then continue end
+		if !table.IsEmpty(eq) then
+			local draw_target = ply
+		
 			local drawData = eq.item.EquipModelDraw
-            local boneid = self.Player:LookupBone( drawData.bone )
+            local boneid = draw_target:LookupBone( drawData.bone )
                 
             if not boneid then
-                return
+                continue
             end
             
-            local matrix = self.Player:GetBoneMatrix( boneid )
+            local matrix = draw_target:GetBoneMatrix( boneid )
             
             if not matrix then 
-                return 
+                continue
             end
 
 			local pos, ang = matrix:GetTranslation(), matrix:GetAngles()

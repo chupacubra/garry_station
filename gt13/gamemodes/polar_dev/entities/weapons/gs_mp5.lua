@@ -59,7 +59,7 @@ SWEP.sightAng = Angle(5, 5, 5)
 SWEP.fakeHandRight = Vector(4, -2, 0)
 SWEP.fakeHandLeft = Vector(10, -4, -7)
 SWEP.Recoil = 0.4
-
+SWEP.Size = ITEM_SMALL
 function SWEP:PrimaryAttack()
     //print(self)
     self:ShootBullet()

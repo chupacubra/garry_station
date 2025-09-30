@@ -103,6 +103,12 @@ function PLAYER:Spawn()
 	self.FirstSpawn = true
 end
 
+// this will be runned after ragdoll wake up
+function PLAYER:RagdollWakeUp()
+	PrintTable(self.Player.Equipment)
+	self:EquipSync()
+end
+
 function GS_EquipWeapon(ply, weapon) -- for start loadout
 	local ent = ents.Create(weapon)
 	ply:PickupWeapon( ent )
