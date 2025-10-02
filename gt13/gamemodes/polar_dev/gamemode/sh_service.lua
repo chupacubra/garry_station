@@ -350,3 +350,22 @@ end)
 function util.ScaleSizeGUI(w, h)
     return ScreenScale(w) * ( ScrW() / ScrH() ), ScreenScaleH(h) * ( ScrW() / ScrH() )
 end
+
+
+function util.WaitForValidEnt(ent, func)
+    local timer_id = "util.WaitForValidEnt"..math.random(1000,10000)
+    local it = 0
+    timer.Create(timer_id, 0, 0, function()
+        if IsValid(ent) then
+            print("ent", ent, "become alive in frame", it)
+            timer.Remove(timer_id)
+            func(ent)
+        end
+        it = it + 1
+    end)
+
+    timer.Simple(1, function()
+            timer.Remove(timer_id)
+            print("ent", ent, "is not become alive")
+    end)
+end

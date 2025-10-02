@@ -162,4 +162,112 @@ GenerateMagazine("gs_mp5", {
     hand_ang = Angle(),
 })
 
+GenerateMagazine("gs_tmp", {
+    accept = {
+        ["9mm"] = true,
+    },
+    max = 25,
+    model = "models/weapons/unloaded/smg_tmp_mag.mdl",
+    name = "TMP Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
 
+GenerateMagazine("gs_ump45", {
+    accept = {
+        ["9mm"] = true,
+    },
+    max = 25,
+    model = "models/weapons/unloaded/smg_ump45_mag.mdl",
+    name = "UMP Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+GenerateMagazine("gs_usp", {
+    accept = {
+        ["9mm"] = true,
+    },
+    max = 12,
+    model = "models/weapons/unloaded/pist_usp_mag.mdl",
+    name = "USP Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+GenerateMagazine("gs_glock", {
+    accept = {
+        ["9mm"] = true,
+    },
+    max = 20,
+    model = "models/weapons/unloaded/pist_glock18_mag.mdl",
+    name = "Glock Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+
+GenerateMagazine("gs_ak47", {
+    accept = {
+        ["762"] = true,
+    },
+    max = 30,
+    model = "models/weapons/unloaded/rif_ak47_mag.mdl",
+    name = "AK Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+
+GenerateMagazine("gs_galil", {
+    accept = {
+        ["762"] = true,
+    },
+    max = 25,
+    model = "models/weapons/unloaded/rif_galil_mag.mdl",
+    name = "Galil Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+GenerateMagazine("gs_m249", {
+    accept = {
+        ["762"] = true,
+    },
+    max = 100,
+    model = "models/weapons/unloaded/mach_m249para_mag.mdl",
+    name = "Pulemet Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+GenerateMagazine("gs_m16", {
+    accept = {
+        ["556"] = true,
+    },
+    max = 30,
+    model = "models/weapons/unloaded/rif_m4a1_mag.mdl",
+    name = "M16 Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})
+
+GenerateMagazine("gs_famas", {
+    accept = {
+        ["556"] = true,
+    },
+    max = 30,
+    model = "models/weapons/unloaded/rif_famas_mag.mdl",
+    name = "famas Magazine",
+    desc = "Weapon magazine",
+    hand_vec = Vector(3,-10,0),
+    hand_ang = Angle(),
+})

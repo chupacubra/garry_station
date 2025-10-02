@@ -20,46 +20,75 @@ local time_change = 0.5
 
 hook.Add( "RenderScreenspaceEffects", "PainEffect", function()
     local ply = LocalPlayer()
+    //print(ply:IsActive())
     if !ply:IsActive() then return end 
     local pain = ScreenspaceEffects.Pain.value
     local old_pain = ScreenspaceEffects.Pain.old_value
 
-    if pain == old_pain and pain == 0 then return end
+    //print(pain, old_pain)
+    //if pain == old_pain and pain == 0 then return end
 
     local curtime = CurTime()
     local last_changed = ScreenspaceEffects.Pain.last_changed
-    if last_changed + time_change > curtime and math.abs(pain - old_pain) > 0.05 then
-        pain = Lerp((curtime - last_changed) / time_change, pain, old_pain)
+    if last_changed + time_change > curtime  then
+        //print((curtime - last_changed) / time_change, lerp())
+        pain = Lerp((curtime - last_changed) / time_change, old_pain, pain)
     end
 
-    local sharp = pain * 1.5
+    if pain == 0 then return end
+
+    local sharp = pain * math.abs(math.sin(curtime)) * 2
     local dist  = pain * math.abs(math.sin(curtime)) * 2
 
+
+    //print("123")
     DrawSharpen( sharp, dist )
 end )
 
 
+hook.Add( "RenderScreenspaceEffects", "StaminaEffect", function()
+    local ply = LocalPlayer()
+    if !ply:IsActive() then return end
+
+    local stamina = ScreenspaceEffects.Stamina.value
+
+    if stamina < 50 then
+        //local effect = 1 - (50 / stamina)
+        DrawMotionBlur(0.1, 0.35,0.01)
+    end
+end )
+
 // необходимо ввести болевой порог?
 // или обезболивающие, которые которые сносят боль и дают уменьшенную боль после ударов?
 hook.Add("PlyClassInit", "ScreenspaceEffectsInit", function(ply)
-    print("ply", ply, "class init")
+    //print("ply", ply, "class init")
     if ply != LocalPlayer() then return end
 
     ply:LocalNWVarProxyAdd("Pain", function(ply, key, old, new)
-
+        //print("PAIN UPDATE")
         if new < 0.4 then
             new = 0
         end
-        old = ScreenspaceEffects.Pain.old_value
+        old = ScreenspaceEffects.Pain.value
         ScreenspaceEffects.Pain.value = new
         ScreenspaceEffects.Pain.old_value = old
         ScreenspaceEffects.Pain.last_changed = CurTime()
-
     end)
 
+    ply:LocalNWVarProxyAdd("Stamina", function(ply, key, old, new)
+        //print("stamina", new)
+        ScreenspaceEffects.Stamina.value = new
+        //ScreenspaceEffects.Pain.old_value = old
+        ScreenspaceEffects.Stamina.last_changed = CurTime()
+    end)
 end)
 
 concommand.Add("pain_effect", function()
+    /*local old = ScreenspaceEffects.Pain.value
+        ScreenspaceEffects.Pain.value = 1
+        ScreenspaceEffects.Pain.old_value = old
+        ScreenspaceEffects.Pain.last_changed = CurTime()
+        */
     timer.Simple(1, function()
         local old = ScreenspaceEffects.Pain.value
         ScreenspaceEffects.Pain.value = 1

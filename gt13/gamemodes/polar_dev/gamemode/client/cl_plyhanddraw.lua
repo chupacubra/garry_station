@@ -59,7 +59,6 @@ function PlayerUpdateWorldModelsSWEP(ply)
         local model
         //print(IsValid(item.WMGun) and item.GSWEP == true)
         if IsValid(swep.WMGun)then
-            
             model = swep.WMGun
         elseif IsValid(item.WMGun) then
             model = item.WMGun
@@ -90,6 +89,7 @@ end
 
 hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
     //if ply == LocalPlayer() then return end
+    if !ply:IsActive() then return end
     if !ply:IsValid() then return end
     local hand_items = ply.HandItemModels 
     if !hand_items then return end
@@ -100,13 +100,11 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
         local pos_offset = mdlData.offsetVec
         local ang_offset = mdlData.offsetAng
 
-
         local boneid = ply:LookupBone( Either(active, "ValveBiped.Bip01_R_Hand" , "ValveBiped.Bip01_L_Hand" ) )
             
         if not boneid then
             continue
         end
-
 
         local matrix = ply:GetBoneMatrix( boneid )
         

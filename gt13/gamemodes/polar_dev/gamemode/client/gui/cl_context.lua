@@ -501,7 +501,7 @@ end
 hook.Add("GUIMousePressed", "ContextMenuEntMenu", function(mouse, dir)
     if mouse == MOUSE_RIGHT or mouse == MOUSE_MIDDLE then
         local ply = LocalPlayer()
-        local dir = dir * 100 --gui.ScreenToVector( gui.MousePos() ) * 100
+        local dir = dir * 100
         local tr = ply:MakeViewTrace(nil, dir)
 
         debugoverlay.Line(EyePos(), tr.HitPos, 0.1, Color(0,255,149), true)
@@ -509,8 +509,7 @@ hook.Add("GUIMousePressed", "ContextMenuEntMenu", function(mouse, dir)
         local target = tr.Entity
         
         if !IsValid(target)  then return end
-            //print(target.Examine)
-        //print(ply:KeyDown(IN_SPEED) , mouse == MOUSE_LEFT)
+
         if mouse == MOUSE_MIDDLE then
             // show context buttons
             if target.Examine then
@@ -543,7 +542,10 @@ hook.Add("Think", "ContextMenuThink", ContextMenuThink)
 hook.Add("HUDPaint", "ContextMenuPaint", ContextMenuPaint)
 
 hook.Add("ContextMenuEnabled", "block", function()
-    return false
+    if LocalPlayer():KeyDown(IN_SPEED) then
+        return true
+    end
+    //return false
 end)
 
 hook.Add("PlayerEquipUpdated", "ContextEquipUpdate", function(ply)

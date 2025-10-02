@@ -22,12 +22,6 @@ SWEP.SoundShot   = ""
 SWEP.SoundReload = ""
 SWEP.Silenced    = false
 
-//SWEP.MuzzlePos      = Vector(50, -0.8, 20)
-//SWEP.MuzzleAng      = Angle(-9.5, 0, 0)
-
-
-SWEP.ShellPos       = nil
-
 SWEP.HoldType       = "pistol"  // basic holdtype
 
 SWEP.Recoil     = 10
@@ -56,10 +50,11 @@ SWEP.SightAng = Angle()
 
 SWEP.HandOffsetVec = Vector(2,10, 0)
 SWEP.HandOffsetAng = Angle(90, 0, 0)
-SWEP.Recoil = 0.05
 
 SWEP.addPos = Vector(0, 0, 0)
 SWEP.addAng = Angle()
+
+SWEP.TypeBrass = "9mm"
 
 if SERVER then
     util.AddNetworkString("gs_swep_update_wm")
@@ -107,9 +102,11 @@ function SWEP:GetBulletSourcePos()
 		local owner = self:GetOwner()
 		if not IsValid(owner) then return end
 		local att = owner:GetAttachment(owner:LookupAttachment('anim_attachment_rh'))
+        //print(att)
 		if att then
 			local defaultlpos, defaultlang = self:GetDefaultLocalMuzzlePos()
 			local pos, ang = LocalToWorld(self.addPos or defaultlpos, self.addAng or defaultlang or angle_zero, att.Pos, att.Ang)
+            //pos = pos + Vector(0,,0)
 			return pos, ang
 		end
 
@@ -302,7 +299,7 @@ function SWEP:InitializeWM()
     if !self.WorldModelCustom then return end
 
     self.WMGun = ClientsideModel(self.WModel)
-
+    self.WMGun:SetModelScale(self.WorldModelScale or 1)
     self.WMGun:SetNoDraw(true)
     if self.WorldModelBodyGroups["base"] then
         self:ChangeBodyGroup("base")
@@ -386,13 +383,14 @@ function SWEP:DrawWorldModel()
             if parent.IsContainer then return end // это может означать только одно - предмет спрятан в контейнер и он не должен рисоваться
         end
 
-        //print("123")
-        gun:SetRenderOrigin(self:GetPos())
-        gun:SetRenderAngles(self:LocalToWorldAngles(Angle(0, 90,0)))
+        local w_offset_pos = self.WorldModelDrawOffset.pos
+        local w_offset_ang = self.WorldModelDrawOffset.ang
+
+        gun:SetRenderOrigin(self:LocalToWorld(w_offset_pos))
+        gun:SetRenderAngles(self:LocalToWorldAngles(w_offset_ang))
 	    gun:DrawModel()
         
     end
-
 end
 
 function SWEP:Drop()
@@ -448,6 +446,24 @@ function SWEP:OnRemove()
     if IsValid(self.WMGun) then self.WMGun:Remove() end
 end
 
+function SWEP:EjectBrass()
+    if CLIENT then
+        local ef = EffectData()
+        
+        local attach = self.WMGun:GetAttachment(self.WMGun:LookupAttachment( "shell" ))
+
+        ef:SetOrigin(attach.Pos)
+        ef:SetAngles(attach.Ang)
+        ef:SetFlags(50)
+
+        if self.TypeBrass then
+            util.Effect("EjectBrass_"..self.TypeBrass, ef)
+        else
+            util.Effect("EjectBrass_762Nato", ef)
+        end
+    end
+end
+
 function SWEP:DevShoot()
     if not IsValid(self) then return nil end
 
@@ -472,10 +488,10 @@ function SWEP:DevShoot()
 	bullet.Src = shootOrigin
 	bullet.Dir = shootDir
 	bullet.Spread = Vector(cone, cone, 0)
-	bullet.Tracer = 1
+	bullet.Tracer = 2
 	bullet.TracerName = 4
 	bullet.Force = 100 / 20
-	bullet.Damage = 50 //dmg or 25
+	bullet.Damage = 50 
 	bullet.Attacker = ply
     bullet.Callback = function(att, trace, dmg)
         //self:BulletCallbackFunc(att, trace, dmg)
@@ -486,15 +502,31 @@ function SWEP:DevShoot()
 		self:GetOwner():LagCompensation(false)
 	end
 
-    if CLIENT then
-        local ef = EffectData()
-		ef:SetEntity(self.WMGun)
-		ef:SetAttachment(self.WMGun:LookupAttachment( "muzzle" ))
-		ef:SetFlags(1)
-		util.Effect("MuzzleFlash", ef)
+    if !self.Silenced then
+        if SERVER then
+            local ef = EffectData()
+            ef:SetEntity(self)
+            ef:SetAttachment(self:LookupAttachment( "muzzle" ))
+            ef:SetFlags(1)
+            util.Effect("MuzzleFlash", ef)
+        else
+            local ef = EffectData()
+            ef:SetEntity(self.WMGun)
+            ef:SetAttachment(self.WMGun:LookupAttachment( "muzzle" ))
+            ef:SetFlags(1)
+            util.Effect("MuzzleFlash", ef)
+        end
     end
 
+    self:EjectBrass()
+
+    
+    self:EmitSound(self.Primary.Sound)
+
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
+
+    self:SetNextPrimaryFire(CurTime()+0.1)
+
 end
 
 function SWEP:GetMag()
@@ -599,12 +631,38 @@ function SWEP:ShootBullet()
 		self:GetOwner():LagCompensation(false)
 	end
 
-    if CLIENT then
+    //if CLIENT then
+        /*
+        local attach = self.WMGun:LookupAttachment( "muzzle" )
         local ef = EffectData()
-		ef:SetEntity(self.WMGun)
-		ef:SetAttachment(self.WMGun:LookupAttachment( "muzzle" ))
-		ef:SetFlags(1)
-		util.Effect("MuzzleFlash", ef)
+        if attach != 0 then
+            ef:SetEntity(self.WMGun)
+            ef:SetAttachment(self.WMGun:LookupAttachment( "muzzle" ))
+        else
+            ef:SetEntity(self)
+            ef:SetAttachment(self:LookupAttachment( "muzzle" ))
+        end
+        ef:SetFlags(1)
+        util.Effect("MuzzleFlash", ef)
+        */
+    //else
+
+   // end
+    if !self.Silenced then
+        print(self.Silenced)
+        if SERVER then
+            local ef = EffectData()
+            ef:SetEntity(self)
+            ef:SetAttachment(self:LookupAttachment( "muzzle" ))
+            ef:SetFlags(1)
+            util.Effect("MuzzleFlash", ef)
+        else
+            local ef = EffectData()
+            ef:SetEntity(self.WMGun)
+            ef:SetAttachment(self.WMGun:LookupAttachment( "muzzle" ))
+            ef:SetFlags(1)
+            util.Effect("MuzzleFlash", ef)
+        end
     end
     self:EmitSound(self.Primary.Sound)
 
@@ -645,7 +703,8 @@ function SWEP:Step()
 	end
 
 	local isLocal = self:IsLocal()
-	if isLocal then
+	
+    /*if isLocal then
 		self.eyeSpray = self.eyeSpray or Angle(0, 0, 0)
 		ply:SetEyeAngles(ply:EyeAngles() + self.eyeSpray)
 		self.eyeSpray = LerpAngleFT(0.5, self.eyeSpray, Angle(0, 0, 0))
@@ -659,6 +718,7 @@ function SWEP:Step()
 			self.eyeSpray = self.eyeSpray + Angle(math.Rand(-p, p), math.Rand(-p, p), 0)
 		end
 	end
+    */
 end
 
 

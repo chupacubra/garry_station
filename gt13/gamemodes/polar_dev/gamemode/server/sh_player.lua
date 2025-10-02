@@ -78,6 +78,10 @@ end
 function PLAYER:IsActive()
     // can player use something, pickup something 
     // if player is sleep or in ragdoll
+	//print(self:GetNWEntity("Corpse"))
+	//if IsValid(self:GetNWEntity("Corpse")) then
+	//	return false
+	//end
     return self:Team() == TEAM_PLY and player_manager.GetPlayerClass(self) == "gs_human"
 end
 
@@ -142,6 +146,24 @@ end
 
 local stamina_to_run = 50
 
+local IN_MOVE = {
+	IN_FORWARD,
+	IN_BACK,
+	IN_MOVELEFT,
+	IN_MOVERIGHT,
+}
+
+local function inMove(keys)
+	for k, move_key in ipairs(IN_MOVE) do
+		//print(bit.band(keys, move_key), move_key)
+		if bit.band(keys, move_key) == move_key then
+			return true
+		end
+	end
+
+	return false
+end
+
 hook.Add("Move", "PlayerMove", function(ply, mv)
 	if !ply:IsActive() then return end
 	
@@ -156,7 +178,7 @@ hook.Add("Move", "PlayerMove", function(ply, mv)
 		mv:SetMaxClientSpeed(origClientSpeed * 0.5)
 	end
 
-	if mv:KeyDown(IN_SPEED) then
+	if mv:KeyDown(IN_SPEED) and inMove(mv:GetButtons()) then
 		if stamina > stamina_to_run then
 			stamina = stamina - FrameTime() * 5
 			if SERVER then
@@ -169,6 +191,41 @@ hook.Add("Move", "PlayerMove", function(ply, mv)
 
 end)
 
+
+
+/*
+if SERVER then
+	hook.Add("Move", "InFake", function(ply, mv)
+		if !ply:IsActive() then return end
+		
+		local origSpeed = mv:GetMaxSpeed()
+		local origClientSpeed = mv:GetMaxClientSpeed()
+		
+		local stamina = ply:GetLocalNWVar("Stamina")
+		if !stamina then return end
+
+		if stamina < stamina_to_run then
+			mv:SetMaxSpeed(origSpeed * 0.5)
+			mv:SetMaxClientSpeed(origClientSpeed * 0.5)
+		end
+
+		print(inMove(mv:GetButtons()))
+
+		if mv:KeyDown(IN_SPEED) and inMove(mv:GetButtons()) then
+			//print(IN_SPEED, mv:GetButtons())
+			if stamina > stamina_to_run then
+				stamina = stamina - FrameTime() * 5
+				if SERVER then
+					ply.Organism_Value.stamina = stamina
+				end
+				ply:SetLocalNWVar("Stamina", stamina)
+			end
+			ply.LastInSpeed = CurTime()
+		end
+
+	end)
+end
+*/
 net.Receive("gs_examine_ply", function(_, ply)
 	local target = net.ReadPlayer()
 

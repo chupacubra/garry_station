@@ -53,6 +53,27 @@ GenerateAmmoPile({
 
     Calibr = "9mm",
 })
+
+GenerateAmmoPile({
+    Name = "Ammo 5.56",
+    Desc = "Buletes",
+    Model = "models/Items/357ammo.mdl",
+    MaxStack = 40,
+
+    Calibr = "556",
+})
+
+GenerateAmmoPile({
+    Name = "Ammo 7.62",
+    Desc = "ruski Buletes",
+    Model = "models/Items/357ammo.mdl",
+    MaxStack = 40,
+
+    Calibr = "762",
+})
+
 if SERVER then
-    RegisterAmmo("9mm", {[D_BRUTE] = 15, [D_STAMINA] = 10})
+    RegisterAmmo("9mm", {[D_BRUTE] = 15, [D_STAMINA] = 1})
+    RegisterAmmo("556", {[D_BRUTE] = 30, [D_STAMINA] = 2})
+    RegisterAmmo("762", {[D_BRUTE] = 35, [D_STAMINA] = 2})
 end

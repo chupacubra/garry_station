@@ -47,7 +47,7 @@ SWEP.WorldModelOffsets    = {
 }
 
 SWEP.WorldModelDrawOffset = {
-    ang = Angle(0, -90, 0),
+    ang = Angle(0, 90, 0),
     pos = Vector()
 }
 SWEP.Spawnable = true
@@ -60,7 +60,10 @@ SWEP.fakeHandRight = Vector(4, -2, 0)
 SWEP.fakeHandLeft = Vector(10, -4, -7)
 SWEP.Recoil = 0.4
 SWEP.Size = ITEM_SMALL
+
+SWEP.TypeBrass = "9mm"
+
+
 function SWEP:PrimaryAttack()
-    //print(self)
     self:ShootBullet()
 end

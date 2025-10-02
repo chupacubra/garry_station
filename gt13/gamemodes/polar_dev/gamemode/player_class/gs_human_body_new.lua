@@ -96,6 +96,17 @@ function PLAYER_HP:SetupOrganismValues()
 	//self.Player.HungerRagdoll = 0
 end
 
+function PLAYER_HP:Ragdollize()
+	//if !ply.InFake then	
+	//end
+
+	ForceFake(self.Player)
+end
+
+function PLAYER_HP:Unragdollize()
+	// игрок теперь наверн сам будет решать, вставать ему или нет
+end
+
 function PLAYER_HP:SetupOrganismThink()
     self:SetupThinkOrgans()
     self:StartSaturationTimer()
@@ -138,13 +149,17 @@ function PLAYER_HP:SetupOrganismThink()
 		self:HungerThink()
 		self:HealthPartClientUpdate(mainpart)
 		self:UpdateLocalNWVars()
-		/*
+		
+		local forceFake = self:RagdollThink() 
+
 		if self:RagdollThink() then
 			self:Ragdollize()
 		else
 			self:Unragdollize()
 		end
-		*/
+
+		self.Player.ForceRagdoll = forceFake
+
 	end)
 end
 
@@ -192,11 +207,23 @@ function PLAYER_HP:BloodLevel(int)
 end
 
 function PLAYER_HP:Bleed()
-	if god_enable:GetBool() then return end
+	//if god_enable:GetBool() then return end
     if self.Player.Organism_Value.blood.bleed == false then
         self.Player.Organism_Value.blood.bleed = true
         self.Player.Organism_Value.blood.bleed_rate = 4
-        timer.Create("gs_bleed"..self.Player:EntIndex(), 2, 0,self.BleedThink)
+        timer.Create("gs_bleed"..self.Player:EntIndex(), 2, 0, function()
+			if self.Player.Organism_Value.blood.bleed == false or self.Player.Organism_Value.blood.bleed_rate == 0 then
+				self:BleedReset()
+				timer.Remove("gs_bleed"..self.Player:EntIndex())
+				return
+			end
+
+			self.Player.Organism_Value.blood.level = self.Player.Organism_Value.blood.level - self.Player.Organism_Value.blood.bleed_rate
+			self.Player.Organism_Value.blood.bleed_rate = self.Player.Organism_Value.blood.bleed_rate - 1
+			self:IncreasePain(0.5 * self.Player.Organism_Value.blood.bleed_rate)
+
+			util.Decal( "Blood", self.Player:GetPos(), self.Player:GetPos() - Vector(0, 100, 0), {self.Player, self.Player.Ragdoll} )
+		end)
     else
         self.Player.Organism_Value.blood.bleed_rate = self.Player.Organism_Value.blood.bleed_rate + 2
     end
@@ -206,7 +233,7 @@ function PLAYER_HP:BleedReset()
 	self.Player.Organism_Value.blood.bleed = false
 	self.Player.Organism_Value.blood.bleed_rate = 0
 end
-
+/*
 function PLAYER_HP:BleedThink()
     -- timer = 2 sec
     -- with bleed_rate 5 aproximately human will be empty in 40 seconds
@@ -223,7 +250,7 @@ function PLAYER_HP:BleedThink()
 
 	util.Decal( "Blood", self.Player:GetPos(), self.Player:GetPos() - Vector(0, 100, 0), {self.Player, self.Player.Ragdoll} )
 end
-
+*/
 function PLAYER_HP:SetHP(body)
 	self.Player.Body_Parts = body
 
@@ -249,7 +276,7 @@ function PLAYER_HP:HurtPart(part, typeD, dmg)
 	else
 		if typeD == D_STAMINA or typeD == D_TOXIN then
 			//continue
-		elseif k == D_BRUTE then
+		elseif typeD == D_BRUTE then
 			if brutesum >= 50 then
 				if flipcoin() then
 					self:Bleed()
@@ -270,13 +297,15 @@ end
 
 // DamageHealth(nil, "toxin", 1)
 function PLAYER_HP:DamageHealth(part, typeD, dmg)
+	PrintTable(self.Player.Body_Parts)
+	print(self.Player," det damage", part, typeD, dmg)
 	//if god_enable:GetBool() then return end
 
 	//print(part, typeD, dmg)
 
-	if typeD == D_STAMINA then
-
-	end
+	//if typeD == D_STAMINA then
+	//	self.Player.
+	//end
 
 	if self.Player.Spec_Damage[typeD] then
 		self.Player.Spec_Damage[typeD] = self.Player.Spec_Damage[typeD] + dmg
@@ -500,9 +529,14 @@ function PLAYER_HP:Death()
 		--self:Ragdollize()
 		--GS_Corpse.SetRagdollDeath(self.Player, self.Player.Ragdoll)
 	--end
-
+	
+	debug.Trace()
+	print(self.Player, self.Player:Alive())
 	self:StopThink()
 
+	//if !IsValid(self.Player:GetNWEntity("Corpse")) then
+		self.Player:CreateFakeRagdoll(true)
+	//end
 	--self:CloseHudClient()
 	--self.Player.ClassDead = true
 	//self.Player:Kill()
@@ -562,6 +596,8 @@ function PLAYER_HP:RagdollThink()
 	if self.Player.Organism_Value.stamina < 1 then
 		return true
 	end
+
+	return false
 end
 
 local BD_EX = {

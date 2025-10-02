@@ -1,8 +1,8 @@
 GS_Corpses = GS_Corpses or {}
 local PLAYER = FindMetaTable("Player")
 
-function PLAYER:CreateFakeRagdoll(attacker, dmginfo)
-	print("CREATE RAGDOLL", ply)
+function PLAYER:CreateFakeRagdoll(isDeath)
+	print("CREATE RAGDOLL", ply, "Is dead?", isDeath)
 	if not self:Alive() and self.fake then return nil end
 	local rag = self:GetNWEntity("Corpse")
 
@@ -44,6 +44,9 @@ function PLAYER:CreateFakeRagdoll(attacker, dmginfo)
 	end
 
 	self:SetNWEntity("Corpse", rag)
+	if isDeath then
+		SetCorpseDead(self, true)
+	end
 end
 
 /*
@@ -116,11 +119,76 @@ function PLAYER:RagSpectate()
 	ply:SetMoveType(MOVETYPE_OBSERVER)
 end
 
-function Faking(ply)
-	ply.fake = not ply.fake
-	ply:SetNWBool("fake", ply.fake)
+function ForceFake(ply)
+	if ply.InFake then return end
+	SavePlyInfoPreSpawn(ply)
 
-	if ply.fake == true then
+	if SERVER then
+		ply:DrawWorldModel(false)
+	end
+
+	if ply:InVehicle() then
+		ply:ExitVehicle()
+	end
+	
+	DropAll(ply)
+
+	ply:CreateFakeRagdoll()
+
+	if IsValid(ply:GetNWEntity("Corpse")) then
+		ply.fakeragdoll = ply:GetNWEntity("Corpse")
+		ply:RagSpectate()
+		ply:SetParent(ply:GetNWEntity("Corpse"))
+		ply:SetSuppressPickupNotices(false)
+		ply:SetActiveWeapon(nil)
+		ply:DropObject()
+	end
+end
+
+function ForceUnfake(ply)
+	if !ply.InFake then return end
+
+	if IsValid(ply:GetNWEntity("Corpse")) then
+		ply.fakeragdoll = nil
+		SavePlyInfoPreSpawn(ply)
+
+		local pos = ply:GetNWEntity("Corpse"):GetPos()
+		local vel = ply:GetNWEntity("Corpse"):GetVelocity()
+		
+		ply:UnSpectate()
+		
+		ply.unfaked = true
+		ply:SetNWBool("unfaked", ply.unfaked)
+		ply:Spawn()
+		
+		ReturnPlyInfo(ply)
+
+		ply:SetNWInt("FakeShooting", false)
+		ply:SetVelocity(vel)
+		ply.unfaked = false
+
+		ply:SetNWBool("unfaked", ply.unfaked)
+		ply:SetParent()
+		ply:SetPos(pos)
+		ply:DrawWorldModel(true)
+
+		ply:GetNWEntity("Corpse"):Remove()
+		ply:SetNWEntity("Corpse", nil)
+	end
+end
+
+function TryStand(ply)
+	if !ply.InFake then return end
+	if ply.ForceRagdoll then return false end
+
+	ForceUnfake(ply)
+end
+
+function Faking(ply)
+	ply.InFake = not ply.InFake
+	ply:SetNWBool("fake", ply.InFake)
+
+	if ply.InFake == true then
 		SavePlyInfoPreSpawn(ply)
 
 		if SERVER then
@@ -206,8 +274,10 @@ function UpdateClModelsForRag(rag, new_equip)
 
 	rag.Equipment = new_equip
 
-	//PrintTable(self.Player.Equipment)
+	//print(rag, rag.Equipment)
+	//PrintTable(rag.Equipment)
 
+	if !rag.Equipment then return end
 	for eq_key, ent_eq in pairs(rag.Equipment) do
 		if eq_key == EQUIP_ID or eq_key == EQUIP_SUIT then continue end
 		if IsValid(ent_eq) then
@@ -267,8 +337,14 @@ local function SyncEquipRagdoll(rag)
 			EAR       = net.ReadEntity(),
 			//SUIT	  = net.ReadEntity(),
 		}
-
+		//timer.Simple(0, function())
 		//print("UPDATE FOR CORPSE", rag, new_equip)
+		//print(rag, IsValid(rag))
+		if !IsValid(rag) then
+			util.WaitForValidEnt(rag, function()
+				print(rag, "is valid!")
+			end)
+		end
 
 		rag.CLEquipment = rag.CLEquipment or {}
 		UpdateClModelsForRag(rag, new_equip)
@@ -287,7 +363,7 @@ local function SyncEquipRagdoll(rag)
 	end
 end
 
-function SetCorpseDead(ply)
+function SetCorpseDead(ply, needTime)
 	local rag = ply:GetNWEntity("Corpse")
 	if !IsValid(rag) then return end
 	// apply damage
@@ -311,9 +387,14 @@ function SetCorpseDead(ply)
 
 	rag.Equipment 	= ply.Equipment
 	rag.Pockets 	= ply.Pockets
-
-	SyncEquipRagdoll(rag)
-
+	
+	if needTime then
+		timer.Simple(0, function()
+			SyncEquipRagdoll(rag)
+		end)
+	else
+		SyncEquipRagdoll(rag)
+	end
 	//table.insert(GS_Corpses, rag)
 	GS_Corpses[rag] = true
 	// need broadcasting and syncing ragdoll trup data
@@ -377,7 +458,7 @@ hook.Add("PostDrawOpaqueRenderables", "CorpseEquipDraw", function()
 end)
 
 hook.Add("PlayerDeath", "resetfakes", function(ply, inflictor, attacker)
-	if ply.fake then
+	if ply.InFake then
 		SetCorpseDead(ply)
 
 		ply:SetNWEntity("Corpse", nil)
@@ -414,7 +495,7 @@ if CLIENT then
 	net.Receive("gs_corpse_update", function(len)
 		local rag = net.ReadEntity()
 
-		print(len)
+		//print(len)
 		SyncEquipRagdoll(rag)
 	end)
 end

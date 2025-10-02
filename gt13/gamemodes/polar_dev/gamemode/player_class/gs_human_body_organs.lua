@@ -118,7 +118,7 @@ end
 
 
 local hypoxia_to_death = 100
-local all_dmg_to_death = 200
+local all_dmg_to_death = 300
 
 function PLAYER_ORGANS:CheckDeathConditions()
     //local organism_value = self.Player.Organism_Value
@@ -127,14 +127,17 @@ function PLAYER_ORGANS:CheckDeathConditions()
 
     // 1. нет кислорода (урон гипоксии много)
     if spec_damage.hypoxia > hypoxia_to_death then
-        self:Death()
+        //self:Death()
+        self.Player:Kill()
+
         return
     end
 
     // 2. общий дамаг под 200
     local body_dmg = self:GetSumDMG()
     if body_dmg > all_dmg_to_death then
-        self:Death()
+        //self:Death()
+        self.Player:Kill()
         return
     end
 
