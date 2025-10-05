@@ -9,10 +9,11 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.2
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = true
-SWEP.Primary.Sound          = "weapons/m4a1/m4a1-1.wav"
-SWEP.Primary.Cone           = 0.01
+SWEP.Primary.Sound          = Sound("weapons/m4a1/m4a1-1.wav")
+SWEP.Primary.Cone           = 0.02
 SWEP.Silenced = true
 
 SWEP.m_bPlayPickupSound = false

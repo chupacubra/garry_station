@@ -3,6 +3,7 @@ SWEP.Contact			= "Poeli"
 SWEP.Purpose			= "KILL!"
 SWEP.Instructions		= "KILL!"
 
+SWEP.Primary.Delay          = 0.5
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = false
 SWEP.Secondary.ClipSize     = -1
@@ -29,7 +30,11 @@ SWEP.RecoilUp   = 15
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
 
-SWEP.LastBullet = nil
+SWEP.ReloadTime = 1
+SWEP.ReloadStart = 0
+SWEP.Reloading = false
+
+//SWEP.LastBullet = nil
 SWEP.Active     = false
 SWEP.Use2Hand   = false
 
@@ -55,6 +60,10 @@ SWEP.addPos = Vector(0, 0, 0)
 SWEP.addAng = Angle()
 
 SWEP.TypeBrass = "9mm"
+
+SWEP.SoundClipIn = Sound("weapons/ak47/ak47_clipin.wav")
+SWEP.SoundReload = Sound("weapons/ak47/ak47_boltpull.wav")
+SWEP.SoundClipOut = Sound("weapons/ak47/ak47_clipout.wav")
 
 if SERVER then
     util.AddNetworkString("gs_swep_update_wm")
@@ -132,10 +141,6 @@ function SWEP:BulletCallbackFunc(att, tr, dmg)
 	end
 end
 
-function SWEP:Initialize()
-    self.Init = true
-end
-
 function SWEP:UpdateHoldType()
     local holdtype = self.HoldType
 
@@ -150,11 +155,20 @@ function SWEP:UpdateHoldType()
 end
 
 function SWEP:UpdateWModelBodyGroups(toset)
+    /*
     if SERVER then
         net.Start("gs_swep_update_wm")
         net.WriteEntity(self)
         net.WriteString(toset)
         net.Broadcast()
+    else
+        self:ChangeBodyGroup(toset)
+    end
+    */
+
+    // это не очень
+    if SERVER then
+        self:SetNWString("Bodygroup", toset)
     else
         self:ChangeBodyGroup(toset)
     end
@@ -164,23 +178,24 @@ function SWEP:Initialize()
     self:SetHoldType(self.HoldType)
     if CLIENT then
         self:InitializeWM()
+        self:SetNWVarProxy("Bodygroup", function(ent, name, old, new)
+            self:UpdateWModelBodyGroups(new)
+        end)
     end
+    self.Init = true
 end
 
 function SWEP:Deploy()
     self:UpdateHoldType()
-    if CLIENT then
-        //self:UpdateWMState()
+    if SERVER then
+        self:SetNW2Int("Ammo", self:GetNW2Int("Ammo"))
     end
 
     return true
 end
 
 function SWEP:Holster()
-    if CLIENT then
-        //self:UpdateWMState(true)
-    end
-    return true
+    return not self.Reloading
 end
 
 function SWEP:Equip()
@@ -192,6 +207,7 @@ end
 
 function SWEP:SecondaryAttack()
 end
+
 /*
     magazine contain only type of bullet
     contain only name of type bullet
@@ -205,23 +221,6 @@ end
     }
 */
 
-function SWEP:PopBulletFromMagazine()
-    // return last bullet and remove from stack
-    if !IsValid(self.Magazine) then
-        return false
-    end
-
-    if #self.Magazine.Ammo < 1 then
-        return false
-    end
-
-    local last = self.Magazine.Ammo[#self.Magazine.Ammo]
-
-    local bullet = table.remove(self.Magazine.Ammo, last)
-
-    return bullet
-end
-
 function SWEP:InsertMagazine(item)
     if self:GetOwner():GetActiveWeapon() != self then return end
     if CLIENT then return end
@@ -234,22 +233,37 @@ function SWEP:InsertMagazine(item)
         return false
     end
 
-    if IsValid(self.Magazine) then
+    if IsValid(self:GetNWEntity("Magazine")) then
         // already have magazine
-        return false
+        // quick change
+        self:EjectMag()
+        //return false
     end
 
     item:ItemHide()
     item:SetParentContainer(self)
+    item:SetNWString("NextCalibr", item.Magazine[#item.Magazine] or "")
 
     self.Magazine = item
 
     self:SetNWEntity("Magazine", self.Magazine)
     self:SetNextPrimaryFire(CurTime()+0.1)
-    self:GetOwner():DoReloadEvent()
+	self:GetOwner():SetAnimation(PLAYER_RELOAD)
+    
+    //self:GetOwner():DoReloadEvent()
 
     self:UpdateWModelBodyGroups("mag")
 
+    self:EmitSound(self.SoundClipIn)
+    self.Reloading = true
+    self.ReloadStart = CurTime()
+
+    // curse
+    timer.Simple(self.ReloadTime, function()
+        if self:IsValid() and self:GetOwner() then
+            self:EmitSound(self.SoundReload)
+        end
+    end)
     return true
 end
 
@@ -271,26 +285,13 @@ function SWEP:EjectMag()
     mag:ItemRecover(pos)
     
     self.Magazine = nil
-    self:SetNWEntity("Magazine", nil)
+    self:SetNWEntity("Magazine", Entity(-1))
     self:UpdateWModelBodyGroups("no_mag")
     self:GetOwner():DoReloadEvent()
+
+    self:EmitSound(self.SoundClipOut)
 end
 
-function SWEP:InsertBullet(bullet)
-    // shotguns, bolt action rifles have iternal mag (tube or smthng)
-    if !self.AcceptCalibr[bullet] then 
-        return false
-    end
-
-    if table.Count(self.Magazine.Ammo) + 1 > self.Magazine.MaxAmmo then
-        return false
-    end
-    
-    table.insert(self.Magazine.Ammo, bullet) 
-
-    return true
-end
- 
 function SWEP:ItemInteraction(item)
     return self:InsertMagazine(item)
 end
@@ -310,7 +311,7 @@ end
 function SWEP:ChangeBodyGroup(bodygroups_set)
     if SERVER then return end
     local gun = self.WMGun
-    print("CHANGE BG ", bodygroups_set)
+    //print("CHANGE BG ", bodygroups_set)
 
     if !IsValid(gun) then return end
     if type(bodygroups_set) == "string" then
@@ -394,6 +395,8 @@ function SWEP:DrawWorldModel()
 end
 
 function SWEP:Drop()
+    self.Reloading = false
+
     if CLIENT then
         net.Start("gs_wep_drop")
         net.WriteEntity(self)
@@ -448,10 +451,13 @@ end
 
 function SWEP:EjectBrass()
     if CLIENT then
-        local ef = EffectData()
-        
         local attach = self.WMGun:GetAttachment(self.WMGun:LookupAttachment( "shell" ))
 
+        if !attach then return end
+
+
+        local ef = EffectData()
+        
         ef:SetOrigin(attach.Pos)
         ef:SetAngles(attach.Ang)
         ef:SetFlags(50)
@@ -520,25 +526,24 @@ function SWEP:DevShoot()
 
     self:EjectBrass()
 
-    
     self:EmitSound(self.Primary.Sound)
-
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
-
     self:SetNextPrimaryFire(CurTime()+0.1)
-
 end
 
+/*
 function SWEP:GetMag()
-    if self.Magazine then       // pump action shotgun 
-        return self.Magazine 
-    else
+    //if self.Magazine then       // pump action shotgun 
+    //    return self.Magazine 
+    //else
         return self:GetNWEntity("Magazine")
-    end
+    //end
 end
+*/
 
 function SWEP:GetBulletsInMag()
     local mag = self:GetNWEntity("Magazine")
+
     if IsValid(mag) then
         return mag:GetNWInt("Bullets")
     else
@@ -546,6 +551,7 @@ function SWEP:GetBulletsInMag()
     end
 end
 
+/*
 function SWEP:SubBullet()
     local magazine = self:GetNWEntity("Magazine")
     if IsValid(magazine) then
@@ -559,26 +565,49 @@ function SWEP:SubBullet()
         table.remove(magazine)
     end
 end
+*/
 
+// its hell
+// all for prediction
+// было бы намного проще весь магазин клиенту отправлять
+// но это как то слишком
 function SWEP:PopUpBulletFromMag()
-    local magazine = self:GetNWEntity("Magazine")
+    if SERVER then
+        // ЭТО НАС УБЬЕТ
+        local magazine = self:GetNWEntity("Magazine")
 
-    local bullet = table.remove(magazine.Magazine, #magazine.Magazine)
-    magazine:SetNWInt("Bullets", #magazine.Magazine)
+        local bullet = table.remove(magazine.Magazine, #magazine.Magazine)
+        magazine:SetNWInt("Bullets", #magazine.Magazine)
+        magazine:SetNWString("NextCalibr", magazine.Magazine[#magazine.Magazine] or "")
 
-    return bullet
+        return bullet
+    else
+        //local ammo = self:GetNW2Int("Ammo")
+        //self:GetNWEnti()
+        local magazine = self:GetNWEntity("Magazine")
+        print(magazine)
+        if !IsValid(magazine) then return end
+        local bullet = magazine:GetNWString("NextCalibr", "")
+
+        magazine:SetNWInt("Bullets", #magazine.Magazine - 1)
+        //magazine:SetNWString("NextCalibr", "")
+        return bullet
+    end
 end
 
 function SWEP:ShootBullet()
-    if not IsValid(self) then return nil end
-
+    //if self
     local ammo = self:GetBulletsInMag()
 
-    if ammo < 1 then 
-        self:EmitSound("Weapon_AR2.Empty")
+    if ammo < 1 then
+        if CurTime() -self:LastShootTime() > 0.2 then
+            self:EmitSound("Weapon_AR2.Empty")
+        end
         self:SetNextPrimaryFire(CurTime()+1)
+        
         return
     end
+
 	if self:GetOwner():IsPlayer() then
 		self:GetOwner():LagCompensation(true)
 	end
@@ -595,25 +624,31 @@ function SWEP:ShootBullet()
 
     local bullet_type = self:PopUpBulletFromMag()
     
-    local bullet_dmg
-    if SERVER then
-        bullet_dmg = GetBulletDMG(bullet_type)
-    end
-    //print(bullet_type)
-    ///PrintTable(bullet_dmg)
-    print(bullet_dmg)
+    //print("kalibr", tostring(bullet_type))
+
+    local bullet_dmg = GetBulletDMG(bullet_type)
+    local bullet_opt = GetBulletOptions(bullet_type)
+
+    //print(CurTime(), bullet_opt)
+
     if !bullet_dmg then bullet_dmg = {} end
 
     local bullet_dmgsum = tblsum(bullet_dmg) 
 
 	local ply = self:GetOwner()
 	local bullet = {}
-	local cone = self.Primary.Cone
 
-	bullet.Num = self.NumBullet or 1
+	local cone = bullet_opt.cone or self.Primary.Cone
+    
+	bullet.Num = bullet_opt.num_bullets or 1
 	bullet.Src = shootOrigin
 	bullet.Dir = shootDir
-	bullet.Spread = Vector(cone, cone, 0)
+    if self.IsShotgun then
+        bullet.Spread = Vector(cone, cone, 0)
+    else
+	    bullet.Spread = Vector(cone, cone, 0) * self:GetNWFloat("VisualRecoil") * 5
+    end
+    //print(bullet.Spread)
 	bullet.Tracer = 1
 	bullet.TracerName = 4
 	bullet.Force = bullet_dmgsum / 10
@@ -631,25 +666,7 @@ function SWEP:ShootBullet()
 		self:GetOwner():LagCompensation(false)
 	end
 
-    //if CLIENT then
-        /*
-        local attach = self.WMGun:LookupAttachment( "muzzle" )
-        local ef = EffectData()
-        if attach != 0 then
-            ef:SetEntity(self.WMGun)
-            ef:SetAttachment(self.WMGun:LookupAttachment( "muzzle" ))
-        else
-            ef:SetEntity(self)
-            ef:SetAttachment(self:LookupAttachment( "muzzle" ))
-        end
-        ef:SetFlags(1)
-        util.Effect("MuzzleFlash", ef)
-        */
-    //else
-
-   // end
     if !self.Silenced then
-        print(self.Silenced)
         if SERVER then
             local ef = EffectData()
             ef:SetEntity(self)
@@ -665,12 +682,11 @@ function SWEP:ShootBullet()
         end
     end
     self:EmitSound(self.Primary.Sound)
-
-    //self:SubBullet()
-
+    print(self.Recoil)
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
-    //self:SetNWFloat("VisualRecoil", 0)
-    self:SetNextPrimaryFire(CurTime()+0.1)
+
+    self:SetLastShootTime(CurTime())
+    self:SetNextPrimaryFire(CurTime()+self.Primary.Delay)
 end
 
 function SWEP:IsLocal()
@@ -683,6 +699,8 @@ function LerpAngleFT(lerp, source, set)
 end
 
 function SWEP:Step()
+    //print(self:GetNWFloat("VisualRecoil"))
+
 	self.animProg = self:GetNWFloat("VisualRecoil") or 0
 	self.animLerp = self.animLerp or Angle(0, 0, 0)
 	self.animLerp = LerpAngle(0.25, self.animLerp, Angle(5, 0, self.HoldType == "revolver" and 0 or -2) * self.animProg)
@@ -694,7 +712,7 @@ function SWEP:Step()
 		end
 
 		ply:ManipulateBoneAngles(ply:LookupBone("ValveBiped.Bip01_R_Hand"), self.animLerp * 2, false)
-		self:SetNWFloat("VisualRecoil", Lerp(4 * FrameTime(), self:GetNWFloat("VisualRecoil") or 0, 0))
+		self:SetNWFloat("VisualRecoil", Lerp(6*FrameTime(), self:GetNWFloat("VisualRecoil") or 0, 0))
 	end
 
 	if SERVER then
@@ -704,21 +722,28 @@ function SWEP:Step()
 
 	local isLocal = self:IsLocal()
 	
-    /*if isLocal then
+    if isLocal then
 		self.eyeSpray = self.eyeSpray or Angle(0, 0, 0)
 		ply:SetEyeAngles(ply:EyeAngles() + self.eyeSpray)
 		self.eyeSpray = LerpAngleFT(0.5, self.eyeSpray, Angle(0, 0, 0))
-		local p = 0.005
+        local p = 0
+        if self:GetNWFloat("VisualRecoil") > 0.3 then
+		    p = 0.005
+        end
 		self.eyeSpray = self.eyeSpray + Angle(math.Rand(-p, p), math.Rand(-p, p), 0)
 	end
 
 	if isLocal then
 		if ply:GetNWInt("LeftArm") < 1 or ply:GetNWInt("RightArm") < 1 then
-			local p = 0.1
+			//local p = 0.1
+            local p = 0
+            if self:GetNWFloat("VisualRecoil") > 0.3 then
+                p = 0.1
+            end
 			self.eyeSpray = self.eyeSpray + Angle(math.Rand(-p, p), math.Rand(-p, p), 0)
 		end
 	end
-    */
+    
 end
 
 
@@ -731,9 +756,22 @@ function SWEP:Think()
     end
 
     self.Zoom = owner:KeyDown(IN_ATTACK2)
-    
+
+    //print(self.Reloading)
+    if self.Reloading then
+        //print((self.ReloadStart + self.ReloadTime) , CurTime(),(self.ReloadStart + self.ReloadTime) < CurTime())
+        if (self.ReloadStart + self.ReloadTime) < CurTime() then
+            self.Reloading = false
+            //print(self.SoundReload)
+            //self:EmitSound(self.SoundReload)
+        end
+    end
+
     self:UpdateHoldType()
 end
+
+//LocalPlayer():EmitSound("weapons/ak47/ak47_boltpull.wav")
+
 
 net.Receive("gs_swep_update_wm", function(_, ply)
     local self = net.ReadEntity()

@@ -9,10 +9,11 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.2
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = true
 SWEP.Primary.Sound          = "weapons/ak47/ak47-1.wav"
-SWEP.Primary.Cone           = 0.04
+SWEP.Primary.Cone           = 0.03
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
@@ -27,7 +28,7 @@ SWEP.Desc = "ak weapon"
 
 SWEP.HoldType       = "ar2" 
 
-SWEP.Recoil     = 1
+SWEP.Recoil     = 50
 SWEP.RecoilUp   = 5
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
@@ -64,6 +65,9 @@ SWEP.Size = ITEM_SMALL
 
 SWEP.TypeBrass = "762Nato"
 
+SWEP.SoundClipIn = Sound("weapons/ak47/ak47_clipin.wav")
+SWEP.SoundReload = Sound("weapons/ak47/ak47_boltpull.wav")
+SWEP.SoundClipOut = Sound("weapons/ak47/ak47_clipout.wav")
 
 function SWEP:PrimaryAttack()
     //self:DevShoot()

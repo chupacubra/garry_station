@@ -178,6 +178,11 @@ hook.Add("Move", "PlayerMove", function(ply, mv)
 		mv:SetMaxClientSpeed(origClientSpeed * 0.5)
 	end
 
+	if ply:GetNWBool("HaveTask") then
+		mv:SetMaxSpeed(origSpeed * 0.5)
+		mv:SetMaxClientSpeed(origClientSpeed * 0.5)
+	end
+
 	if mv:KeyDown(IN_SPEED) and inMove(mv:GetButtons()) then
 		if stamina > stamina_to_run then
 			stamina = stamina - FrameTime() * 5

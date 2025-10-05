@@ -9,9 +9,10 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.1
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = true
-SWEP.Primary.Sound          = "weapons/mp5navy/mp5-1.wav"
+SWEP.Primary.Sound          = Sound("weapons/mp5navy/mp5-1.wav")
 SWEP.Primary.Cone           = 0.04
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
@@ -63,6 +64,9 @@ SWEP.Size = ITEM_SMALL
 
 SWEP.TypeBrass = "9mm"
 
+SWEP.SoundClipIn = Sound("weapons/mp5navy/mp5_clipin.wav")
+SWEP.SoundReload = Sound("weapons/mp5navy/mp5_slideback.wav")
+SWEP.SoundClipOut = Sound("weapons/mp5navy/mp5_clipout.wav")
 
 function SWEP:PrimaryAttack()
     self:ShootBullet()

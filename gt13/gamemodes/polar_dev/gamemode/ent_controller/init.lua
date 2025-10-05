@@ -3,10 +3,11 @@
 
 if SERVER then
     AddCSLuaFile("main.lua")
-    include("ammo.lua")
+    AddCSLuaFile("ammo.lua")
 end
 
 include("main.lua")
+include("ammo.lua")
 
 RegisterEnts()
 

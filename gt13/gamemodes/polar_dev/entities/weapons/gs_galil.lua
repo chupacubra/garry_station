@@ -9,10 +9,11 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.1
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = false
-SWEP.Primary.Sound          = "weapons/galil/galil-1.wav"
-SWEP.Primary.Cone           = 0.04
+SWEP.Primary.Sound          = Sound("weapons/galil/galil-1.wav")
+SWEP.Primary.Cone           = 0.02
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
@@ -47,7 +48,7 @@ SWEP.WorldModelOffsets    = {
 }
 
 SWEP.WorldModelDrawOffset = {
-    ang = Angle(0, -90, 0),
+    ang = Angle(0, 90, 0),
     pos = Vector()
 }
 

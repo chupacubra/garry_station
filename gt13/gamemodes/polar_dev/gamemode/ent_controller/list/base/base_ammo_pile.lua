@@ -71,9 +71,29 @@ GenerateAmmoPile({
 
     Calibr = "762",
 })
+//models/Items/BoxBuckshot.mdl
 
-if SERVER then
-    RegisterAmmo("9mm", {[D_BRUTE] = 15, [D_STAMINA] = 1})
-    RegisterAmmo("556", {[D_BRUTE] = 30, [D_STAMINA] = 2})
-    RegisterAmmo("762", {[D_BRUTE] = 35, [D_STAMINA] = 2})
-end
+GenerateAmmoPile({
+    Name = "12g shells",
+    Desc = "drobi Buletes",
+    Model = "models/Items/357ammo.mdl",
+    MaxStack = 40,
+
+    Calibr = "12g",
+})
+
+GenerateAmmoPile({
+    Name = "slug shells",
+    Desc = "drobi Buletes",
+    Model = "models/Items/357ammo.mdl",
+    MaxStack = 40,
+
+    Calibr = "slug",
+})
+
+RegisterAmmo("9mm", {[D_BRUTE] = 15, [D_STAMINA] = 1})
+RegisterAmmo("556", {[D_BRUTE] = 30, [D_STAMINA] = 2})
+RegisterAmmo("762", {[D_BRUTE] = 35, [D_STAMINA] = 2})
+RegisterAmmo("12g", {[D_BRUTE] = 12, [D_STAMINA] = 1}, {num_bullets = 12, cone = 0.1} )
+RegisterAmmo("slug", {[D_BRUTE] = 45, [D_STAMINA] = 5} , {cone = 0.01})
+

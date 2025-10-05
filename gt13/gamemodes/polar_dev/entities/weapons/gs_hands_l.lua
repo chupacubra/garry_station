@@ -37,6 +37,7 @@ SWEP.NextR = 0
 local SwingSound = Sound( "WeaponFrag.Throw" )
 local HitSound = Sound( "Flesh.ImpactHard" )
 
+/*
 
 if SERVER then
     concommand.Add( "gs_manipcontrol_down", function(ply, str, arg)
@@ -81,7 +82,7 @@ if SERVER then
         end
     end)
 end
-
+*/
 function SWEP:MakeTrace(range)
     local trace = {
         start = self:GetOwner():EyePos(),
@@ -252,18 +253,40 @@ end
 local function CanPickup(item)
     if !IsValid(item) then return end
     if item:IsPlayer() or item:IsNPC()  then return end
-    
+    local class = item:GetClass()
+    if class == "prop_ragdoll" then return end
     return true
+end
+
+local function FindCloseEnt(pos)
+    local box = {
+        pos + Vector(0.5,0.5,0.5),
+        pos - Vector(0.5,0.5,0.5)
+    }
+    for k, v in ipairs(ents.FindInBox(box[1], box[2])) do
+        if IsValid(v) then
+            return v
+        end
+    end
 end
 
 function SWEP:PickupItem(item)
     if CLIENT then return end
-    if !item then
+    
+    if !IsValid(item) then
+    
         local trace = self:GetOwner():MakeViewTrace()//self:MakeTrace()
-        if !trace.Entity:IsValid() then
-            return
+        local pickup_ent = trace.Entity 
+
+        if !pickup_ent:IsValid() then
+            // neeed double check
+            pickup_ent = FindCloseEnt(trace.HitPos)
+            if !IsValid(pickup_ent) then
+                return
+            end
         end
-        item = trace.Entity
+        item = pickup_ent
+
     end
     
     if item:IsPlayerHolding() then return end
@@ -495,6 +518,7 @@ if CLIENT then
         [DIR_PITCHA] = 5,
         [DIR_PITCHB] = 6,
     }
+end
 /*
     hook.Add("PostPlayerDraw", "GS_HandsDrawItem" , function(ply, flags)
         
@@ -562,6 +586,7 @@ if CLIENT then
         return !weapon:GetNWBool("CombatMode")
     end)
 */ 
+/*
     local THROW_START   = 0
     local THROWING      = false
 
@@ -630,3 +655,4 @@ if CLIENT then
     end)
 end
 
+*/

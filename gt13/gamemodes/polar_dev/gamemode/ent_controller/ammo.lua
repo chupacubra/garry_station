@@ -1,9 +1,22 @@
 GS_Ammo = {}
+--local Iter = 0 // for generating id for ammo calibres
 
-function RegisterAmmo(type, dmg)
-    GS_Ammo[type] = dmg
+--[[
+
+    opt = {
+        num_bullets = 1
+    }
+
+]]
+
+function RegisterAmmo(type, dmg, opt)
+    GS_Ammo[type] = {dmg = dmg, opt = opt}
 end
 
 function GetBulletDMG(type)
-    return GS_Ammo[type]
+    return GS_Ammo[type].dmg or {}
+end
+
+function GetBulletOptions(type)
+    return GS_Ammo[type].opt or {}
 end

@@ -214,7 +214,7 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 		ply:ManipulateBoneScale(ply:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
 		local weaponClass = wep:GetClass()
 		local guninfo = weapons.Get(weaponClass)
-		if guninfo and (guninfo.Base == "gs_base_weapon") then
+		if guninfo and (guninfo.Base == "gs_base_weapon" or guninfo.Base == "gs_base_weapon_shot") then
 			if scopeAiming() then
 				MyLerp = Lerp(4 * FrameTime(), MyLerp, 1)
 			else

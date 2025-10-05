@@ -9,10 +9,11 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.1
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = false
-SWEP.Primary.Sound          = "weapons/tmp/tmp-1.wav"
-SWEP.Primary.Cone           = 0.04
+SWEP.Primary.Sound          = Sound("weapons/tmp/tmp-1.wav")
+SWEP.Primary.Cone           = 0.01
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
@@ -27,7 +28,7 @@ SWEP.Desc = "pistol weapon"
 
 SWEP.HoldType       = "revolver" 
 
-SWEP.Recoil     = 1
+SWEP.Recoil     = 0.5
 SWEP.RecoilUp   = 5
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
@@ -65,6 +66,10 @@ SWEP.Size = ITEM_SMALL
 
 SWEP.TypeBrass = "9mm"
 SWEP.Silenced = true
+
+SWEP.SoundClipIn = Sound("weapons/usp/usp_clipin.wav")
+SWEP.SoundReload = Sound("weapons/usp/usp_slideback.wav")
+SWEP.SoundClipOut = Sound("weapons/usp/usp_clipout.wav")
 
 function SWEP:PrimaryAttack()
     //self:DevShoot()

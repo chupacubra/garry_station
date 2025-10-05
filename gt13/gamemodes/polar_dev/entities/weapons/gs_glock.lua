@@ -9,9 +9,10 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.1
 SWEP.Primary.ClipSize       = -1
-SWEP.Primary.Automatic      = false
-SWEP.Primary.Sound          = "weapons/glock/glock18-1.wav"
+SWEP.Primary.Automatic      = true
+SWEP.Primary.Sound          = Sound("weapons/glock/glock18-1.wav")
 SWEP.Primary.Cone           = 0.04
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
@@ -27,7 +28,7 @@ SWEP.Desc = "gangster weapon"
 
 SWEP.HoldType       = "revolver" 
 
-SWEP.Recoil     = 1
+SWEP.Recoil     = 0.5
 SWEP.RecoilUp   = 5
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
@@ -63,6 +64,11 @@ SWEP.fakeHandRight = Vector(3.5, -1.5, 2)
 SWEP.Size = ITEM_SMALL
 
 SWEP.TypeBrass = "9mm"
+
+SWEP.SoundClipIn = Sound("weapons/glock/glock_clipin.wav")
+SWEP.SoundReload = Sound("weapons/glock/glock_slideback.wav")
+SWEP.SoundClipOut = Sound("weapons/glock/glock_clipout.wav")
+
 
 function SWEP:PrimaryAttack()
     //self:DevShoot()

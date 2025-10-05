@@ -142,7 +142,11 @@ function ForceFake(ply)
 		ply:SetSuppressPickupNotices(false)
 		ply:SetActiveWeapon(nil)
 		ply:DropObject()
+
+		ply.InFake = true
+
 	end
+
 end
 
 function ForceUnfake(ply)
@@ -174,6 +178,8 @@ function ForceUnfake(ply)
 
 		ply:GetNWEntity("Corpse"):Remove()
 		ply:SetNWEntity("Corpse", nil)
+
+		ply.InFake = false
 	end
 end
 

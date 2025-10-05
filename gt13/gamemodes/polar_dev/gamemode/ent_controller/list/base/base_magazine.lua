@@ -135,8 +135,8 @@ local function GenerateMagazine(weap_class, mag_data)
     ENT.Name = mag_data.name
     ENT.Desc = mag_data.desc
 
-    ENT.HandOffsetVec = mag_data.hand_vec
-    ENT.HandOffsetAng = mag_data.hand_ang
+    ENT.HandOffsetVec = mag_data.hand_vec or Vector()
+    ENT.HandOffsetAng = mag_data.hand_ang or Angle()
 
     ENT.PrintName = ENT.Name or "magazine"
     ENT.Spawnable = true
@@ -159,7 +159,7 @@ GenerateMagazine("gs_mp5", {
     name = "MP5 Magazine",
     desc = "Weapon magazine",
     hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_tmp", {
@@ -170,8 +170,8 @@ GenerateMagazine("gs_tmp", {
     model = "models/weapons/unloaded/smg_tmp_mag.mdl",
     name = "TMP Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_ump45", {
@@ -182,8 +182,8 @@ GenerateMagazine("gs_ump45", {
     model = "models/weapons/unloaded/smg_ump45_mag.mdl",
     name = "UMP Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_usp", {
@@ -194,8 +194,8 @@ GenerateMagazine("gs_usp", {
     model = "models/weapons/unloaded/pist_usp_mag.mdl",
     name = "USP Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_glock", {
@@ -206,8 +206,8 @@ GenerateMagazine("gs_glock", {
     model = "models/weapons/unloaded/pist_glock18_mag.mdl",
     name = "Glock Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 
@@ -219,8 +219,8 @@ GenerateMagazine("gs_ak47", {
     model = "models/weapons/unloaded/rif_ak47_mag.mdl",
     name = "AK Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 
@@ -232,8 +232,8 @@ GenerateMagazine("gs_galil", {
     model = "models/weapons/unloaded/rif_galil_mag.mdl",
     name = "Galil Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_m249", {
@@ -244,8 +244,8 @@ GenerateMagazine("gs_m249", {
     model = "models/weapons/unloaded/mach_m249para_mag.mdl",
     name = "Pulemet Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_m16", {
@@ -256,8 +256,8 @@ GenerateMagazine("gs_m16", {
     model = "models/weapons/unloaded/rif_m4a1_mag.mdl",
     name = "M16 Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })
 
 GenerateMagazine("gs_famas", {
@@ -268,6 +268,6 @@ GenerateMagazine("gs_famas", {
     model = "models/weapons/unloaded/rif_famas_mag.mdl",
     name = "famas Magazine",
     desc = "Weapon magazine",
-    hand_vec = Vector(3,-10,0),
-    hand_ang = Angle(),
+    //hand_vec = Vector(3,-10,0),
+    //hand_ang = Angle(),
 })

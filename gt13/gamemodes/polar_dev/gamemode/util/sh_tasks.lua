@@ -25,26 +25,6 @@ local PLAYER = FindMetaTable("Player")
 
 
 if CLIENT then
-/*
-surface.CreateFont("PBLabel", {
-	font = "ChatFont",
-	extended = false,
-	size = ScreenScaleH(22),
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true,
-	underline = false,
-	italic = false,
-	strikeout = false,
-	symbol = false,
-	rotary = false,
-	shadow = true,
-	additive = false,
-	outline = false,
-} )
-*/
-
     local clr_outline   = Color(0, 0, 0)
     local clr_back      = Color(128, 128, 128, 128)
     local clr_bar       = Color(220,220,220)
@@ -60,51 +40,20 @@ surface.CreateFont("PBLabel", {
         local start_time = task.start_time
         local time = task.time
         local in_task_time = CurTime() - start_time
-        
-        //print()
 
         local fract = math.Clamp(in_task_time / time , 0, 1)
 
         local w, h = ScrW(), ScrH()
 
-        //
-        //
-        //
-        
-        //print(w/2 - (bar_width/2), h - (h/3) + (bar_height / 2), bar_width, bar_height)
-
-        //print( Lerp(fract, 0, bar_width - 2))
-
-        //draw.RoundedBox( 4, w/2 , (h) - bar_height, bar_width, bar_height, Color(0,0,0) )
-
         local x = w/2 - (bar_width/2)
         local y = h - (h/3) + (bar_height / 2)
 
-        //draw.RoundedBox( 4, x, y, bar_width, bar_height, clr_back )
 
         surface.SetDrawColor(clr_outline)
         surface.DrawOutlinedRect( x, y, bar_width, bar_height, 1 )
 
-        //draw.DrawText(pb_label, "PBLabel", w / 2 , y-6, Color(72, 72, 72), TEXT_ALIGN_CENTER)
         surface.SetDrawColor(clr_bar)
         surface.DrawRect( x + 3 , y + 3, Lerp(fract, 0, bar_width - 6), bar_height - 6 )
-
-        /*surface.SetFont("PBLabel")
-        surface.SetTextColor(Color(72,72,72))
-        surface.SetTextPos(x, y)
-        surface.DrawText(pb_label)
-        */
-        //draw.SimpleTextOutlined( pb_label, "PBLabel", x + bar_width, y, Color(255,255,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 3,  Color( 0, 0, 0) )
-
-        //draw.RoundedBox( 4, x + 1 , y + 1, Lerp(fract, 0, bar_width - 2), bar_height - 2, clr_bar )
-
-        //surface.SetFont("HudDefault")
-        //local tw, th = surface.GetTextSize( pb_label )
-
-        //surface.SetTextColor(Color(0,0,0, 255))
-        //surface.SetTextPos(x, y)
-        //surface.DrawText(pb_label)
-        //draw.SimpleTextOutlined( pb_label, "PBLabel", x, y, Color(255,255,255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 2,  Color( 0, 0, 0) )
 
     end
 end
@@ -113,10 +62,18 @@ hook.Add( "StartCommand", "TaskStop", function( ply, cmd )
     if !ply:IsActive() or !ply:Alive() then return end
     if !ply:GetNWBool("HaveTask") then return end
 
+    /*
     if cmd:GetButtons() != 0 then
         ply:ClearTask()
         return
-    end 
+    end
+    */
+
+    if cmd:KeyDown(IN_WALK) then
+        ply:ClearTask()
+        return
+    end
+
 end)
 
 function PLAYER:ClearTask()

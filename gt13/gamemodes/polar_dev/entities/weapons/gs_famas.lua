@@ -9,10 +9,11 @@ SWEP.Instructions		= ""
 
 SWEP.Category = "Polar station: Guns"
 
+SWEP.Primary.Delay          = 0.1
 SWEP.Primary.ClipSize       = -1
 SWEP.Primary.Automatic      = true
-SWEP.Primary.Sound          = "weapons/famas/famas-1.wav"
-SWEP.Primary.Cone           = 0.04
+SWEP.Primary.Sound          = Sound("weapons/famas/famas-1.wav")
+SWEP.Primary.Cone           = 0.01
 SWEP.Secondary.ClipSize     = -1
 SWEP.Secondary.Automatic    = false
 
@@ -52,7 +53,7 @@ SWEP.WorldModelDrawOffset = {
 }
 SWEP.Spawnable = true
 
-SWEP.addPos = Vector(10, -1.05, 5)
+SWEP.addPos = Vector(9, -1.05, 5)
 SWEP.addAng = Angle(-8, 2, 0)
 SWEP.sightPos = Vector(9, 6, 1.3)
 SWEP.sightAng = Angle(-10, -2.5, 0)
@@ -64,6 +65,10 @@ SWEP.Recoil = 0.4
 SWEP.Size = ITEM_SMALL
 
 SWEP.TypeBrass = "57"
+
+SWEP.SoundClipIn = Sound("weapons/famas/famas_clipin.wav")
+SWEP.SoundReload = Sound("weapons/famas/famas_forearm.wav")
+SWEP.SoundClipOut = Sound("weapons/famas/famas_clipout.wav")
 
 function SWEP:PrimaryAttack()
     //self:DevShoot()
