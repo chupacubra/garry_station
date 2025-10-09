@@ -159,16 +159,18 @@ function ENT:ChemContainerUpdate()
 end
 
 // льем в другое ведро из нашего, потом смешиваем
-function ENT:TransferChems(receiver)
+function ENT:TransferChems(receiver, amount)
     local rec_chem_cont = receiver.ChemContainer
 
-    local transfer = self:GetNWInt("Transfer")
+    local transfer = amount or self:GetNWInt("Transfer")
     
+    if transfer < 1 then return false end
+
     local rec_amount = rec_chem_cont:GetSum()
     if transfer + rec_amount > rec_chem_cont.limit then
         transfer = transfer + (limit - rec_amount)
     end
-    if transfer <= 0 then return end
+    if transfer <= 0 then return false end
 
     local drop_chems = FormContent(self.ChemContainer)
     
@@ -184,6 +186,7 @@ function ENT:TransferChems(receiver)
     rec_chem_cont:ChemContainerUpdate()
 
     rec_chem_cont:MixComp()
+    return true
 end
 
 local cache_verts = {}

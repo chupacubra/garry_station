@@ -198,6 +198,7 @@ function SWEP:ItemInteraction(item)
         end
         timer.Simple(0, function() ply:DoTask(task) end)
     end
+    ply:DoReloadEvent()
 
     ply:DoTask(task)
     //return self:InsertBullet(item)    

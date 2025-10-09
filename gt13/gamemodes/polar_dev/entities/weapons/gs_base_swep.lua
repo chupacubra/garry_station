@@ -9,65 +9,56 @@ SWEP.Category           = "GS"
 SWEP.SlotPos            = 1
 
 SWEP.ViewModel = ""
-SWEP.WorldModel = "models/weapons/w_pist_p228.mdl"
-SWEP.HoldType = "pistol"
-
+SWEP.WorldModel = ""
+SWEP.HoldType = "crowbar"
 
 SWEP.GMSWEP = true
 
-
-SWEP.Primary.Automatic = false
+SWEP.Primary.Automatic = true
 SWEP.PrimarySound = "Weapon_Crowbar"
---[[
-SWEP.Entity_Data = {}
-SWEP.Entity_Data.Name = "tool"
-SWEP.Entity_Data.Desc = "desc"
-SWEP.Entity_Data.ENUM_Type = GS_ITEM_TOOL
-SWEP.Entity_Data.Type = "toolname"
+SWEP.PrimaryDelay = 0.5
 
-SWEP.Private_Data = {}
---]]
-game.AddParticles( "particles/hunter_flechette.pcf" )
-game.AddParticles( "particles/hunter_projectile.pcf" )
+SWEP.WorldModelCustom     = false
+SWEP.WorldModelBonemerge  = true
+SWEP.WorldModelBodyGroups = {}
+SWEP.WorldModelOffsets    = {}
 
-function SWEP:Initialize()
+
+function SWEP:UpdateHoldType()
     self:SetHoldType(self.HoldType)
 end
 
+function SWEP:Initialize()
+    self:UpdateHoldType()
+end
+
+function SWEP:Primary()
+    //
+    return true
+end
+
+function SWEP:Secondary()
+    //
+    return true
+end
+
 function SWEP:PrimaryAttack()
-    // from flechette_gun
-	self:SetNextPrimaryFire( CurTime() + 0.1 )
-
-	self:EmitSound( ShootSound )
-	self:ShootEffects()
-
-	if ( CLIENT ) then return end
-
-	SuppressHostEvents( NULL ) -- Do not suppress the flechette effects
-
-	local ent = ents.Create( "hunter_flechette" )
-	if ( !IsValid( ent ) ) then return end
-
-	local owner = self:GetOwner()
-
-	local Forward = owner:GetAimVector()
-
-	ent:SetPos( owner:GetShootPos() + Forward * 32 )
-	ent:SetAngles( owner:EyeAngles() )
-	ent:SetOwner( owner )
-	ent:Spawn()
-	ent:Activate()
-
-	ent:SetVelocity( Forward * 2000 )
+    if self:Primary() then
+        self:SetNextPrimaryFire(CurTime() + self.PrimaryDelay)
+    end
 end
 
 function SWEP:SecondaryAttack()
+    if self:Secondary() then
+        self:SetNextSecondaryFire(CurTime() + self.PrimaryDelay)
+    end
 end
 
 function SWEP:Throw(force)
 end
 
 function SWEP:Deploy()
+    self:UpdateHoldType()
     return true
 end
 
@@ -75,63 +66,80 @@ function SWEP:Holster()
     return true
 end
 
-function SWEP:ItemHide()
-    // hide item - make invinsible, without physic, hide in client, parent to owner
-    if self.Hided then
-        GS_MSG( "whou, item already hided, but need moore!? - "..tostring(self), "w")
+function SWEP:UpdateWModelBodyGroups(toset)
+    if SERVER then
+        self:SetNW2String("Bodygroup", toset)
+    else
+        self:ChangeBodyGroup(toset)
+    end
+end
+
+function SWEP:Initialize()
+    self:SetHoldType(self.HoldType)
+    if CLIENT then
+        self:InitializeWM()
+        self:SetNW2VarProxy("Bodygroup", function(ent, name, old, new)
+            self:UpdateWModelBodyGroups(new)
+        end)
+    end
+    self.Init = true
+end
+
+function SWEP:InitializeWM()
+    if !self.WorldModelCustom then return end
+
+    self.WMGun = ClientsideModel(self.WModel)
+    self.WMGun:SetModelScale(self.WorldModelScale or 1)
+    self.WMGun:SetNoDraw(true)
+    
+    if self.WorldModelBodyGroups["base"] then
+        self:ChangeBodyGroup("base")
+    end
+end
+
+
+function SWEP:DrawWorldModel()
+    if !self.WorldModelCustom then
+        self:DrawModel()
         return
     end
 
-    self.HideData = {}
-    self.HideData.MT = ent:GetMoveType()
-    self.HideData.SD = ent:GetSolid()
-    
-    self:SetMoveType(MOVETYPE_NONE)
-    self:SetSolid(SOLID_NONE)
-    self:SetNoDraw(true)
-    
-    self.Hided = true
-end
+    local ply = self:GetOwner()
+    local gun = self.WMGun
 
-function SWEP:SetParentContainer(parent)
-    if !parent:IsValid() then
-        return
-    end
+    if (IsValid(ply)) then
+        local offsetVec = self.WorldModelOffsets.pos
+        local offsetAng = self.WorldModelOffsets.ang
+        
+        local boneid = ply:LookupBone("ValveBiped.Bip01_R_Hand")
+        if !boneid then return end
 
-    self:SetPos(parent:GetPos())
-    self:SetParent(parent)
+        local matrix = ply:GetBoneMatrix(boneid)
+        if !matrix then return end
 
-    self.Container = parent
-end
+        local newPos, newAng = LocalToWorld(offsetVec, offsetAng, matrix:GetTranslation(), matrix:GetAngles())
 
-function SWEP:ItemGetParentContainer()
-    return self.Container
-end
+        gun:SetRenderOrigin(newPos)
+        gun:SetRenderAngles(newAng)
 
-function SWEP:ItemRecover(pos)
-    ent:SetParent(nil)
-    ent:SetPos(pos)
-    ent:SetMoveType(ent.HideData.MT)
-    ent:SetSolid(ent.HideData.SD)
-    ent:SetNoDraw(false)
-    
-    ent.HideData = nil
-    ent.Hided = false
-end
-
-function RemoveItemFromInv(ent)
-    if ent.Container:IsPlayer() then
-        player_manager.RunClass(ent.Container, "RemoveFromInventary", ent)
-    end
-    
-    if IsValid(ent.Container) and ent.Container.RemoveItem then
-        -- for sync
-        ent.Item_Container:RemoveItem(self)
-    end
-
-    if ent.Item_Container then
-        for _, item in pairs(ent.Private_Data.Items) do
-            ItemRecover(item, ent:GetPos())
+        gun:SetupBones()
+	    gun:DrawModel()
+    else
+        // need add offsets
+        //print(self:GetParent())
+        local parent = self:GetParent()
+        if IsValid(parent) then
+            print(parent, parent.IsContainer)
+            if parent.IsContainer then return end // это может означать только одно - предмет спрятан в контейнер и он не должен рисоваться
         end
+
+        local w_offset_pos = self.WorldModelDrawOffset.pos
+        local w_offset_ang = self.WorldModelDrawOffset.ang
+
+        gun:SetRenderOrigin(self:LocalToWorld(w_offset_pos))
+        gun:SetRenderAngles(self:LocalToWorldAngles(w_offset_ang))
+	    gun:DrawModel()
+        
     end
 end
+

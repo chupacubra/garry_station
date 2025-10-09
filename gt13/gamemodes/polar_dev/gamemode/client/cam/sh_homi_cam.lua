@@ -161,7 +161,7 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	local ang1 = LerpAngle(0, ply:EyeAngles(), eye.Ang)
 	local org1 = eye.Pos + eye.Ang:Up() * 2 + eye.Ang:Forward() * 2.5
 	
-	if ply:Team() == 1002 then return end
+	if ply:Team() == 1002 or !ply:Alive() then return end
 	--[[if not ply:Alive() then
 		local specPly = ply:GetNWEntity("SpecPly")
 		if not specPly:IsValid() then

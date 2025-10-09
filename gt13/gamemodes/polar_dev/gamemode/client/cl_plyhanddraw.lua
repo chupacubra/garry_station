@@ -2,11 +2,11 @@
 // this for hands with items and SWEP
 
 function PlayerHandsModelClear(ply)
-
+    print("clearing cl models")
     local hand_items = ply.HandItemModels
 
     for k, v in pairs(hand_items) do
-        if !v.item:IsWeapon() then
+        if !v.item:IsWeapon() or !v.item.WorldModelCustom then
             v.model:Remove()
             v = nil
         else
@@ -25,9 +25,100 @@ local function CopyBodyGroups(from, to)
     end
 end
 
+
+local function UpdateWorldModels(ply, new)
+    PlayerHandsModelClear(ply)
+
+    for k, v in pairs(new) do
+        if !v.model then
+            local item = v.item
+            model = ClientsideModel(item:GetModel())
+            model:SetColor(item:GetColor())
+            model:SetSkin(item:GetSkin())
+            
+            if ply != LocalPlayer() then
+                model:SetNoDraw(true)
+            end
+            
+            CopyBodyGroups(v.item, model)
+            v.model = model
+        end
+    end
+end
+
+function PlayerUpdateWorldModelsSWEP1(ply)
+    local sweps = ply:GetWeapons()
+    local active = ply:GetActiveWeapon()
+
+    local old_HandItemModels = ply.HandItemModels or {}
+
+    local new_HandItemModels = {}
+
+    for i = 1, #sweps <= 2 and #sweps or 2 do
+        local swep = sweps[i]
+        local isActive = active == swep
+        local item = swep
+        local haveModel = IsValid(swep.WMGun)
+
+        if swep.IsHands then
+            item = swep:GetItem()
+            
+            if !IsValid(item) then 
+                continue
+            end
+        else
+            if isActive then
+                continue
+            end
+        end 
+
+        
+        local model = item:GetModel()
+
+        table.insert(new_HandItemModels, {
+            model = item.WMGun or swep.WMGun,
+            //cl_model = item.WMGun or swep.WMGun,
+            isActive = isActive,
+            offsetVec = item.HandOffsetVec or Vector(),
+            offsetAng = item.HandOffsetAng or Angle(),
+            item = item,
+            isSWEP = !swep.IsHands,
+        })
+    end
+    
+    if #old_HandItemModels != #new_HandItemModels then
+        print("NE SHODSTVO")
+        UpdateWorldModels(ply, new_HandItemModels)
+
+        ply.HandItemModels = new_HandItemModels
+        return
+    end
+
+    for k, v in pairs(old_HandItemModels) do
+        v.isActive = new_HandItemModels[k].isActive
+        //print(v.ent_item, new_HandItemModels[k].ent_item )
+        if v.ent_item == new_HandItemModels[k].ent_item then
+            // обновление бодигруп?
+            
+            continue
+        else
+            //updateHandsModels
+            print("NE SHODSTVO")
+            UpdateWorldModels(ply, new_HandItemModels)
+
+            ply.HandItemModels = new_HandItemModels
+            break
+        end
+    end
+end
+
 function PlayerUpdateWorldModelsSWEP(ply)
     local sweps = ply:GetWeapons()
     local active = ply:GetActiveWeapon()
+
+    // каждый раз удалять модели это не хорошо, поэтому немного дергано выглядит
+
+    local old_HandItemModels = table.Copy
 
     if !ply.HandItemModels then
         ply.HandItemModels = {}
@@ -67,6 +158,11 @@ function PlayerUpdateWorldModelsSWEP(ply)
             model = ClientsideModel(item:GetModel())
             model:SetColor(item:GetColor())
             model:SetSkin(item:GetSkin())
+            
+            if ply != LocalPlayer() then
+                model:SetNoDraw(true)
+            end
+            
             CopyBodyGroups(item, model)
         end
 
@@ -87,10 +183,12 @@ function PlayerUpdateWorldModelsSWEP(ply)
 end
 
 
+
+
 hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
     //if ply == LocalPlayer() then return end
-    if !ply:IsActive() then return end
     if !ply:IsValid() then return end
+    if !ply:IsActive() then return end
     local hand_items = ply.HandItemModels 
     if !hand_items then return end
 
@@ -150,41 +248,9 @@ hook.Add( "PostPlayerDraw" , "Draw Hands models", function( ply )
 
 end) 
 
-/*
 hook.Add("Think", "UpdateHandsDraw", function()
-    // get old and new player sweps, check if is not ravno
-    // пример кода
-    // проблема только в одном - это надо делать для всех игроков
-    // может в корутину?
-    // или все таки сделать по нормальному
-    if true return end
-
-    local old = ply.Old
-    local new = ply:GetWeapons()
-    if old != new then
-
-        PlayerUpdateWorldModelsSWEP
-    end
-end)
-*/
-
-hook.Add("Think", "UpdateHandsDraw", function()
-    /*local old = ply.Old
-    local new = ply:GetWeapons()
-    if old != new then
-
-        PlayerUpdateWorldModelsSWEP
-    end*/
     for _, ply in ipairs(player.GetAll()) do
-        //local new_weaps = ply:GetWeapons()
-        //local f_equal = false
-        /*
-        for i = 1, #new do
-            if new_weaps[i] != 
-        end
-        */
-        //ply.OldWeapForCheck = new
-        PlayerUpdateWorldModelsSWEP(ply)
+        PlayerUpdateWorldModelsSWEP1(ply)
     end
 end)
 
@@ -192,7 +258,7 @@ end)
 
 hook.Add("PlayerSwitchWeapon", "UpdateDrawWeapon", function( ply, oldWeapon, newWeapon)
     timer.Simple(0, function()
-        PlayerUpdateWorldModelsSWEP(ply)
+        PlayerUpdateWorldModelsSWEP1(ply)
     end)
 end)
 
@@ -202,5 +268,5 @@ net.Receive("gs_hands_model_update", function()
 
     print("update model hands cs", ply, ent)
 
-    PlayerUpdateWorldModelsSWEP(ply)
+    PlayerUpdateWorldModelsSWEP1(ply)
 end)

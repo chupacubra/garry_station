@@ -297,7 +297,8 @@ end
 */
 
 local function parseRichText(str)
-    local result = {}
+    local result = {} 
+    
     local pattern = "([^{]*){(.-)}"
     local pos = 1
 
@@ -339,6 +340,7 @@ function RichTextPrint(richText, ply)
         end
     else
         local args = parseRichText(richText)
+        // need set first arg a white color?
         chat.AddText(unpack(args))
     end
 end
@@ -351,7 +353,7 @@ function util.ScaleSizeGUI(w, h)
     return ScreenScale(w) * ( ScrW() / ScrH() ), ScreenScaleH(h) * ( ScrW() / ScrH() )
 end
 
-
+// dont work
 function util.WaitForValidEnt(ent, func)
     local timer_id = "util.WaitForValidEnt"..math.random(1000,10000)
     local it = 0

@@ -82,7 +82,7 @@ function PLAYER_HP:SetupOrganismValues()
 
 	// всё что сдесь стоит внести в отдельную таблицу
     if !self.Player.Ragdolled then
-        self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 200)
+        self.Player.Chemicals = CHEMIC_CONTAINER:New_Container(self.Player, 500)
 		self.Player.Chemicals.data = {}
 
         self.Player.HealthStatus = GS_HS_OK

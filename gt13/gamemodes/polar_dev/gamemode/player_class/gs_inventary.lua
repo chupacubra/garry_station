@@ -114,7 +114,9 @@ function PLAYER_INVENTARY:DequipItem(item, noDrop)
 		item:OnDeEquip(ply)
 	end
 
-	if !noDrop then
+	print(noDrop)
+
+	if noDrop then
 		recover(self.Player, item)
 	end
 	self:EquipSync()
@@ -407,9 +409,9 @@ local NODRAW = {
 	HEAD = true,
 	MASK = true
 }
-local localply = LocalPlayer()
 function PLAYER_INVENTARY:DrawEquip()
 	local ply = self.Player
+	local localply = LocalPlayer()
 
 	if !ply.CLEquipment then return end
 

@@ -9,7 +9,7 @@ ENT.Model = "models/props_junk/cardboard_box003a.mdl"
 ENT.Size  = ITEM_SMALL
 
 ENT.Spawnable = false
-ENT.Category = "Developing"
+ENT.Category = "Polar Station: Ammo and mags"
 
 ENT.IsWeaponMagazine = true
 ENT.MagWeaponTyp = {

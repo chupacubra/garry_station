@@ -54,7 +54,7 @@ SWEP.WorldModelDrawOffset = {
 SWEP.Spawnable = true
 
 SWEP.addPos = Vector(11, 0.05, 1)
-SWEP.addAng = Angle(-8.5, 2.2, 0)
+SWEP.addAng = Angle(-6, 2.2, 0)
 SWEP.sightPos = Vector(10, 5, 1.3)
 SWEP.sightAng = Angle(5, 5, 5)
 SWEP.fakeHandRight = Vector(4, -2, 0)

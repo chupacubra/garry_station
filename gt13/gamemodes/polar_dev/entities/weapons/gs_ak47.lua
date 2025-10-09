@@ -28,7 +28,7 @@ SWEP.Desc = "ak weapon"
 
 SWEP.HoldType       = "ar2" 
 
-SWEP.Recoil     = 50
+SWEP.Recoil     = 1
 SWEP.RecoilUp   = 5
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5
@@ -60,7 +60,6 @@ SWEP.sightAng = Angle(-0, -2.5, 0)
 SWEP.fakeHandRight = Vector(12, -2, 0)
 SWEP.fakeHandLeft = Vector(13, -3, -5)
 
-SWEP.Recoil = 0.4
 SWEP.Size = ITEM_SMALL
 
 SWEP.TypeBrass = "762Nato"

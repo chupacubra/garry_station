@@ -28,7 +28,7 @@ SWEP.Desc = "drob weapon"
 
 SWEP.HoldType       = "ar2" 
 
-SWEP.Recoil     = 5
+SWEP.Recoil     = 2
 SWEP.RecoilUp   = 5
 SWEP.ShotSpeed  = 0.5
 SWEP.ShotSpread = 0.5

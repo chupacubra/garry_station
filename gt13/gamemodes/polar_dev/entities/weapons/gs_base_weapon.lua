@@ -221,23 +221,13 @@ end
     }
 */
 
+
 function SWEP:InsertMagazine(item)
     if self:GetOwner():GetActiveWeapon() != self then return end
     if CLIENT then return end
-
-    if !item.IsWeaponMagazine then
-        return false
-    end
-
-    if item.MagWeaponType != self:GetClass() then
-        return false
-    end
-
+    
     if IsValid(self:GetNWEntity("Magazine")) then
-        // already have magazine
-        // quick change
         self:EjectMag()
-        //return false
     end
 
     item:ItemHide()
@@ -248,24 +238,68 @@ function SWEP:InsertMagazine(item)
 
     self:SetNWEntity("Magazine", self.Magazine)
     self:SetNextPrimaryFire(CurTime()+0.1)
-	self:GetOwner():SetAnimation(PLAYER_RELOAD)
+	//self:GetOwner():SetAnimation(PLAYER_RELOAD)
     
     //self:GetOwner():DoReloadEvent()
 
     self:UpdateWModelBodyGroups("mag")
 
-    self:EmitSound(self.SoundClipIn)
-    self.Reloading = true
-    self.ReloadStart = CurTime()
+
 
     // curse
-    timer.Simple(self.ReloadTime, function()
-        if self:IsValid() and self:GetOwner() then
-            self:EmitSound(self.SoundReload)
-        end
-    end)
+    //timer.Simple(self.ReloadTime, function()
+
+    //end)
+
     return true
 end
+
+-- function SWEP:InsertMagazine(item)
+--     if self:GetOwner():GetActiveWeapon() != self then return end
+--     if CLIENT then return end
+
+--     if !item.IsWeaponMagazine then
+--         return false
+--     end
+
+--     if item.MagWeaponType != self:GetClass() then
+--         return false
+--     end
+
+--     if IsValid(self:GetNWEntity("Magazine")) then
+--         // already have magazine
+--         // quick change
+--         self:EjectMag()
+--         //return false
+--     end
+
+--     item:ItemHide()
+--     item:SetParentContainer(self)
+--     item:SetNWString("NextCalibr", item.Magazine[#item.Magazine] or "")
+
+--     self.Magazine = item
+
+--     self:SetNWEntity("Magazine", self.Magazine)
+--     self:SetNextPrimaryFire(CurTime()+0.1)
+-- 	self:GetOwner():SetAnimation(PLAYER_RELOAD)
+    
+--     //self:GetOwner():DoReloadEvent()
+
+--     self:UpdateWModelBodyGroups("mag")
+
+--     self:EmitSound(self.SoundClipIn)
+--     self.Reloading = true
+--     self.ReloadStart = CurTime()
+
+--     // curse
+--     timer.Simple(self.ReloadTime, function()
+--         if self:IsValid() and self:GetOwner() then
+--             self:EmitSound(self.SoundReload)
+--         end
+--     end)
+
+--     return true
+-- end
 
 function SWEP:EjectMag()
     if CLIENT then
@@ -293,8 +327,45 @@ function SWEP:EjectMag()
 end
 
 function SWEP:ItemInteraction(item)
-    return self:InsertMagazine(item)
+    if self:GetOwner():GetActiveWeapon() != self then return end
+    if CLIENT then return end
+
+    if !item.IsWeaponMagazine then
+        return false
+    end
+
+    if item.MagWeaponType != self:GetClass() then
+        return false
+    end
+
+    self:GetOwner():DoReloadEvent()
+    self:EmitSound(self.SoundClipIn)
+    self.Reloading = true
+    self.ReloadStart = CurTime()
+
+    local task = {}
+    task.time = self.ReloadTime
+    task.func = function()
+        if !self:IsValid() or !self:GetOwner() then return end
+        
+        // нужно удалитьь маг из старого контейнера
+        if IsValid(item.Container) then
+            item:ClearContainer()
+        end
+        
+        self:InsertMagazine(item)
+
+        if self:IsValid() and self:GetOwner() then
+            self:EmitSound(self.SoundReload)
+        end
+    end
+
+    self:GetOwner():DoTask(task)
 end
+
+-- function SWEP:ItemInteraction(item)
+--     return self:InsertMagazine(item)
+-- end
 
 function SWEP:InitializeWM()
     if !self.WorldModelCustom then return end
@@ -623,13 +694,9 @@ function SWEP:ShootBullet()
     debugoverlay.Line(shootOrigin, shootOrigin + shootDir*1000,1,nil, true)
 
     local bullet_type = self:PopUpBulletFromMag()
-    
-    //print("kalibr", tostring(bullet_type))
 
     local bullet_dmg = GetBulletDMG(bullet_type)
     local bullet_opt = GetBulletOptions(bullet_type)
-
-    //print(CurTime(), bullet_opt)
 
     if !bullet_dmg then bullet_dmg = {} end
 
@@ -643,12 +710,13 @@ function SWEP:ShootBullet()
 	bullet.Num = bullet_opt.num_bullets or 1
 	bullet.Src = shootOrigin
 	bullet.Dir = shootDir
+
     if self.IsShotgun then
         bullet.Spread = Vector(cone, cone, 0)
     else
 	    bullet.Spread = Vector(cone, cone, 0) * self:GetNWFloat("VisualRecoil") * 5
     end
-    //print(bullet.Spread)
+
 	bullet.Tracer = 1
 	bullet.TracerName = 4
 	bullet.Force = bullet_dmgsum / 10
@@ -682,7 +750,7 @@ function SWEP:ShootBullet()
         end
     end
     self:EmitSound(self.Primary.Sound)
-    print(self.Recoil)
+
     self:SetNWFloat("VisualRecoil", self:GetNWFloat("VisualRecoil") + self.Recoil)
 
     self:SetLastShootTime(CurTime())
@@ -727,8 +795,8 @@ function SWEP:Step()
 		ply:SetEyeAngles(ply:EyeAngles() + self.eyeSpray)
 		self.eyeSpray = LerpAngleFT(0.5, self.eyeSpray, Angle(0, 0, 0))
         local p = 0
-        if self:GetNWFloat("VisualRecoil") > 0.3 then
-		    p = 0.005
+        if self:GetNWFloat("VisualRecoil") > 0.1 then
+		    p = 0.01
         end
 		self.eyeSpray = self.eyeSpray + Angle(math.Rand(-p, p), math.Rand(-p, p), 0)
 	end
@@ -737,7 +805,7 @@ function SWEP:Step()
 		if ply:GetNWInt("LeftArm") < 1 or ply:GetNWInt("RightArm") < 1 then
 			//local p = 0.1
             local p = 0
-            if self:GetNWFloat("VisualRecoil") > 0.3 then
+            if self:GetNWFloat("VisualRecoil") > 0.1 then
                 p = 0.1
             end
 			self.eyeSpray = self.eyeSpray + Angle(math.Rand(-p, p), math.Rand(-p, p), 0)
@@ -790,3 +858,7 @@ net.Receive("gs_wep_drop", function(_, ply)
     local wep = net.ReadEntity()
     wep:Drop()
 end)
+
+/*
+    стоить добавить систему тасков, которые связаны с самим свепом, а не через ply
+*/

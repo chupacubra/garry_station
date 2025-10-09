@@ -28,6 +28,23 @@ function ENT:ItemHide()
     self.Hided = true
 end
 
+// эта функция лишь удаляет обьект из старого контейнера
+function ENT:ClearContainer()
+    if !self.Container then return end
+
+    local cont = self.Container
+
+    if cont.IsHands then
+        cont:SetItem(nil)
+    end
+    
+    if cont:IsPlayer() then
+        return cont:RunClass("RemoveItemFromInventary", self)
+    end
+
+    return cont:RemoveItem(self)
+end
+
 function ENT:SetParentContainer(parent)
     if IsValid(self.Container) then
         if self.Container.IsHands then

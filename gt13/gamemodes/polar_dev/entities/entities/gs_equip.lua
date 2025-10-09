@@ -95,7 +95,7 @@ function ENT:DeEquip(ply)
        net.WriteEntity(self)
        net.SendToServer() 
     else
-        local success = player_manager.RunClass(ply, "DequipItem", self)
+        local success = player_manager.RunClass(ply, "DequipItem", self, true)
         if success then
             self.EquipOwner = nil
         end

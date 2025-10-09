@@ -144,6 +144,10 @@ function PLAYER:MakeViewTrace(len, dir)
 	end
 end
 
+function PLAYER:RichTextPrint(txt)
+	RichTextPrint(txt, self)
+end
+
 local stamina_to_run = 50
 
 local IN_MOVE = {

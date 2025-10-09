@@ -24,6 +24,8 @@ ENT.CarryAng = Angle(0,0,0)
 ENT.HandOffsetVec = Vector()
 ENT.HandOffsetAng = Angle()
 
+ENT.Server_examine = false
+
 local function CanPickup(ent)
     local phys = ent:GetPhysicsObject(ent)
     if !phys then return end
@@ -61,7 +63,7 @@ function ENT:Initialize()
         self:CallOnRemove("ItemDeleting", function(ent)
             if !ent.Container then return end 
             if ent.Container:IsPlayer() then
-                player_manager.RunClass(ent.Container, "RemoveFromInventary", ent)
+                player_manager.RunClass(ent.Container, "RemoveItemFromInventary", ent)
             end
             
             if IsValid(ent.Container) and ent.Container.RemoveItem then
@@ -159,7 +161,7 @@ function ENT:Examine(ply)
     RichTextPrint("It's a {255 255 255}".. self.Name, ply)
     RichTextPrint("{255 255 255}"..self.Desc, ply)
 
-    debug.Trace()
+    //debug.Trace()
 end
 
 function ENT:SetupBaseContextCallbacks()
