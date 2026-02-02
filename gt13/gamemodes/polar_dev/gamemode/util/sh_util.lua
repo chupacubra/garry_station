@@ -1,11 +1,11 @@
-function util.FindCloserEntsAndRun(radius, func)
-    for k, ent in pairs(ents.FindInSphere(radius)) do
+function util.FindCloserEntsAndRun(pos, radius, func)
+    for k, ent in pairs(ents.FindInSphere(pos, radius)) do
         func(ent)
     end
 end
 
-function util.FindCloserPlysAndRun(radius, func)
-    for k, ply in pairs(ents.FindInSphere(radius)) do
+function util.FindCloserPlysAndRun(pos, radius, func)
+    for k, ply in pairs(ents.FindInSphere(pos, radius)) do
         if !ply:IsPlayer() then continue end
         func(ply)
     end
@@ -19,7 +19,7 @@ function util.getGameTimeStamp()
     return tostring(t.year+28) .. "-" .. tostring(t.month) .. "-".. tostring(t.day) .. " " .. tostring(t.hour) ..":".. tostring(t.min) ..":".. tostring(t.sec)
 end
 
-function util.TableMul(value, count)
+function table.CloneVals(value, count)
     local tbl = {}
     for i = 1, count do
         table.insert(tbl, value)
@@ -75,4 +75,13 @@ function util.TableToHash(tbl)
     end
     
     return util.CRC(hash)
+end
+
+//уникальнейшая функция, которая превращяет простые типы в кучу бинарного говна
+//сериализация данных для отправление их через writeData
+//
+function util.VarToData(var)
+    if type(var) == "number" then
+        return
+    end
 end

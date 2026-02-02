@@ -19,12 +19,43 @@ ENT.Desc  = "DESC"
 
 ENT.Size  = ITEM_SMALL
 ENT.Color = nil
+ENT.Material = nil
 ENT.CarryAng = Angle(0,0,0)
 
 ENT.HandOffsetVec = Vector()
 ENT.HandOffsetAng = Angle()
 
-ENT.Server_examine = false
+// с помощью нет комманд можно предустановить "команду" в которую можно засунуть аргументы
+// всё для экономии нетворкинга
+// очень хочется чтобы оно ещё могло создавать короткие функции, в которые бы можно было сразу передать аргументы и передавать неты
+// каллбаки не могли передавать аргументов, а нэткоманды могут
+// с помощью неткомманд можно не создавать для энтити отдельные нетстроки, если нужно что-то передать
+// шаред
+--[[
+    ENT.NetCommands = {
+        ["SetChemical"] = {
+            {"id", "string"}
+        }
+    }
+
+    // на клиенте
+    self:NetCommand("SetChemical", "water")
+
+
+
+    // на сервере
+    
+    net.Receive("ps_ent_netcmd", function(_, ply) ... end) --->
+        ent:SetChemical("water")
+
+
+
+
+        необходимо поставить проверки на валидность выполнения комманды
+--]]
+ENT.NetCommands = {}
+
+
 
 local function CanPickup(ent)
     local phys = ent:GetPhysicsObject(ent)
@@ -33,6 +64,36 @@ local function CanPickup(ent)
 end
 
 function ENT:SetupNWVars()
+end
+
+
+function ENT:RunNetCommand(cmd, ...)
+    if !self.NetCommands[cmd] then return end
+    
+    local net_args = self.NetCommands[cmd]
+
+    if #args != #net_args then return end
+
+
+    local netsend = {}
+
+    for i, v in pairs(args) do
+        local typ = net_args[i][2] 
+        local id = net_args[i][1]
+        
+        if type(v) != typ then 
+            GS_Error("NetCommand for "..tostring(self)..": Unexpected type for '"..tostring(id).."' - "..type(v) .." but need "..typ)
+            return
+        end
+
+        table.insert(netsend, {id = id, var = v, typ = typ})
+    end
+
+    util.SendNetCommand(ent, cmd, netsend)
+end
+
+function ENT:HandleNetCommands(netcmd, args, ply)
+    // some shiiiieeeet
 end
 
 function ENT:SetupDataTables()
@@ -47,6 +108,11 @@ function ENT:Initialize()
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
     
+    self:SetColor(self.Color or Color(255, 255, 255) )
+    if self.Material then
+        self:SetMaterial(self.Material)
+    end
+
     local phys = self:GetPhysicsObject()
     if (phys:IsValid()) then
         phys:Wake()

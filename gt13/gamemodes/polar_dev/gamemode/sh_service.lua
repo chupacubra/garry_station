@@ -71,6 +71,10 @@ function GS_MSG(text, color)
     MsgC(MSG_INFO or LogColor[color], "[GS] "..text.."\n")
 end
 
+function GS_Error(text)
+    error("[GS] "..text)
+end
+
 /*
 function GS_Log(c, text)
     MsgC(c, "[GS] "..text.."\n")

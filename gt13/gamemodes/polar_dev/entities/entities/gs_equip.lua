@@ -63,6 +63,7 @@ function ENT:CreateEquipDrawModel(ply)
     local cmodel = ClientsideModel(self.EquipModelDraw.model)
     cmodel:SetBodyGroups(self.EquipModelDraw.bodygroups)
     cmodel:SetModelScale(self.EquipModelDraw.size)
+    cmodel:SetMaterial(self:GetMaterial())
     return cmodel
 end
 

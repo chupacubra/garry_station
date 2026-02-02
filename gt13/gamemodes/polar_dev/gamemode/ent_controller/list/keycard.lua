@@ -35,7 +35,7 @@ function Base:ShowCard(owner, ply)
     local text_show = "You were shown an access card:\n"..self:GetDepartment().."\n"..self:GetPost().."\n"..self:GetOwnerName()
 
     if !ply then
-        util.FindCloserPlysAndRun(show_radius, function(ply)
+        util.FindCloserPlysAndRun(owner:GetPos(), show_radius, function(ply)
             if ply == owner then return end
             RichTextPrint(text_show, ply)
         end)

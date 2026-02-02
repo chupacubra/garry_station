@@ -72,6 +72,7 @@ function PLAYER:GetLocalNWVar(key, def)
     return self.LocalNWVars[key] or def
 end
 
+// ненадёжная фигня но кто знает
 function PLAYER:RegisterNWKey(key, id)
     if self.LocalNWVars[key] then return end
 

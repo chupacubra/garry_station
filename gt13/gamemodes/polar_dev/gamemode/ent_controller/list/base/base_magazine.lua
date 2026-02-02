@@ -114,7 +114,7 @@ local function GenerateMagazineFull(mag, data)
     local ENT = {}
 
     function ENT:PostInit()
-        self.Magazine = util.TableMul(next(self.AcceptCalibr), self.MaxAmmo)
+        self.Magazine = table.CloneVals(next(self.AcceptCalibr), self.MaxAmmo)
         self:SetNWInt("Bullets", self.MaxAmmo)
     end
 

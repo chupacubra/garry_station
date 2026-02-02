@@ -21,7 +21,8 @@ local base_EquipModelDraw = {
     bone        = "ValveBiped.Bip01_Spine2",
     offset_pos  = pos_bdy,
     offset_ang  = ang_bdy,
-    size = 0.85,
+    size = 1,
+    mat = ""
 }
 
 
@@ -41,8 +42,8 @@ ENT.Category = "Polar Station: Armor"
 ENT.TypeEquip   = "VEST"
 
 ENT.EquipModelDraw = {
-    model       = "models/eft_props/gear/backpacks/bp_forward.mdl",
-    bodygroups  = "1",
+    model       = "models/eft_props/gear/armor/ar_kirasa_black.mdl",
+    //bodygroups  = "1",
     bone        = "ValveBiped.Bip01_Spine2",
     offset_pos  = pos_bdy,//Vector(-4.5, 5,0),
     offset_ang  = ang_bdy,
@@ -58,7 +59,7 @@ ENT.Protection = {
 
 AddEntItem(ENT, "dev_armorvest")
 
-local function fast_vest(id, name, desk, model, protect, EquipModelDraw  ) // if EquipModelDraw == true, then copy base and set model
+local function fast_vest(id, name, desk, model, protect, EquipModelDraw, material  ) // if EquipModelDraw == true, then copy base and set model
     local ent = {}
     
     ent.PrintName = name
@@ -67,7 +68,7 @@ local function fast_vest(id, name, desk, model, protect, EquipModelDraw  ) // if
     //ent.MaxItems = max_items
     ent.Model = model
     ent.Protection = protect
-    
+    ent.Material = material
     if EquipModelDraw == true then
         local base_emd = table.Copy(base_EquipModelDraw)
         base_emd.model = model
@@ -81,6 +82,7 @@ local function fast_vest(id, name, desk, model, protect, EquipModelDraw  ) // if
     AddEntItem(ent, id, "dev_armorvest")
 end
 
+
 fast_vest("av_greenkirasa" ,"Armor vest", "Security", "models/eft_props/gear/armor/ar_kirasa_camo.mdl", {[D_BRUTE] = 15} , true )
 fast_vest("av_armorkirasa" ,"Armor kirasa", "for big Security", "models/eft_props/gear/armor/ar_korundvm.mdl", {[D_BRUTE] = 30} , true )
 fast_vest("av_lightvest" ,"Light vest", "for small Security", "models/eft_props/gear/armor/ar_slick_b.mdl", {[D_BRUTE] = 10} , true )
@@ -90,6 +92,12 @@ fast_vest("av_armyvest" ,"Army vest", "Skibidi shield", "models/eft_props/gear/a
 fast_vest("av_civil" ,"Civil armorvest", "Classic vest", "models/eft_props/gear/armor/ar_paca.mdl", {[D_BRUTE] = 15} , true )
 fast_vest("av_bigkirasa" ,"Tank kirasa", "invincible", "models/eft_props/gear/armor/cr/cr_6b3.mdl", {[D_BRUTE] = 40} , true )
 fast_vest("av_press" ,"Press vest", "unreliable", "models/eft_props/gear/armor/ar_beetle3.mdl", {[D_BRUTE] = 15} , true )
+fast_vest("av_blackkirasa" ,"Armor vest", "Security", "models/eft_props/gear/armor/ar_kirasa_black.mdl", {[D_BRUTE] = 15} , true )
+
+fast_vest("av_blackkirasa_gco" ,"Armor vest", "Sus vest", "models/eft_props/gear/armor/ar_kirasa_black.mdl", {[D_BRUTE] = 15} , true, "models/eft/armor/mats/armor_kora_kulon_black_d_gco")
+fast_vest("av_armorkirasa_gco" ,"Armor kirasa gco", "for big sus Security", "models/eft_props/gear/armor/ar_korundvm.mdl", {[D_BRUTE] = 30} , true, "models/eft/armor/armor_korundvm_gco")
+fast_vest("av_lightvest_gco" ,"Light vest", "sus vest", "models/eft_props/gear/armor/ar_slick_b.mdl", {[D_BRUTE] = 10} , true, "models/eft/armor/armor_slick_black_gco" )
+
 
 
 

@@ -95,23 +95,30 @@ function CHEMIC_CONTAINER:HumanMetabolize(unit) // only for humanclass
 end
 
 function CHEMIC_CONTAINER:GetColor()
-	if #self.content == 0 then return Color(0,0,0) 
-	elseif #self.content == 1 then return CHEMICALS[table.GetKeys(self.content)[1]]["color"] or BASE_CHEM_COLOR end
+	PrintTable(CHEMICALS[table.GetKeys(self.content)[1]])
+	if table.Count(self.content) == 0 then return Color(0,0,0) 
+	elseif table.Count(self.content) == 1 then return CHEMICALS[table.GetKeys(self.content)[1]]["color"] or BASE_CHEM_COLOR end
 
 	local sum = tblsum(self.content)
 	local proc = {}
 
 	for k, v in SortedPairsByValue(self.content, true) do
-		proc[#proc+1] = {
+		table.insert(proc, {
 			proc = (v * 100) / sum,
 			clr =  CHEMICALS[k]["color"] or BASE_CHEM_COLOR
-		}
+		})
 	end
+	print(proc)
+	PrintTable(proc)
 
 	local blend, rat = proc[1]["clr"], proc[1]["proc"]
-	for i = 2, #proc do
- 		blend:Lerp(proc[i]["clr"], proc[i][proc] / rat)
-		rat = rat + proc[i][proc]
+	for i = 1, #proc do
+		//if i == 1 then continue  end
+		//print(( proc[i]["proc"]) / 100)
+		//print(proc[i]["clr"])
+ 		blend = blend:Lerp(proc[i]["clr"], ( proc[i]["proc"]) / rat )
+		print("blending", blend)
+		rat = rat + proc[i]["proc"]
 	end
  
 	blend.a = math.Clamp(blend.a, 20, 255)

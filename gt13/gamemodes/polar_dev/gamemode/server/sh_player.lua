@@ -157,9 +157,8 @@ local IN_MOVE = {
 	IN_MOVERIGHT,
 }
 
-local function inMove(keys)
+local function inMove(keys)					// need faster version
 	for k, move_key in ipairs(IN_MOVE) do
-		//print(bit.band(keys, move_key), move_key)
 		if bit.band(keys, move_key) == move_key then
 			return true
 		end

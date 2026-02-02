@@ -144,6 +144,13 @@ hook.Add(
 	end
 )
 
+hook.Add("HUDDrawTargetID", "HidePlayerInfo", function() return false end)
+
+
+local function IsSpectating(ply)
+	return false
+end
+
 local sightAng = Angle(0, 0, 0)
 local podkid = 0
 local oldFakeOrigin = Vector(0, 0, 0)
@@ -151,23 +158,38 @@ local oldFakeAng = Angle(0, 0, 0)
 local oldOrigin = Vector(0, 0, 0)
 local oldAng = Angle(0, 0, 0)
 local lerping = 1
-
-hook.Add("HUDDrawTargetID", "HidePlayerInfo", function() return false end)
+local vector_origin = vector_origin
 
 function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	local hand = ply:GetAttachment(ply:LookupAttachment("anim_attachment_rh"))
 	local eye = ply:GetAttachment(ply:LookupAttachment("eyes"))
+
 	local org = eye.Pos
 	local ang1 = LerpAngle(0, ply:EyeAngles(), eye.Ang)
 	local org1 = eye.Pos + eye.Ang:Up() * 2 + eye.Ang:Forward() * 2.5
+
+	local ply_head_bid = ply:LookupBone("ValveBiped.Bip01_Head1")
+	local active_weapon = ply:GetActiveWeapon()
 	
-	if ply:Team() == 1002 or !ply:Alive() then return end
-	--[[if not ply:Alive() then
-		local specPly = ply:GetNWEntity("SpecPly")
-		if not specPly:IsValid() then
-			if not IsValid(ply:GetNWEntity("Corpse")) then return end
-			local attach = ply:GetNWEntity("Corpse"):GetAttachment(1)
-			ply:GetNWEntity("Corpse"):ManipulateBoneScale(ply:GetNWEntity("Corpse"):LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
+	//if ply:Team() == 1002 or !ply:Alive() then return end
+	
+	local corpse = ply:GetNWEntity("Corpse")
+	
+
+	if ply:Team() == TEAM_SPECTATOR then return end
+
+
+	// когда регдолизация, последние секунды трупачока, вид с глаз ИЛИ спек кам (не работает)
+	/*
+	if not ply:Alive() then
+		//local specPly = ply:GetNWEntity("SpecPly")
+	
+		//if not specPly:IsValid() then
+			if not IsValid(corpse) then return end
+			
+			local attach = corpse:GetAttachment(1)
+			corpse:ManipulateBoneScale(corpse:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
+
 			local view = {
 				origin = attach.Pos,
 				angles = LerpAngle(0.2, ang1, attach.Ang),
@@ -178,16 +200,26 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 			lerping = 1
 
 			return view
-		end
+		//end
 
-		return SpecCam(specPly)
+		//return SpecCam(specPly)
+	end    
+	*/
+	//if (ply:GetNWBool("fake") == true and IsValid(corpse))  then
+	
+	if ply:Alive() then
+		ply:ManipulateBoneScale(ply_head_bid, vector_origin)
+	else
+		if !IsValid(corpse) then return end
+
+		if IsSpectating(ply) then
+			return SpecCam(ply)
+		end
 	end
-    --]]
-    
-	if ply:GetNWBool("fake") == true and IsValid(ply:GetNWEntity("Corpse")) then
-		local rag = ply:GetNWEntity("Corpse")
-		local attach = rag:GetAttachment(1)
-		rag:ManipulateBoneScale(rag:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
+
+	if IsValid(corpse) then
+		local attach = corpse:GetAttachment(1)
+		corpse:ManipulateBoneScale(corpse:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
 
 		lerping = Lerp(3 * FrameTime(), lerping, 0)
 		local view = {
@@ -204,16 +236,18 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	end
     
 
-	if IsValid(ply) and IsValid(ply:GetActiveWeapon()) then
-		wep = ply:GetActiveWeapon()
-		if whitelistweps[wep:GetClass()] and not ply:InVehicle() then return end
+	if IsValid(ply) and IsValid(active_weapon) then
+		if whitelistweps[active_weapon:GetClass()] and not ply:InVehicle() then return end
 	end
 
 	sightAng = sightAng or hand.Pos
+	
 	if ply:Alive() and IsValid(ply) and IsValid(ply) and IsValid(ply:GetActiveWeapon()) then
-		ply:ManipulateBoneScale(ply:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
-		local weaponClass = wep:GetClass()
+		ply:ManipulateBoneScale(ply_head_bid, vector_origin)
+
+		local weaponClass = active_weapon:GetClass()
 		local guninfo = weapons.Get(weaponClass)
+	
 		if guninfo and (guninfo.Base == "gs_base_weapon" or guninfo.Base == "gs_base_weapon_shot") then
 			if scopeAiming() then
 				MyLerp = Lerp(4 * FrameTime(), MyLerp, 1)
@@ -221,8 +255,10 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 				
 				MyLerp = Lerp(6 * FrameTime(), MyLerp, 0.1)
 			end
+
+			local recoil = active_weapon:GetNWFloat("VisualRecoil")
 			
-			podkid = Lerp(0.1, podkid, math.Clamp((wep:GetHoldType() ~= "revolver" and ply:GetActiveWeapon():GetNWFloat("VisualRecoil") / 4) or ply:GetActiveWeapon():GetNWFloat("VisualRecoil") / 1, 0, 10))
+			podkid = Lerp(0.1, podkid, math.Clamp(active_weapon:GetHoldType() ~= "revolver" and recoil / 4 or recoil / 1, 0, 10))
 			org = hand.Pos + hand.Ang:Up() * guninfo.sightPos.x - hand.Ang:Forward() * guninfo.sightPos.y + hand.Ang:Right() * guninfo.sightPos.z + hand.Ang:Up() * podkid
 			ang = hand.Ang + guninfo.sightAng + Angle(podkid * 10, 0, 0)
 		end
@@ -230,15 +266,11 @@ function HomigradCam(ply, vec, ang, fov, znear, zfar)
 	end
 
 	sightAng = LerpAngle(3 * FrameTime(), sightAng, ang)
-	if ply:Alive() then
-		ply:ManipulateBoneScale(ply:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
-	end
 
 	if ply:InVehicle() == true then
 		org = eye.Pos + eye.Ang:Forward() * 0.8
 		ang = eye.Ang
 		MyLerp = 1
-		ply:ManipulateBoneScale(ply:LookupBone("ValveBiped.Bip01_Head1"), vector_origin)
 		anglerp = LerpAngle(MyLerp, ang1, ang)
 	else
 		anglerp = LerpAngle(MyLerp / 2, ang1, sightAng or Angle(0, 0, 0))
@@ -265,7 +297,8 @@ hook.Add(
 	"RenderScene",
 	"fwep-viewbobfix",
 	function(pos, angle, fov)
-		local view = hook.Run("CalcView", LocalPlayer(), pos, angle, fov)
+		local lply = LocalPlayer()
+		local view = hook.Run("CalcView", lply, pos, angle, fov)
 		local view = {
 			x = 0,
 			y = 0,
@@ -275,12 +308,13 @@ hook.Add(
 			drawmonitors = true
 		}
 
-		local calcView = HomigradCam(LocalPlayer(), pos, angle, fov)
+		local calcView = HomigradCam(lply, pos, angle, fov)
 		if not calcView then return end
 		view.fov = calcView.fov
 		view.origin = calcView.origin
 		view.angles = calcView.angles
 		view.drawviewmodel = not calcView.drawviewer
+
 		render.Clear(0, 0, 0, 255, true, true, true)
 		render.RenderView(view)
 

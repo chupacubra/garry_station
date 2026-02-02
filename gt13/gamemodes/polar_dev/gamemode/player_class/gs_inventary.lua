@@ -315,6 +315,9 @@ function PLAYER_INVENTARY:EquipSyncClient(new_equip)
 				if ent_eq.EquipModelDraw.size then
 					mdl:SetModelScale(ent_eq.EquipModelDraw.size)
 				end
+
+				print(ent_eq:GetMaterial())
+				mdl:SetMaterial(ent_eq:GetMaterial())
 			end
 		end
 		return mdl
